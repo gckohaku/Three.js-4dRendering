@@ -5,4 +5,9 @@ export type FixedArray<T, Value> = [...T[]] & { length: Value };
 /**
  * [red, green, blue]
  */
-export type ColorRGBArray = [number, number, number];
+export type ArrayOfColorRGB = [number, number, number];
+
+/**
+ * [red, green, blue, alpha]
+ */
+export type ArrayOfColorRGBA = [number, number, number, number];
