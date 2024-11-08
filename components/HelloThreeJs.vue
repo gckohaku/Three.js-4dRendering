@@ -114,9 +114,16 @@ onMounted(() => {
 </script>
 
 <template>
-	<canvas id="canvas" ref="threeCanvas"></canvas>
+	<div class="page-container">
+		<canvas id="canvas" ref="threeCanvas"></canvas>
+		<ModuleSlider text="x" />
+	</div>
 </template>
 
 <style scoped>
-/* style here */
+.page-container {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: nowrap;
+}
 </style>

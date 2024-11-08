@@ -61,7 +61,6 @@ export class Model3D {
 	}
 
 	toThreeVertexes(): Float32Array {
-		console.log(this.vertexes.flat());
 		return new Float32Array(this.vertexes.flat());
 	}
 
@@ -72,7 +71,6 @@ export class Model3D {
 			trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
 		}
 
-		console.log(trianglesVertexesArray);
 		return new Uint32Array(trianglesVertexesArray);
 	}
 
