@@ -1,12 +1,13 @@
 import type { ThreeMFLoader } from "three/examples/jsm/Addons.js";
 import { PolygonStrip3D } from "./PolygonStrip3D";
-import type { ArrayOfColorRGB } from "./TypeUtilities";
-import type * as THREE from "three";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import * as THREE from "three";
 
 export class Model3D {
 	vertexes: number[][] = [];
 	parts: PolygonStrip3D[] = [];
 	indexes: number[][] = [];
+	colors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [];
 
 	constructor();
 	constructor(m: Model3D);
@@ -32,25 +33,9 @@ export class Model3D {
 
 	setParts(partsIndexes: number[][], colors?: ArrayOfColorRGB[]) {
 		this.indexes = partsIndexes;
-		for (let i = 0; i < partsIndexes.length; i++) {
-			const indexes = partsIndexes[i];
 
-			if (indexes.length < 3) {
-				console.warn(
-					`partsIndexes[${i}] length is too few (al least 3 length).`,
-				);
-			}
-			const vs: number[][] = [];
-			for (let j = 0; j < indexes.length; j++) {
-				vs.push(this.vertexes[indexes[j]]);
-			}
-			this.parts.push(new PolygonStrip3D([...vs]));
-			if (colors?.[i]) {
-				const talePart = this.parts.at(-1);
-				if (talePart) {
-					talePart.setColor(...colors[i]);
-				}
-			}
+		if (colors) {
+			this.colors = [...colors];
 		}
 	}
 
@@ -75,8 +60,16 @@ export class Model3D {
 	}
 
 	setColorMesh() {
-		for (let i = 0; i < this.parts.length; i++) {
-			this.parts[i].setColorMesh();
+		const materialColors = [];
+
+		for (let i = 0; i < this.colors.length; i++) {
+			if (this.colors.length === 3) {
+				materialColors.push(
+					new THREE.MeshBasicMaterial({
+						color: new THREE.Color().setRGB(...this.colors[i] as ArrayOfColorRGB),
+					}),
+				);
+			}
 		}
 	}
 

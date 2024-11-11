@@ -16,7 +16,7 @@ const props = defineProps<Props>();
 
 <template>
 	<div class="module-wrapper">
-		<p>{{ text }}</p>
+		<p>{{ text }}: {{modelValue}}</p>
 		<div class="slider-container">
 			<button><</button>
 			<input type="range" :name="name" :id="id" :min="min" :max="max" :value="modelValue" :step="step" @input="(e) => modelValue = (e.target as HTMLInputElement).value">
