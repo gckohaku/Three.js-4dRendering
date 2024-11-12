@@ -1,12 +1,15 @@
 import type { ThreeMFLoader } from "three/examples/jsm/Addons.js";
 import { PolygonStrip3D } from "./PolygonStrip3D";
-import type { ArrayOfColorRGB } from "./TypeUtilities";
-import type * as THREE from "three";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import * as THREE from "three";
 
 export class Model3D {
 	vertexes: number[][] = [];
-	parts: PolygonStrip3D[] = [];
 	indexes: number[][] = [];
+	colors: ArrayOfColorRGB[] = [];
+	materialColors: THREE.MeshBasicMaterial[] = [];
+	alphas: number[] = [];
+	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 
 	constructor();
 	constructor(m: Model3D);
@@ -14,79 +17,76 @@ export class Model3D {
 	constructor(m?: Model3D) {
 		if (m) {
 			this.vertexes = [...m.vertexes];
-			for (const p of m.parts) {
-				this.parts.push(new PolygonStrip3D(p));
-			}
+			this.indexes = [...m.indexes];
+			this.colors = [...m.colors];
+			this.materialColors = [...m.materialColors];
+			this.alphas = [...m.alphas];
+			this.geometry.copy(m.geometry);
 		}
 	}
 
 	setVertexes(vs: number[][]) {
 		this.vertexes = vs;
+
+		this.geometry.deleteAttribute("position");
+		this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
+		this.geometry.computeVertexNormals();
 	}
 
 	addVertexes(vs: number[][]) {
 		for (let i = 0; i < vs.length; i++) {
 			this.vertexes.push(vs[i]);
+
+			this.geometry.deleteAttribute("position");
+			this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
+			this.geometry.computeVertexNormals();
 		}
 	}
 
 	setParts(partsIndexes: number[][], colors?: ArrayOfColorRGB[]) {
 		this.indexes = partsIndexes;
-		for (let i = 0; i < partsIndexes.length; i++) {
-			const indexes = partsIndexes[i];
 
-			if (indexes.length < 3) {
-				console.warn(
-					`partsIndexes[${i}] length is too few (al least 3 length).`,
-				);
-			}
-			const vs: number[][] = [];
-			for (let j = 0; j < indexes.length; j++) {
-				vs.push(this.vertexes[indexes[j]]);
-			}
-			this.parts.push(new PolygonStrip3D([...vs]));
-			if (colors?.[i]) {
-				const talePart = this.parts.at(-1);
-				if (talePart) {
-					talePart.setColor(...colors[i]);
-				}
-			}
+		if (colors) {
+			this.colors = [...colors];
 		}
+
+		this.geometry.setIndex(new THREE.BufferAttribute(this.toTrianglesIndex(), 1));
+
+		this.setColorMesh();
 	}
 
 	affine(m: number[][]) {
-		for (const part of this.parts) {
-			part.affine(m);
-		}
+		// this needs to redefine.
 	}
 
 	toThreeVertexes(): Float32Array {
-		console.log(this.vertexes.flat());
 		return new Float32Array(this.vertexes.flat());
 	}
 
 	toTrianglesIndex(): Uint32Array {
 		const trianglesVertexesArray: number[] = [];
 
-		for (let i = 0; i < this.parts.length; i++) {
+		for (let i = 0; i < this.indexes.length; i++) {
 			trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
 		}
 
-		console.log(trianglesVertexesArray);
 		return new Uint32Array(trianglesVertexesArray);
 	}
 
 	setColorMesh() {
-		for (let i = 0; i < this.parts.length; i++) {
-			this.parts[i].setColorMesh();
-		}
-	}
+		this.geometry.clearGroups();
+		let colorToIndex = 0;
 
-	meshToScene(scene: THREE.Scene) {
-		for (let i = 0; i < this.parts.length; i++) {
-			const m = this.parts[i].mesh;
-			if (m) {
-				scene.add(m);
+		for (let i = 0; i < this.indexes.length; i++) {
+			this.materialColors.push(
+				new THREE.MeshBasicMaterial({
+					color: new THREE.Color().setRGB(...this.colors[i].map(v => v / 255) as ArrayOfColorRGB),
+				}),
+			);
+
+			for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
+				this.geometry.addGroup(colorToIndex, this.colors.length, i);
+				colorToIndex += 3;
 			}
 		}
 	}
@@ -97,30 +97,12 @@ export class Model3D {
 
 		for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
 			if (i % 2 === 0) {
-				ret.push(
-					onePolygonIndexes[i],
-					onePolygonIndexes[i + 1],
-					onePolygonIndexes[i + 2],
-				);
+				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
 			} else {
-				ret.push(
-					onePolygonIndexes[i],
-					onePolygonIndexes[i + 2],
-					onePolygonIndexes[i + 1],
-				);
+				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
 			}
 		}
 
 		return ret;
-	}
-
-	private getPolygons(): number[][][] {
-		const polygons: number[][][] = [];
-
-		for (let i = 0; i < this.parts.length; i++) {
-			polygons.push(this.parts[i].getPolygons());
-		}
-
-		return polygons;
 	}
 }
