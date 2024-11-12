@@ -5,9 +5,11 @@ import * as THREE from "three";
 
 export class Model3D {
 	vertexes: number[][] = [];
-	parts: PolygonStrip3D[] = [];
 	indexes: number[][] = [];
-	colors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [];
+	colors: ArrayOfColorRGB[] = [];
+	materialColors: THREE.MeshBasicMaterial[] = [];
+	alphas: number[] = [];
+	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 
 	constructor();
 	constructor(m: Model3D);
@@ -15,19 +17,29 @@ export class Model3D {
 	constructor(m?: Model3D) {
 		if (m) {
 			this.vertexes = [...m.vertexes];
-			for (const p of m.parts) {
-				this.parts.push(new PolygonStrip3D(p));
-			}
+			this.indexes = [...m.indexes];
+			this.colors = [...m.colors];
+			this.materialColors = [...m.materialColors];
+			this.alphas = [...m.alphas];
+			this.geometry.copy(m.geometry);
 		}
 	}
 
 	setVertexes(vs: number[][]) {
 		this.vertexes = vs;
+
+		this.geometry.deleteAttribute("position");
+		this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
+		this.geometry.computeVertexNormals();
 	}
 
 	addVertexes(vs: number[][]) {
 		for (let i = 0; i < vs.length; i++) {
 			this.vertexes.push(vs[i]);
+
+			this.geometry.deleteAttribute("position");
+			this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
+			this.geometry.computeVertexNormals();
 		}
 	}
 
@@ -37,12 +49,14 @@ export class Model3D {
 		if (colors) {
 			this.colors = [...colors];
 		}
+
+		this.geometry.setIndex(new THREE.BufferAttribute(this.toTrianglesIndex(), 1));
+
+		this.setColorMesh();
 	}
 
 	affine(m: number[][]) {
-		for (const part of this.parts) {
-			part.affine(m);
-		}
+		// this needs to redefine.
 	}
 
 	toThreeVertexes(): Float32Array {
@@ -52,7 +66,7 @@ export class Model3D {
 	toTrianglesIndex(): Uint32Array {
 		const trianglesVertexesArray: number[] = [];
 
-		for (let i = 0; i < this.parts.length; i++) {
+		for (let i = 0; i < this.indexes.length; i++) {
 			trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
 		}
 
@@ -60,24 +74,19 @@ export class Model3D {
 	}
 
 	setColorMesh() {
-		const materialColors = [];
+		this.geometry.clearGroups();
+		let colorToIndex = 0;
 
-		for (let i = 0; i < this.colors.length; i++) {
-			if (this.colors.length === 3) {
-				materialColors.push(
-					new THREE.MeshBasicMaterial({
-						color: new THREE.Color().setRGB(...this.colors[i] as ArrayOfColorRGB),
-					}),
-				);
-			}
-		}
-	}
+		for (let i = 0; i < this.indexes.length; i++) {
+			this.materialColors.push(
+				new THREE.MeshBasicMaterial({
+					color: new THREE.Color().setRGB(...this.colors[i].map(v => v / 255) as ArrayOfColorRGB),
+				}),
+			);
 
-	meshToScene(scene: THREE.Scene) {
-		for (let i = 0; i < this.parts.length; i++) {
-			const m = this.parts[i].mesh;
-			if (m) {
-				scene.add(m);
+			for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
+				this.geometry.addGroup(colorToIndex, this.colors.length, i);
+				colorToIndex += 3;
 			}
 		}
 	}
@@ -88,30 +97,12 @@ export class Model3D {
 
 		for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
 			if (i % 2 === 0) {
-				ret.push(
-					onePolygonIndexes[i],
-					onePolygonIndexes[i + 1],
-					onePolygonIndexes[i + 2],
-				);
+				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
 			} else {
-				ret.push(
-					onePolygonIndexes[i],
-					onePolygonIndexes[i + 2],
-					onePolygonIndexes[i + 1],
-				);
+				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
 			}
 		}
 
 		return ret;
-	}
-
-	private getPolygons(): number[][][] {
-		const polygons: number[][][] = [];
-
-		for (let i = 0; i < this.parts.length; i++) {
-			polygons.push(this.parts[i].getPolygons());
-		}
-
-		return polygons;
 	}
 }

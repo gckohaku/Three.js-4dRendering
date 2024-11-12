@@ -5,6 +5,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB } from "~/utils/defines/TypeUtilities";
 
+const moveX: Ref<number> = ref(0);
+
 const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 
 const myGeometry = new THREE.BufferGeometry();
@@ -30,12 +32,12 @@ const parts: number[][] = [
 ];
 
 const colors: ArrayOfColorRGB[] = [
+	[255, 0, 0],
 	[0, 255, 0],
-	[0, 255, 0],
-	[0, 255, 0],
-	[0, 255, 0],
-	[0, 255, 0],
-	[0, 255, 0],
+	[0, 0, 255],
+	[128, 128, 128],
+	[0, 255, 255],
+	[255, 0, 255],
 ];
 
 const nextVertexes: number[][] = [
@@ -65,8 +67,8 @@ const nextColors: ArrayOfColorRGB[] = [
 ];
 
 const model = new Model3D();
-model.setVertexes(nextVertexes);
-model.setParts(nextParts, nextColors);
+model.setVertexes(vertexes);
+model.setParts(parts, colors);
 
 myGeometry.setAttribute("position", new THREE.BufferAttribute(model.toThreeVertexes(), 3));
 myGeometry.setIndex(new THREE.BufferAttribute(model.toTrianglesIndex(), 1));
@@ -84,12 +86,11 @@ const initialize = () => {
 
 	const geometry = new THREE.BoxGeometry(300, 300, 300);
 	const material = new THREE.MeshNormalMaterial();
-	const mesh = new THREE.Mesh(myGeometry, material);
+	
 
 	scene.add(light);
-	// scene.add(mesh);
-	model.setColorMesh();
-	model.meshToScene(scene);
+	const mesh = new THREE.Mesh(model.geometry, model.materialColors);
+	scene.add(mesh);
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -116,7 +117,7 @@ onMounted(() => {
 <template>
 	<div class="page-container">
 		<canvas id="canvas" ref="threeCanvas"></canvas>
-		<ModuleSlider text="x" />
+		<ModuleSlider text="x" v-model="moveX" />
 	</div>
 </template>
 
