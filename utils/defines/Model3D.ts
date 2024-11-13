@@ -21,8 +21,11 @@ export class Model3D {
 			this.colors = [...m.colors];
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
-			this.geometry.copy(m.geometry);
+			this.geometry = m.geometry.clone();
 			this.setColorMesh();
+
+			// console.log("this", this.geometry);
+			// console.log("m", m.geometry);
 		}
 	}
 
@@ -59,7 +62,8 @@ export class Model3D {
 	affine(m: THREE.Matrix4): Model3D {
 		const returnedModel = new Model3D(this);
 
-		returnedModel.geometry.getAttribute("position").applyMatrix4(m);
+		const position = returnedModel.geometry.attributes.position;
+		position.applyMatrix4(m);
 
 		return returnedModel;
 	}

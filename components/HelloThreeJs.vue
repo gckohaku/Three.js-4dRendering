@@ -7,34 +7,34 @@ import { makeRotate3DMatrix44 } from "~/utils/defines/MatrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB } from "~/utils/defines/TypeUtilities";
 
-const moveX: Ref<number> = ref(0);
-const moveY: Ref<number> = ref(0);
-const moveZ: Ref<number> = ref(0);
-const rotateX: Ref<number> = ref(0);
-const rotateY: Ref<number> = ref(0);
-const rotateZ: Ref<number> = ref(0);
-const sizeX: Ref<number> = ref(0);
-const sizeY: Ref<number> = ref(0);
-const sizeZ: Ref<number> = ref(0);
+const moveX: Ref<string> = ref("0");
+const moveY: Ref<string> = ref("0");
+const moveZ: Ref<string> = ref("0");
+const rotateX: Ref<string> = ref("0");
+const rotateY: Ref<string> = ref("0");
+const rotateZ: Ref<string> = ref("0");
+const sizeX: Ref<string> = ref("1.0");
+const sizeY: Ref<string> = ref("1.0");
+const sizeZ: Ref<string> = ref("1.0");
 
 const parallelMatrix: ComputedRef<number[][]> = computed(() => {
 	return [
-		[1, 0, 0, moveX.value],
-		[0, 1, 0, moveY.value],
-		[0, 0, 1, moveZ.value],
+		[1, 0, 0, Number(moveX.value)],
+		[0, 1, 0, Number(moveY.value)],
+		[0, 0, 1, Number(moveZ.value)],
 		[0, 0, 0, 1],
 	];
 });
 
 const rotateMatrix: ComputedRef<number[][]> = computed(() => {
-	return makeRotate3DMatrix44(rotateX.value, rotateY.value, rotateZ.value);
+	return makeRotate3DMatrix44(Number(rotateX.value), Number(rotateY.value), Number(rotateZ.value));
 });
 
 const sizeMatrix: ComputedRef<number[][]> = computed(() => {
 	return [
-		[sizeX.value, 0, 0, 0],
-		[0, sizeY.value, 0, 0],
-		[0, 0, sizeZ.value, 0],
+		[Number(sizeX.value), 0, 0, 0],
+		[0, Number(sizeY.value), 0, 0],
+		[0, 0, Number(sizeZ.value), 0],
 		[0, 0, 0, 1],
 	];
 });
@@ -143,9 +143,10 @@ const initialize = () => {
 
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, mesh: THREE.Mesh) => {
 	const transformedModel = model.affine((new THREE.Matrix4()).set(...transformMatrix.value.flat()));
-	console.log(mesh.geometry);
 	mesh.geometry = transformedModel.geometry;
 	mesh.geometry.computeVertexNormals();
+	scene.updateMatrix();
+	mesh.matrixAutoUpdate = true
 	renderer.render(scene, camera);
 };
 
@@ -157,7 +158,17 @@ onMounted(() => {
 <template>
 	<div class="page-container">
 		<canvas id="canvas" ref="threeCanvas"></canvas>
-		<ModuleSlider text="x" v-model="moveX" />
+		<div class="control-container">
+			<ModuleSlider text="x" max="300" min="-300" v-model="moveX" />
+			<ModuleSlider text="y" max="300" min="-300" v-model="moveY" />
+			<ModuleSlider text="z" max="300" min="-300" v-model="moveZ" />
+			<ModuleSlider text="rotateX" max="360" min="-360" v-model="rotateX" />
+			<ModuleSlider text="rotateY" max="360" min="-360" v-model="rotateY" />
+			<ModuleSlider text="rotateZ" max="360" min="-360" v-model="rotateZ" />
+			<ModuleSlider text="sizeX" max="2.0" min="0.1" step="0.1" v-model="sizeX" />
+			<ModuleSlider text="sizeY" max="2.0" min="0.1" step="0.1" v-model="sizeY" />
+			<ModuleSlider text="sizeZ" max="2.0" min="0.1" step="0.1" v-model="sizeZ" />
+		</div>
 	</div>
 </template>
 
@@ -166,5 +177,11 @@ onMounted(() => {
 	display: flex;
 	gap: 1rem;
 	flex-wrap: nowrap;
+
+	.control-container {
+		display: grid;
+		grid-template-columns: auto;
+		height: min-content;
+	}
 }
 </style>
