@@ -1,4 +1,4 @@
-import type { ThreeMFLoader } from "three/examples/jsm/Addons.js";
+import { ThreeMFLoader } from "three/examples/jsm/Addons.js";
 import { PolygonStrip3D } from "./PolygonStrip3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
 import * as THREE from "three";
@@ -22,6 +22,7 @@ export class Model3D {
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
 			this.geometry.copy(m.geometry);
+			this.setColorMesh();
 		}
 	}
 
@@ -55,8 +56,12 @@ export class Model3D {
 		this.setColorMesh();
 	}
 
-	affine(m: number[][]) {
-		// this needs to redefine.
+	affine(m: THREE.Matrix4): Model3D {
+		const returnedModel = new Model3D(this);
+
+		returnedModel.geometry.getAttribute("position").applyMatrix4(m);
+
+		return returnedModel;
 	}
 
 	toThreeVertexes(): Float32Array {
