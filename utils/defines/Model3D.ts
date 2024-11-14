@@ -1,7 +1,5 @@
-import { ThreeMFLoader } from "three/examples/jsm/Addons.js";
-import { PolygonStrip3D } from "./PolygonStrip3D";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
 import * as THREE from "three";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -47,11 +45,18 @@ export class Model3D {
 		}
 	}
 
-	setParts(partsIndexes: number[][], colors?: ArrayOfColorRGB[]) {
+	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = partsIndexes;
 
 		if (colors) {
-			this.colors = [...colors];
+			this.colors = [];
+			for (let i = 0; i < colors.length; i++) {
+				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
+				this.colors.push(colors[i].slice(0, 3) as ArrayOfColorRGB);
+				
+				const alpha = colors[i][3] ?? 1.0;
+				this.alphas.push(alpha);
+			}
 		}
 
 		this.geometry.setIndex(new THREE.BufferAttribute(this.toTrianglesIndex(), 1));
@@ -90,11 +95,15 @@ export class Model3D {
 			this.materialColors.push(
 				new THREE.MeshBasicMaterial({
 					color: new THREE.Color().setRGB(...this.colors[i].map(v => v / 255) as ArrayOfColorRGB),
+					opacity: this.alphas[i],
+					transparent: true,
+					depthTest: true,
+					side: THREE.DoubleSide
 				}),
 			);
 
 			for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
-				this.geometry.addGroup(colorToIndex, this.colors.length, i);
+				this.geometry.addGroup(colorToIndex, 3, i);
 				colorToIndex += 3;
 			}
 		}

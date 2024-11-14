@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { chain, mode } from "mathjs";
+import { chain } from "mathjs";
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import type { ThreeMFLoader } from "three/examples/jsm/Addons.js";
 import { makeRotate3DMatrix44 } from "~/utils/defines/MatrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
-import type { ArrayOfColorRGB } from "~/utils/defines/TypeUtilities";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/defines/TypeUtilities";
 
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
@@ -67,13 +65,13 @@ const parts: number[][] = [
 	[3, 7, 2, 6],
 ];
 
-const colors: ArrayOfColorRGB[] = [
-	[255, 0, 0],
-	[0, 255, 0],
-	[0, 0, 255],
-	[128, 128, 128],
-	[0, 255, 255],
-	[255, 0, 255],
+const colors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [
+	[255, 0, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 0, 255, 0.5],
+	[128, 128, 128, 0.5],
+	[0, 255, 255, 0.5],
+	[255, 0, 255, 0.5],
 ];
 
 const nextVertexes: number[][] = [
@@ -113,6 +111,7 @@ myGeometry.computeVertexNormals();
 const initialize = () => {
 	// 参考リンク: https://b-risk.jp/blog/2021/12/webgl_threejs/
 	const scene = new THREE.Scene();
+	scene.background = new THREE.Color().setRGB(0, 0, 0);
 
 	const camera = new THREE.PerspectiveCamera(45, 1);
 	camera.position.set(0, 0, 1000);
@@ -131,7 +130,7 @@ const initialize = () => {
 		throw new Error("canvasElement is null");
 	}
 
-	const renderer = new THREE.WebGLRenderer({ canvas: threeCanvas.value, antialias: true });
+	const renderer = new THREE.WebGLRenderer({ canvas: threeCanvas.value, antialias: false, alpha: true });
 
 	renderer.setSize(600, 600);
 	renderer.render(scene, camera);
@@ -142,7 +141,9 @@ const initialize = () => {
 };
 
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, mesh: THREE.Mesh) => {
-	const transformedModel = model.affine((new THREE.Matrix4()).set(...transformMatrix.value.flat()));
+	const flatTransformMatrix = transformMatrix.value.flat();
+	// このファイル内では flatTransformMatrix の要素数は 16 であることが保証されている。parallelMatrix, rotateMatrix, sizeMatrix はすべて 4x4 の行列であり、それらの籍の結果の行列も当然 4x4 になり要素数が 16 となるので、Matrix4.set メソッドの引数の数と一致する
+	const transformedModel = model.affine((new THREE.Matrix4()).set(...flatTransformMatrix as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
 	mesh.geometry = transformedModel.geometry;
 	mesh.geometry.computeVertexNormals();
 	scene.updateMatrix();
