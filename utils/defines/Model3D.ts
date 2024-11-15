@@ -12,7 +12,7 @@ export class Model3D {
 	constructor();
 	constructor(m: Model3D);
 
-	constructor(m?: Model3D) {
+	constructor(m?: Model3D, deepCopies: {vertexes: boolean, indexes: boolean, colors: boolean, materialColors: boolean, alphas: boolean, geometry: boolean} = {vertexes: true, indexes: true, colors: true, materialColors: true, alphas: true, geometry: true}) {
 		if (m) {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
@@ -21,9 +21,6 @@ export class Model3D {
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
 			this.setColorMesh();
-
-			// console.log("this", this.geometry);
-			// console.log("m", m.geometry);
 		}
 	}
 
@@ -97,8 +94,10 @@ export class Model3D {
 					color: new THREE.Color().setRGB(...this.colors[i].map(v => v / 255) as ArrayOfColorRGB),
 					opacity: this.alphas[i],
 					transparent: true,
-					depthTest: true,
-					side: THREE.DoubleSide
+					depthTest: false,
+					depthWrite: false,
+					side: THREE.DoubleSide,
+					wireframe: true,
 				}),
 			);
 
