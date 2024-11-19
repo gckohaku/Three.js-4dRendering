@@ -1,13 +1,15 @@
 import * as THREE from "three";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import { NumberController } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 export class Model3D {
 	vertexes: number[][] = [];
 	indexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
-	materialColors: THREE.MeshBasicMaterial[] = [];
+	materialColors: THREE.Material[] = [];
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
+	lineGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 
 	constructor();
 	constructor(m: Model3D);
@@ -90,14 +92,15 @@ export class Model3D {
 
 		for (let i = 0; i < this.indexes.length; i++) {
 			this.materialColors.push(
-				new THREE.MeshBasicMaterial({
+				new THREE.MeshStandardMaterial({
 					color: new THREE.Color().setRGB(...this.colors[i].map(v => v / 255) as ArrayOfColorRGB),
 					opacity: this.alphas[i],
 					transparent: true,
 					depthTest: false,
 					depthWrite: false,
 					side: THREE.DoubleSide,
-					wireframe: true,
+					wireframe: false,
+					flatShading: true,
 				}),
 			);
 
@@ -106,6 +109,26 @@ export class Model3D {
 				colorToIndex += 3;
 			}
 		}
+	}
+
+	getLineSegments(color: ArrayOfColorRGB, width: number)/*:  THREE.LineSegments */ {
+		const lineGeometryIndexes: [number, number][] = [];
+
+		for (const indexesUnit of this.indexes) {
+			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]])
+			if (!lineGeometryIndexes.find(e => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+				lineGeometryIndexes.push(currentIndexes);
+			}
+			
+			
+		}
+	}
+
+	private checkAscending(tuple: [number, number]): [number, number] {
+		if (tuple[0] <= tuple[1]) {
+			return tuple;
+		}
+		return [tuple[1], tuple[0]];
 	}
 
 	private onePolygonToTrianglesIndexes(index: number): number[] {

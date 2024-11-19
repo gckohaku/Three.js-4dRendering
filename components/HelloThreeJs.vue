@@ -66,12 +66,12 @@ const parts: number[][] = [
 ];
 
 const colors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [
-	[0, 255, 0, 0.1],
-	[0, 255, 0, 0.1],
-	[0, 255, 0, 0.1],
-	[0, 255, 0, 0.1],
-	[0, 255, 0, 0.1],
-	[0, 255, 0, 0.1],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
 ];
 
 const nextVertexes: number[][] = [
@@ -116,8 +116,9 @@ const initialize = () => {
 	const camera = new THREE.PerspectiveCamera(45, 1);
 	camera.position.set(0, 0, 1000);
 
-	const light = new THREE.AmbientLight(0xffffff, 1.0);
-	light.position.set(50, 50, 50);
+	const light = new THREE.PointLight(0xffffff, 1000.0, 2000, 0.8);
+	light.position.set(0, 0, 1000);
+	light.castShadow = true;
 
 	const geometry = new THREE.BoxGeometry(300, 300, 300);
 	const material = new THREE.MeshNormalMaterial();
@@ -146,6 +147,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	const flatTransformMatrix = transformMatrix.value.flat();
 	// このファイル内では flatTransformMatrix の要素数は 16 であることが保証されている。parallelMatrix, rotateMatrix, sizeMatrix はすべて 4x4 の行列であり、それらの籍の結果の行列も当然 4x4 になり要素数が 16 となるので、Matrix4.set メソッドの引数の数と一致する
 	const transformedModel = model.affine((new THREE.Matrix4()).set(...flatTransformMatrix as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
+	transformedModel.geometry.computeVertexNormals();
 	mesh.geometry = transformedModel.geometry;
 	// mesh.geometry.computeVertexNormals();
 	scene.updateMatrix();
