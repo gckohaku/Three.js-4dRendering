@@ -1,6 +1,6 @@
 import * as THREE from "three";
+import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
-import { NumberController } from "three/examples/jsm/libs/lil-gui.module.min.js";
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -111,15 +111,41 @@ export class Model3D {
 		}
 	}
 
-	getLineSegments(color: ArrayOfColorRGB, width: number)/*:  THREE.LineSegments */ {
+	getLineSegments(color: ArrayOfColorRGB | number, width: number):  THREE.LineSegments {
 		const lineGeometryIndexes: [number, number][] = [];
+		const lineGeometries: THREE.BufferGeometry[] = [];
 
 		for (const indexesUnit of this.indexes) {
 			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]])
 			if (!lineGeometryIndexes.find(e => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
 				lineGeometryIndexes.push(currentIndexes);
 			}
-			
+		}
+
+		for (const indexPair of lineGeometryIndexes) {
+			lineGeometries.push(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...this.vertexes[indexPair[0]]), new THREE.Vector3(...this.vertexes[indexPair[1]])]));
+		}
+
+		const mergedGeometry = BufferGeometryUtils.mergeGeometries(lineGeometries);
+		const material = new THREE.LineBasicMaterial({
+			color: 0x00ffff,
+		});
+
+		return new THREE.LineSegments(mergedGeometry, material);
+	}
+
+	getGeometryWithFrame(frameColor: number) {
+		const lineGeometryIndexes: [number, number][] = [];
+		const frameGeometries: THREE.BufferGeometry[] = [];
+
+		for (const indexesUnit of this.indexes) {
+			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]])
+			if (!lineGeometryIndexes.find(e => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+				lineGeometryIndexes.push(currentIndexes);
+			}
+		}
+
+		for (const indexPair of lineGeometryIndexes) {
 			
 		}
 	}
@@ -144,5 +170,9 @@ export class Model3D {
 		}
 
 		return ret;
+	}
+
+	private generateLineTube(radius: number, segment = 12) {
+
 	}
 }

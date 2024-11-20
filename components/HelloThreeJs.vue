@@ -126,6 +126,8 @@ const initialize = () => {
 	scene.add(light);
 	const mesh = new THREE.Mesh(model.geometry, model.materialColors);
 	scene.add(mesh);
+	const lineSegments = model.getLineSegments(0x00ffff, 1);
+	scene.add(lineSegments);
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -137,11 +139,11 @@ const initialize = () => {
 	renderer.render(scene, camera);
 
 	renderer.setAnimationLoop(() => {
-		update(renderer, scene, camera, mesh);
+		update(renderer, scene, camera, mesh, lineSegments);
 	});
 };
 
-const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, mesh: THREE.Mesh) => {
+const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, mesh: THREE.Mesh, lineSegments: THREE.LineSegments) => {
 	release(mesh);
 
 	const flatTransformMatrix = transformMatrix.value.flat();
@@ -149,7 +151,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	const transformedModel = model.affine((new THREE.Matrix4()).set(...flatTransformMatrix as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
 	transformedModel.geometry.computeVertexNormals();
 	mesh.geometry = transformedModel.geometry;
-	// mesh.geometry.computeVertexNormals();
+	lineSegments.clear();
 	scene.updateMatrix();
 	mesh.matrixAutoUpdate = true
 	renderer.render(scene, camera);
