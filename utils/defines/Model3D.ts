@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import { add, cos, cross, divide, dotDivide, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
+import { makeRodriguesRotationMatrix } from "./MatrixUtilities";
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -14,7 +16,17 @@ export class Model3D {
 	constructor();
 	constructor(m: Model3D);
 
-	constructor(m?: Model3D, deepCopies: {vertexes: boolean, indexes: boolean, colors: boolean, materialColors: boolean, alphas: boolean, geometry: boolean} = {vertexes: true, indexes: true, colors: true, materialColors: true, alphas: true, geometry: true}) {
+	constructor(
+		m?: Model3D,
+		deepCopies: { vertexes: boolean; indexes: boolean; colors: boolean; materialColors: boolean; alphas: boolean; geometry: boolean } = {
+			vertexes: true,
+			indexes: true,
+			colors: true,
+			materialColors: true,
+			alphas: true,
+			geometry: true,
+		},
+	) {
 		if (m) {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
@@ -52,7 +64,7 @@ export class Model3D {
 			for (let i = 0; i < colors.length; i++) {
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
 				this.colors.push(colors[i].slice(0, 3) as ArrayOfColorRGB);
-				
+
 				const alpha = colors[i][3] ?? 1.0;
 				this.alphas.push(alpha);
 			}
@@ -93,7 +105,7 @@ export class Model3D {
 		for (let i = 0; i < this.indexes.length; i++) {
 			this.materialColors.push(
 				new THREE.MeshStandardMaterial({
-					color: new THREE.Color().setRGB(...this.colors[i].map(v => v / 255) as ArrayOfColorRGB),
+					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
 					opacity: this.alphas[i],
 					transparent: true,
 					depthTest: false,
@@ -111,19 +123,21 @@ export class Model3D {
 		}
 	}
 
-	getLineSegments(color: ArrayOfColorRGB | number, width: number):  THREE.LineSegments {
+	getLineSegments(color: ArrayOfColorRGB | number, width: number): THREE.LineSegments {
 		const lineGeometryIndexes: [number, number][] = [];
 		const lineGeometries: THREE.BufferGeometry[] = [];
 
 		for (const indexesUnit of this.indexes) {
-			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]])
-			if (!lineGeometryIndexes.find(e => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]]);
+			if (!lineGeometryIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
 				lineGeometryIndexes.push(currentIndexes);
 			}
 		}
 
 		for (const indexPair of lineGeometryIndexes) {
-			lineGeometries.push(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...this.vertexes[indexPair[0]]), new THREE.Vector3(...this.vertexes[indexPair[1]])]));
+			lineGeometries.push(
+				new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...this.vertexes[indexPair[0]]), new THREE.Vector3(...this.vertexes[indexPair[1]])]),
+			);
 		}
 
 		const mergedGeometry = BufferGeometryUtils.mergeGeometries(lineGeometries);
@@ -135,18 +149,17 @@ export class Model3D {
 	}
 
 	getGeometryWithFrame(frameColor: number) {
-		const lineGeometryIndexes: [number, number][] = [];
+		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
 		for (const indexesUnit of this.indexes) {
-			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]])
-			if (!lineGeometryIndexes.find(e => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
-				lineGeometryIndexes.push(currentIndexes);
+			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]]);
+			if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+				framePositionIndexes.push(currentIndexes);
 			}
 		}
 
-		for (const indexPair of lineGeometryIndexes) {
-			
+		for (const indexPair of framePositionIndexes) {
 		}
 	}
 
@@ -172,7 +185,30 @@ export class Model3D {
 		return ret;
 	}
 
-	private generateLineTube(radius: number, segment = 12) {
+	private generateLineTube(indexPair: [number, number], radius: number, segment = 12) {
+		const positions = [this.vertexes[indexPair[0]], this.vertexes[indexPair[1]]];
 
+		const lineVector = subtract(positions[1], positions[0]);
+		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
+		const originTubeRawVector = cross(lineVector, unaryMinus(positions[0]));
+		const originTubeVector = divide(originTubeRawVector, divide(norm(originTubeRawVector), radius));
+
+		const vertexes: number[][] = [];
+		const indexes: number[] = [];
+
+		const tubeVectors: number[][] = [];
+		const tubePositions: number[][] = [];
+
+		for (let i = 0; i < segment; i++) {
+			const rotateMatrix = makeRodriguesRotationMatrix((2 * pi * i) / segment, normalizeLineVector);
+			const tubeVector = multiply(rotateMatrix, originTubeRawVector) as number[];
+
+			tubeVectors.push(tubeVector);
+			vertexes.push(add(positions[0], tubeVector), add(positions[1], tubeVector));
+		}
+
+		for (let i = 0; i < segment; i++) {
+			indexes.push(i, i + 1, i + 3, i + 3, i + 2, i);
+		}
 	}
 }
