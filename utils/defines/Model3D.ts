@@ -148,7 +148,27 @@ export class Model3D {
 		return new THREE.LineSegments(mergedGeometry, material);
 	}
 
-	getGeometryWithFrame(frameColor: number) {
+	getMeshWithFrame(frameColor: number): THREE.Group {
+		const frameGeometry = this.getFrameGeometry();
+		
+		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
+		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({color: frameColor}));
+
+		const retGroup = new THREE.Group();
+		retGroup.add(faceMesh);
+		retGroup.add(frameMesh);
+
+		return retGroup;
+	}
+
+	getFrameMesh(frameColor: number): THREE.Mesh {
+		const frameGeometry = this.getFrameGeometry();
+		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({color: frameColor}));
+
+		return mesh;
+	}
+
+	getFrameGeometry(): THREE.BufferGeometry {
 		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
@@ -160,7 +180,13 @@ export class Model3D {
 		}
 
 		for (const indexPair of framePositionIndexes) {
+			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 10));
 		}
+
+		const mergedGeometry = BufferGeometryUtils.mergeGeometries(frameGeometries);
+		mergedGeometry.computeVertexNormals();
+
+		return mergedGeometry;
 	}
 
 	private checkAscending(tuple: [number, number]): [number, number] {
@@ -185,7 +211,7 @@ export class Model3D {
 		return ret;
 	}
 
-	private generateLineTube(indexPair: [number, number], radius: number, segment = 12) {
+	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
 		const positions = [this.vertexes[indexPair[0]], this.vertexes[indexPair[1]]];
 
 		const lineVector = subtract(positions[1], positions[0]);
@@ -210,5 +236,10 @@ export class Model3D {
 		for (let i = 0; i < segment; i++) {
 			indexes.push(i, i + 1, i + 3, i + 3, i + 2, i);
 		}
+
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertexes.flat()), 3));
+		geometry.setIndex(indexes);
+		return geometry;
 	}
 }

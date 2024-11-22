@@ -125,9 +125,15 @@ const initialize = () => {
 
 	scene.add(light);
 	const mesh = new THREE.Mesh(model.geometry, model.materialColors);
-	scene.add(mesh);
-	const lineSegments = model.getLineSegments(0x00ffff, 1);
-	scene.add(lineSegments);
+	// const lineSegments = model.getLineSegments(0x00ffff, 1);
+	const face = new THREE.Mesh(model.geometry, model.materialColors);
+	const frame = model.getFrameMesh(0x00ffff);
+	const group = new THREE.Group();
+	group.add(face);
+	group.add(frame);
+	scene.add(group);
+	console.log(model.getFrameGeometry());
+
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -139,26 +145,26 @@ const initialize = () => {
 	renderer.render(scene, camera);
 
 	renderer.setAnimationLoop(() => {
-		update(renderer, scene, camera, mesh, lineSegments);
+		update(renderer, scene, camera, face, frame);
 	});
 };
 
-const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, mesh: THREE.Mesh, lineSegments: THREE.LineSegments) => {
-	release(mesh);
+const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, face: THREE.Mesh, frame: THREE.Mesh) => {
+	release(face, frame);
 
 	const flatTransformMatrix = transformMatrix.value.flat();
 	// このファイル内では flatTransformMatrix の要素数は 16 であることが保証されている。parallelMatrix, rotateMatrix, sizeMatrix はすべて 4x4 の行列であり、それらの籍の結果の行列も当然 4x4 になり要素数が 16 となるので、Matrix4.set メソッドの引数の数と一致する
 	const transformedModel = model.affine((new THREE.Matrix4()).set(...flatTransformMatrix as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
 	transformedModel.geometry.computeVertexNormals();
-	mesh.geometry = transformedModel.geometry;
-	lineSegments.clear();
+	face.geometry = transformedModel.geometry;
+	frame.geometry = transformedModel.getFrameGeometry();
 	scene.updateMatrix();
-	mesh.matrixAutoUpdate = true
 	renderer.render(scene, camera);
 };
 
-const release = (mesh: THREE.Mesh) => {
-	mesh.geometry.dispose();
+const release = (face: THREE.Mesh, frame: THREE.Mesh) => {
+	face.geometry.dispose();
+	frame.geometry.dispose();
 }
 
 onMounted(() => {
