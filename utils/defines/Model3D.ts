@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
-import { add, cos, cross, divide, dotDivide, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
+import { add, concat, cos, cross, divide, dotDivide, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
 import { makeRodriguesRotationMatrix } from "./MatrixUtilities";
 
 export class Model3D {
@@ -16,17 +16,7 @@ export class Model3D {
 	constructor();
 	constructor(m: Model3D);
 
-	constructor(
-		m?: Model3D,
-		deepCopies: { vertexes: boolean; indexes: boolean; colors: boolean; materialColors: boolean; alphas: boolean; geometry: boolean } = {
-			vertexes: true,
-			indexes: true,
-			colors: true,
-			materialColors: true,
-			alphas: true,
-			geometry: true,
-		},
-	) {
+	constructor(m?: Model3D) {
 		if (m) {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
@@ -75,11 +65,19 @@ export class Model3D {
 		this.setColorMesh();
 	}
 
-	affine(m: THREE.Matrix4): Model3D {
+	affine(m: number[][]): Model3D {
+		const logTimeManager = logTimeManagerStore();
+
+		// m が四行四列である必要がある。四行四列でない場合はエラーが発生する
+		const threeMatrix = new THREE.Matrix4().set(...m.flat() as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>);
 		const returnedModel = new Model3D(this);
 
 		const position = returnedModel.geometry.attributes.position;
-		position.applyMatrix4(m);
+		position.applyMatrix4(threeMatrix);
+		
+		for (let i = 0; i < returnedModel.vertexes.length; i++) {
+			returnedModel.vertexes[i] = multiply(m, concat(this.vertexes[i], [1])) as number[];
+		}
 
 		return returnedModel;
 	}
@@ -150,9 +148,9 @@ export class Model3D {
 
 	getMeshWithFrame(frameColor: number): THREE.Group {
 		const frameGeometry = this.getFrameGeometry();
-		
+
 		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
-		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({color: frameColor}));
+		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
 
 		const retGroup = new THREE.Group();
 		retGroup.add(faceMesh);
@@ -163,12 +161,14 @@ export class Model3D {
 
 	getFrameMesh(frameColor: number): THREE.Mesh {
 		const frameGeometry = this.getFrameGeometry();
-		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({color: frameColor}));
+		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
 
 		return mesh;
 	}
 
 	getFrameGeometry(): THREE.BufferGeometry {
+		const logTimeManager = logTimeManagerStore();
+
 		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
@@ -212,11 +212,11 @@ export class Model3D {
 	}
 
 	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
-		const positions = [this.vertexes[indexPair[0]], this.vertexes[indexPair[1]]];
+		const positions = [this.vertexes[indexPair[0]].slice(0, 3), this.vertexes[indexPair[1]].slice(0, 3)];
 
 		const lineVector = subtract(positions[1], positions[0]);
 		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
-		const originTubeRawVector = cross(lineVector, unaryMinus(positions[0]));
+		const originTubeRawVector = cross(lineVector, [lineVector[1], lineVector[2], lineVector[0]]);
 		const originTubeVector = divide(originTubeRawVector, divide(norm(originTubeRawVector), radius));
 
 		const vertexes: number[][] = [];

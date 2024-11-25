@@ -5,6 +5,8 @@ import { makeRotate3DMatrix44 } from "~/utils/defines/MatrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/defines/TypeUtilities";
 
+const logTimeManager = logTimeManagerStore();
+
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
 const moveZ: Ref<string> = ref("0");
@@ -14,6 +16,8 @@ const rotateZ: Ref<string> = ref("0");
 const sizeX: Ref<string> = ref("1.0");
 const sizeY: Ref<string> = ref("1.0");
 const sizeZ: Ref<string> = ref("1.0");
+
+const isLogPush: Ref<boolean> = ref(false);
 
 const parallelMatrix: ComputedRef<number[][]> = computed(() => {
 	return [
@@ -132,7 +136,7 @@ const initialize = () => {
 	group.add(face);
 	group.add(frame);
 	scene.add(group);
-	console.log(model.getFrameGeometry());
+	console.log(frame.geometry);
 
 
 	if (!threeCanvas.value) {
@@ -153,13 +157,27 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	release(face, frame);
 
 	const flatTransformMatrix = transformMatrix.value.flat();
-	// このファイル内では flatTransformMatrix の要素数は 16 であることが保証されている。parallelMatrix, rotateMatrix, sizeMatrix はすべて 4x4 の行列であり、それらの籍の結果の行列も当然 4x4 になり要素数が 16 となるので、Matrix4.set メソッドの引数の数と一致する
-	const transformedModel = model.affine((new THREE.Matrix4()).set(...flatTransformMatrix as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
+	const transformedModel = model.affine(transformMatrix.value);
 	transformedModel.geometry.computeVertexNormals();
-	face.geometry = transformedModel.geometry;
 	frame.geometry = transformedModel.getFrameGeometry();
+	face.geometry = transformedModel.geometry;
+
 	scene.updateMatrix();
 	renderer.render(scene, camera);
+
+	if (isLogPush.value) {
+		console.log(frame.geometry);
+		isLogPush.value = false;
+	}
+
+	if (logTimeManager.isPushLog()) {
+		
+		console.log(transformedModel.vertexes);
+
+		logTimeManager.updateLogDate();
+	}
+
+	logTimeManager.updateCurrentDate();
 };
 
 const release = (face: THREE.Mesh, frame: THREE.Mesh) => {
@@ -170,8 +188,6 @@ const release = (face: THREE.Mesh, frame: THREE.Mesh) => {
 onMounted(() => {
 	initialize();
 });
-
-
 </script>
 
 <template>
@@ -188,7 +204,9 @@ onMounted(() => {
 			<ModuleSlider text="sizeY" max="2.0" min="0.1" step="0.1" v-model="sizeY" />
 			<ModuleSlider text="sizeZ" max="2.0" min="0.1" step="0.1" v-model="sizeZ" />
 		</div>
+
 	</div>
+	<button id="push-log" @click="isLogPush = true">push log</button>
 </template>
 
 <style scoped>
