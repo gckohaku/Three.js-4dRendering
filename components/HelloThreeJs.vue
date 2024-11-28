@@ -7,6 +7,8 @@ import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/defines/TypeUtil
 
 const logTimeManager = logTimeManagerStore();
 
+const isInitialize: Ref<boolean> = ref(false);
+
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
 const moveZ: Ref<string> = ref("0");
@@ -133,8 +135,8 @@ const initialize = () => {
 	const face = new THREE.Mesh(model.geometry, model.materialColors);
 	const frame = model.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
-	group.add(face);
 	group.add(frame);
+	group.add(face);
 	scene.add(group);
 	console.log(frame.geometry);
 
@@ -171,8 +173,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	}
 
 	if (logTimeManager.isPushLog()) {
-		
-		console.log(transformedModel.vertexes);
+
 
 		logTimeManager.updateLogDate();
 	}
@@ -186,7 +187,25 @@ const release = (face: THREE.Mesh, frame: THREE.Mesh) => {
 }
 
 onMounted(() => {
+	if (process.env.NODE_ENV === "development") {
+		console.log("develop");
+
+		const initializeState = localStorage.getItem("initializeState");
+
+		if (initializeState === "initialized") {
+			console.log("a");
+			localStorage.setItem("initializeState", "reload");
+			console.log("page reloading");
+			location.reload();
+			return;
+		}
+	}
+
 	initialize();
+
+	if (process.env.NODE_ENV === "development") {
+		localStorage.setItem("initializeState", "initialized");
+	}
 });
 </script>
 

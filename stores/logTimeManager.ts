@@ -1,6 +1,7 @@
 export const logTimeManagerStore = defineStore("logTimeManagerStore", () => {
 	const logDate: Ref<number> = ref(Date.now());
-	const currentDate: Ref<number> = ref(Date.now())
+	const currentDate: Ref<number> = ref(Date.now());
+	const logIntervalMilliseconds: Ref<number> = ref(1000);
 
 	function isPushLog(): boolean {
 		if (currentDate.value - logDate.value < 1000) {
@@ -18,5 +19,5 @@ export const logTimeManagerStore = defineStore("logTimeManagerStore", () => {
 		logDate.value = Date.now();
 	}
 
-	return { logDate, isPushLog, updateCurrentDate, updateLogDate };
+	return { logDate, currentDate, logIntervalMilliseconds, isPushLog, updateCurrentDate, updateLogDate };
 });

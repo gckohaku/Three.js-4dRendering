@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
-import { add, concat, cos, cross, divide, dotDivide, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
+import { add, concat, cos, cross, divide, dotDivide, index, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
 import { makeRodriguesRotationMatrix } from "./MatrixUtilities";
 
 export class Model3D {
@@ -69,12 +69,12 @@ export class Model3D {
 		const logTimeManager = logTimeManagerStore();
 
 		// m が四行四列である必要がある。四行四列でない場合はエラーが発生する
-		const threeMatrix = new THREE.Matrix4().set(...m.flat() as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>);
+		const threeMatrix = new THREE.Matrix4().set(...(m.flat() as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
 		const returnedModel = new Model3D(this);
 
 		const position = returnedModel.geometry.attributes.position;
 		position.applyMatrix4(threeMatrix);
-		
+
 		for (let i = 0; i < returnedModel.vertexes.length; i++) {
 			returnedModel.vertexes[i] = multiply(m, concat(this.vertexes[i], [1])) as number[];
 		}
@@ -106,7 +106,7 @@ export class Model3D {
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
 					opacity: this.alphas[i],
 					transparent: true,
-					depthTest: false,
+					depthTest: true,
 					depthWrite: false,
 					side: THREE.DoubleSide,
 					wireframe: false,
@@ -161,7 +161,7 @@ export class Model3D {
 
 	getFrameMesh(frameColor: number): THREE.Mesh {
 		const frameGeometry = this.getFrameGeometry();
-		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
+		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor, depthTest: true }));
 
 		return mesh;
 	}
@@ -173,19 +173,27 @@ export class Model3D {
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
 		for (const indexesUnit of this.indexes) {
-			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]]);
-			if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
-				framePositionIndexes.push(currentIndexes);
+			this.frameIndexesPushProcess(indexesUnit, 0, 1, framePositionIndexes);
+			for (let i = 1; i < indexesUnit.length - 1; i += 2) {
+				this.frameIndexesPushProcess(indexesUnit, i, i + 2, framePositionIndexes);
 			}
+			this.frameIndexesPushProcess(indexesUnit, indexesUnit.length - 1, indexesUnit.length - 2, framePositionIndexes);
+			for (let i = indexesUnit.length - 1 - (indexesUnit.length + 1) % 2; i > 0; i -= 2) {
+				this.frameIndexesPushProcess(indexesUnit, i, i - 2, framePositionIndexes);
+			}
+			
+		}
+
+		if (logTimeManager.isPushLog()) {
+			console.log(framePositionIndexes);
 		}
 
 		for (const indexPair of framePositionIndexes) {
-			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 10));
+			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
 		}
 
 		const mergedGeometry = BufferGeometryUtils.mergeGeometries(frameGeometries);
 		mergedGeometry.computeVertexNormals();
-
 		return mergedGeometry;
 	}
 
@@ -194,6 +202,16 @@ export class Model3D {
 			return tuple;
 		}
 		return [tuple[1], tuple[0]];
+	}
+
+	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
+		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
+		if (currentIndexes[0] === currentIndexes[1]) {
+			return;
+		}
+		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+			framePositionIndexes.push(currentIndexes);
+		}
 	}
 
 	private onePolygonToTrianglesIndexes(index: number): number[] {
@@ -212,11 +230,13 @@ export class Model3D {
 	}
 
 	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
+		const logTimeManager = logTimeManagerStore();
+
 		const positions = [this.vertexes[indexPair[0]].slice(0, 3), this.vertexes[indexPair[1]].slice(0, 3)];
 
 		const lineVector = subtract(positions[1], positions[0]);
 		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
-		const originTubeRawVector = cross(lineVector, [lineVector[1], lineVector[2], lineVector[0]]);
+		const originTubeRawVector = cross(lineVector, positions[0]);
 		const originTubeVector = divide(originTubeRawVector, divide(norm(originTubeRawVector), radius));
 
 		const vertexes: number[][] = [];
@@ -227,19 +247,31 @@ export class Model3D {
 
 		for (let i = 0; i < segment; i++) {
 			const rotateMatrix = makeRodriguesRotationMatrix((2 * pi * i) / segment, normalizeLineVector);
-			const tubeVector = multiply(rotateMatrix, originTubeRawVector) as number[];
+			const tubeVector = multiply(rotateMatrix, originTubeVector) as number[];
 
 			tubeVectors.push(tubeVector);
 			vertexes.push(add(positions[0], tubeVector), add(positions[1], tubeVector));
 		}
 
-		for (let i = 0; i < segment; i++) {
-			indexes.push(i, i + 1, i + 3, i + 3, i + 2, i);
+		const fromStickOutPosition = subtract(positions[0], multiply(normalizeLineVector, radius)) as number[];
+		const toStickOutPosition = add(positions[1], multiply(normalizeLineVector, radius)) as number[];
+
+		vertexes.push(fromStickOutPosition, toStickOutPosition);
+
+		for (let i = 0; i < segment * 2; i += 2) {
+			indexes.push(i, (i + 2) % (2 * segment), i + 1, (i + 2) % (2 * segment), (i + 3) % (2 * segment), i + 1);
+			indexes.push(i, segment * 2, i + 2, i + 1, i + 3, segment * 2 + 1);
 		}
+
+
 
 		const geometry = new THREE.BufferGeometry();
 		geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertexes.flat()), 3));
-		geometry.setIndex(indexes);
+		geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexes), 1));
+
+		if (logTimeManager.isPushLog()) {
+		}
+
 		return geometry;
 	}
 }
