@@ -174,7 +174,7 @@ export class Model3D {
 
 		for (const indexesUnit of this.indexes) {
 			this.frameIndexesPushProcess(indexesUnit, 0, 1, framePositionIndexes);
-			for (let i = 1; i < indexesUnit.length - 1; i += 2) {
+			for (let i = 1; i < indexesUnit.length - 2; i += 2) {
 				this.frameIndexesPushProcess(indexesUnit, i, i + 2, framePositionIndexes);
 			}
 			this.frameIndexesPushProcess(indexesUnit, indexesUnit.length - 1, indexesUnit.length - 2, framePositionIndexes);
