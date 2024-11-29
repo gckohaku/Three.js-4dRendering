@@ -161,7 +161,7 @@ export class Model3D {
 
 	getFrameMesh(frameColor: number): THREE.Mesh {
 		const frameGeometry = this.getFrameGeometry();
-		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor, depthTest: true }));
+		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor, depthTest: true, depthWrite: true }));
 
 		return mesh;
 	}
