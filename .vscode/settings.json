@@ -2,7 +2,10 @@
 	"cSpell.words": [
         "mathjs",
         "nuxt",
-        "Nuxt"
+        "Nuxt",
+        "pinia",
+        "Rodrigues",
+        "versin"
     ],
 	"editor.insertSpaces": false,
 	"indentRainbow.indicatorStyle": "light",
