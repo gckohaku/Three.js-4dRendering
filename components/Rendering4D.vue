@@ -141,6 +141,12 @@ const fourDimensionParts: number[][] = [
 	[8, 9, 12, 13],
 	[10, 11, 14, 15],
 	// あと 12 面
+	// x rotate direction
+	// (4 faces)
+	// y rotate direction
+	// (4 faces)
+	// z rotate direction
+	// (4 faces)
 ]
 
 const model = new Model3D();
