@@ -58,7 +58,7 @@ export class Model4D {
 	affine(m: number[][]): Model4D {
 		const logTimeManager = logTimeManagerStore();
 
-		// m が四行四列である必要がある。四行四列でない場合はエラーが発生する
+		// m が五行五列である必要がある。五行五列でない場合はエラーが発生する
 		const threeMatrix = new THREE.Matrix4().set(...(m.flat() as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
 		const returnedModel = new Model4D(this);
 
