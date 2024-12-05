@@ -6,8 +6,7 @@ import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/defines/TypeUtilities";
 
 const logTimeManager = logTimeManagerStore();
-
-const isInitialize: Ref<boolean> = ref(false);
+const rotationOrder = rotationOrderStore();
 
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
@@ -223,7 +222,9 @@ onMounted(() => {
 			<ModuleSlider text="sizeY" max="2.0" min="0.1" step="0.1" v-model="sizeY" />
 			<ModuleSlider text="sizeZ" max="2.0" min="0.1" step="0.1" v-model="sizeZ" />
 		</div>
-
+		<div class="rotation-order-container">
+			<ChangeableOrderList :contents="rotationOrder.orderList" />
+		</div>
 	</div>
 	<button id="push-log" @click="isLogPush = true">push log</button>
 </template>
