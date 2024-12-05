@@ -45,6 +45,7 @@ function onContentClick(index: number) {
 
 			&:hover {
 				text-decoration: underline;
+				font-weight: bold;
 			}
 
 			&.selected {
