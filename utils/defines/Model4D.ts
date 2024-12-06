@@ -1,6 +1,6 @@
 import { concat, multiply } from "mathjs";
 import * as THREE from "three";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 
 export class Model4D {
 	vertexes: number[][] = [];

@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { add, concat, cos, cross, divide, dotDivide, index, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
-import { makeRodriguesRotationMatrix } from "./MatrixUtilities";
+import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 
 export class Model3D {
 	vertexes: number[][] = [];
