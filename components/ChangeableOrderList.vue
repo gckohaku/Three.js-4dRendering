@@ -8,22 +8,44 @@ const props = defineProps<Props>();
 const contentsList = ref(props.contents.map(content => content));
 const isSelectedContentOfList = ref([...Array(props.contents.length)].map(() => false));
 
-function onContentClick(index: number) {
+function onClickContent(index: number) {
 	isSelectedContentOfList.value.fill(false);
 	isSelectedContentOfList.value[index] = true;
+}
+
+function onClickUpButton() {
+	const isSelected = isSelectedContentOfList.value;
+	const index = isSelected.indexOf(true);
+	if (index <= 0) {
+		return;
+	}
+	const contents = contentsList.value;
+	[contents[index], contents[index - 1]] = [contents[index - 1], contents[index]];
+	[isSelected[index], isSelected[index - 1]] = [false, true];
+}
+
+function onClickDownButton() {
+	const isSelected = isSelectedContentOfList.value;
+	const index = isSelected.indexOf(true);
+	if (index >= isSelected.length - 1) {
+		return;
+	}
+	const contents = contentsList.value;
+	[contents[index], contents[index + 1]] = [contents[index + 1], contents[index]];
+	[isSelected[index], isSelected[index + 1]] = [false, true];
 }
 </script>
 
 <template>
 	<div class="list-wrapper">
 		<div class="list-container">
-			<div v-for="(content, index) of contentsList" class="content" :class="isSelectedContentOfList[index] ? 'selected' : ''" :key="content" @click="onContentClick(index)">
+			<div v-for="(content, index) of contentsList" class="content" :class="isSelectedContentOfList[index] ? 'selected' : ''" :key="content" @click="onClickContent(index)">
 				{{ content }}
 			</div>
 		</div>
 		<div class="button-container">
-			<button>up</button>
-			<button>down</button>
+			<button @click="onClickUpButton">up</button>
+			<button @click="onClickDownButton">down</button>
 		</div>
 	</div>
 
@@ -44,8 +66,8 @@ function onContentClick(index: number) {
 			padding: .1rem .25rem;
 
 			&:hover {
-				text-decoration: underline;
 				font-weight: bold;
+				background-color: #e0e8ec;
 			}
 
 			&.selected {
