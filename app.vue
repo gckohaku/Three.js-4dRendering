@@ -5,6 +5,6 @@ import HelloThreeJs from './components/HelloThreeJs.vue';
 
 <template>
   <div>
-    <HelloThreeJs />
+    <Rendering4D />
   </div>
 </template>
