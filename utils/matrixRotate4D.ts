@@ -1,6 +1,9 @@
-import { cos, sin, Unit } from "mathjs";
+import { concat, cos, multiply, sin, Unit } from "mathjs";
 
-export const makeRotate4DMatrix = (rotateXW: number, rotateYW: number, rotateZW: number, rotateXY: number, rotateYZ: number, rotateXZ: number) => {
+export const makeRotate4DMatrix = (rotateXW: number, rotateYW: number, rotateZW: number, rotateXY: number, rotateYZ: number, rotateXZ: number): number[][] => {
+	const rotationOrder = rotationOrderStore();
+	const logTimeManager = logTimeManagerStore();
+
 	const unitRXW = new Unit(rotateXW, "deg");
 	const unitRYW = new Unit(rotateYW, "deg");
 	const unitRZW = new Unit(rotateZW, "deg");
@@ -39,4 +42,62 @@ export const makeRotate4DMatrix = (rotateXW: number, rotateYW: number, rotateZW:
 		[0, 0, 1, 0],
 		[0, 0, 0, 1],
 	];
+	const rotateMatrixXY = [
+		[1, 0, 0, 0],
+		[0, 1, 0, 0],
+		[0, 0, cosRXY, -sinRXY],
+		[0, 0, sinRXY, cosRXY],
+	];
+	const rotateMatrixYZ = [
+		[cosRYZ, 0, 0, sinRYZ],
+		[0, 1, 0, 0],
+		[0, 0, 1, 0],
+		[-sinRYZ, 0, 0, cosRYZ],
+	];
+	const rotateMatrixXZ = [
+		[1, 0, 0, 0],
+		[0, cosRXZ, 0, -sinRXZ],
+		[0, 0, 1, 0],
+		[0, sinRXZ, 0, cosRXZ],
+	];
+
+	const rotateMatrices: Map<string, number[][]> = new Map();
+	rotateMatrices.set("xw", rotateMatrixXW);
+	rotateMatrices.set("yw", rotateMatrixYW);
+	rotateMatrices.set("zw", rotateMatrixZW);
+	rotateMatrices.set("xy", rotateMatrixXY);
+	rotateMatrices.set("yz", rotateMatrixYZ);
+	rotateMatrices.set("xz", rotateMatrixXZ);
+
+	const orderList = rotationOrder.orderList;
+
+	const lastRotateKey = orderList.at(-1);
+
+	if (!lastRotateKey) {
+		throw new Error("rotate order list is undefined in matrixRotate4D.ts");
+	}
+
+	let retMatrix = rotateMatrices.get(lastRotateKey);
+
+	for (let i = orderList.length - 2; i >= 0; i--) {
+		const currentMatrix = rotateMatrices.get(orderList[i]);
+		if (!retMatrix || !currentMatrix) {
+			throw new Error("matrix is undefined in matrixRotate4D.ts");
+		}
+
+		retMatrix = multiply(retMatrix, currentMatrix);
+	}
+
+	if (!retMatrix) {
+		throw new Error("matrix is undefined in matrixRotate4D.ts");
+	}
+
+	return retMatrix;
 };
+
+export const makeRotate4DMatrix55 = (rotateXW: number, rotateYW: number, rotateZW: number, rotateXY: number, rotateYZ: number, rotateXZ: number): number[][] => {
+	const matrix44 = makeRotate4DMatrix(rotateXW, rotateYW, rotateZW, rotateXY, rotateYZ, rotateXZ);
+	const matrix45 = concat(matrix44, [[0], [0], [0], [0]]);
+	const matrix55 = concat(matrix45, [[0, 0, 0, 0, 1]], 0);
+	return matrix55 as number[][];
+}

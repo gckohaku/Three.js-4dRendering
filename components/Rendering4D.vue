@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
+import { Model4D } from "~/utils/defines/Model4D";
 
 const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
@@ -11,12 +12,17 @@ const rotationOrder = rotationOrderStore();
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
 const moveZ: Ref<string> = ref("0");
-const rotateX: Ref<string> = ref("0");
-const rotateY: Ref<string> = ref("0");
-const rotateZ: Ref<string> = ref("0");
+const moveW: Ref<string> = ref("0");
+const rotateXW: Ref<string> = ref("0");
+const rotateYW: Ref<string> = ref("0");
+const rotateZW: Ref<string> = ref("0");
+const rotateXY: Ref<string> = ref("0");
+const rotateYZ: Ref<string> = ref("0");
+const rotateXZ: Ref<string> = ref("0");
 const sizeX: Ref<string> = ref("1.0");
 const sizeY: Ref<string> = ref("1.0");
 const sizeZ: Ref<string> = ref("1.0");
+const sizeW: Ref<string> = ref("1.0");
 
 const isLogPush: Ref<boolean> = ref(false);
 
@@ -29,8 +35,22 @@ const parallelMatrix: ComputedRef<number[][]> = computed(() => {
 	];
 });
 
+const parallelMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return [
+		[1, 0, 0, 0, Number(moveX.value)],
+		[0, 1, 0, 0, Number(moveY.value)],
+		[0, 0, 1, 0, Number(moveZ.value)],
+		[0, 0, 0, 1, Number(moveW.value)],
+		[0, 0, 0, 0, 1],
+	];
+});
+
 const rotateMatrix: ComputedRef<number[][]> = computed(() => {
-	return makeRotate3DMatrix44(Number(rotateX.value), Number(rotateY.value), Number(rotateZ.value));
+	return makeRotate3DMatrix44(Number(rotateXW.value), Number(rotateYW.value), Number(rotateZW.value));
+});
+
+const rotateMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return makeRotate4DMatrix55(Number(rotateXW.value), Number(rotateYW.value), Number(rotateZW.value), Number(rotateXY.value), Number(rotateYZ.value), Number(rotateXZ.value));
 });
 
 const sizeMatrix: ComputedRef<number[][]> = computed(() => {
@@ -42,8 +62,22 @@ const sizeMatrix: ComputedRef<number[][]> = computed(() => {
 	];
 });
 
+const sizeMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return [
+		[Number(sizeX.value), 0, 0, 0, 0],
+		[0, Number(sizeY.value), 0, 0, 0],
+		[0, 0, Number(sizeZ.value), 0, 0],
+		[0, 0, 0, Number(sizeW.value), 0],
+		[0, 0, 0, 1],
+	];
+});
+
 const transformMatrix: ComputedRef<number[][]> = computed(() => {
 	return chain(parallelMatrix.value).multiply(rotateMatrix.value).multiply(sizeMatrix.value).done();
+});
+
+const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return chain(parallelMatrix4D.value).multiply(rotateMatrix4D.value).multiply(sizeMatrix4D.value).done();
 });
 
 const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
@@ -160,6 +194,10 @@ const model = new Model3D();
 model.setVertexes(vertexes);
 model.setParts(parts, colors);
 
+const model4D = new Model4D();
+model4D.setVertexes(fourDimensionVertexes);
+model4D.setParts(fourDimensionParts);
+
 myGeometry.setAttribute("position", new THREE.BufferAttribute(model.toThreeVertexes(), 3));
 myGeometry.setIndex(new THREE.BufferAttribute(model.toTrianglesIndex(), 1));
 myGeometry.computeVertexNormals();
@@ -223,7 +261,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	}
 
 	if (logTimeManager.isPushLog()) {
-
+		console.log(makeRotate4DMatrix(30, 0, 0, 0, 0, 0));
 
 		logTimeManager.updateLogDate();
 	}
@@ -266,15 +304,20 @@ onMounted(() => {
 			<ModuleSlider text="x" max="300" min="-300" v-model="moveX" />
 			<ModuleSlider text="y" max="300" min="-300" v-model="moveY" />
 			<ModuleSlider text="z" max="300" min="-300" v-model="moveZ" />
-			<ModuleSlider text="rotateX" max="360" min="-360" v-model="rotateX" />
-			<ModuleSlider text="rotateY" max="360" min="-360" v-model="rotateY" />
-			<ModuleSlider text="rotateZ" max="360" min="-360" v-model="rotateZ" />
+			<ModuleSlider text="w" max="300" min="-300" v-model="moveW" />
+			<ModuleSlider text="rotateXW" max="360" min="-360" v-model="rotateXW" />
+			<ModuleSlider text="rotateYW" max="360" min="-360" v-model="rotateYW" />
+			<ModuleSlider text="rotateZW" max="360" min="-360" v-model="rotateZW" />
+			<ModuleSlider text="rotateXY" max="360" min="-360" v-model="rotateXY" />
+			<ModuleSlider text="rotateYZ" max="360" min="-360" v-model="rotateYZ" />
+			<ModuleSlider text="rotateXZ" max="360" min="-360" v-model="rotateXZ" />
 			<ModuleSlider text="sizeX" max="2.0" min="0.1" step="0.1" v-model="sizeX" />
 			<ModuleSlider text="sizeY" max="2.0" min="0.1" step="0.1" v-model="sizeY" />
 			<ModuleSlider text="sizeZ" max="2.0" min="0.1" step="0.1" v-model="sizeZ" />
+			<ModuleSlider text="sizeW" max="2.0" min="0.1" step="0.1" v-model="sizeW" />
 		</div>
 		<div class="rotation-order-container">
-			<ChangeableOrderList :contents="rotationOrder.orderList" />
+			<ChangeableOrderList v-model="rotationOrder.orderList" />
 		</div>
 	</div>
 	<button id="push-log" @click="isLogPush = true">push log</button>

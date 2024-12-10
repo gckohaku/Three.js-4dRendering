@@ -184,10 +184,6 @@ export class Model3D {
 			
 		}
 
-		if (logTimeManager.isPushLog()) {
-			console.log(framePositionIndexes);
-		}
-
 		for (const indexPair of framePositionIndexes) {
 			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
 		}

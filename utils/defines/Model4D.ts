@@ -39,14 +39,20 @@ export class Model4D {
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = partsIndexes;
 
+		this.colors = [];
 		if (colors) {
-			this.colors = [];
 			for (let i = 0; i < colors.length; i++) {
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
-				this.colors.push(colors[i].slice(0, 3) as ArrayOfColorRGB);
+				this.colors.push(colors[i].slice(0, 3) as ArrayOfColorRGB ?? [0, 255, 0]);
 
 				const alpha = colors[i][3] ?? 1.0;
 				this.alphas.push(alpha);
+			}
+		}
+		else {
+			for (let i = 0; i < this.indexes.length; i++) {
+				this.colors.push([0, 255, 0]);
+				this.alphas.push(1.0);
 			}
 		}
 
