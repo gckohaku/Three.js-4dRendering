@@ -1,6 +1,7 @@
 import { concat, multiply } from "mathjs";
 import * as THREE from "three";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
+import { Model3D } from "./Model3D";
 
 export class Model4D {
 	vertexes: number[][] = [];
@@ -63,19 +64,23 @@ export class Model4D {
 
 	affine(m: number[][]): Model4D {
 		const logTimeManager = logTimeManagerStore();
-
-		// m が五行五列である必要がある。五行五列でない場合はエラーが発生する
-		const threeMatrix = new THREE.Matrix4().set(...(m.flat() as Parameters<InstanceType<typeof THREE.Matrix4>["set"]>));
+		
 		const returnedModel = new Model4D(this);
-
-		const position = returnedModel.geometry.attributes.position;
-		position.applyMatrix4(threeMatrix);
 
 		for (let i = 0; i < returnedModel.vertexes.length; i++) {
 			returnedModel.vertexes[i] = multiply(m, concat(this.vertexes[i], [1])) as number[];
 		}
 
 		return returnedModel;
+	}
+
+	toModel3D(): Model3D {
+		const model3d = new Model3D();
+
+		model3d.setVertexes(this.vertexes.map(v => v.slice(0, 3)));
+		model3d.setParts(this.indexes, this.colors);
+
+		return model3d
 	}
 
 	toThreeVertexes(): Float32Array {

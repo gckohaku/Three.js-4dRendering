@@ -26,15 +26,6 @@ const sizeW: Ref<string> = ref("1.0");
 
 const isLogPush: Ref<boolean> = ref(false);
 
-const parallelMatrix: ComputedRef<number[][]> = computed(() => {
-	return [
-		[1, 0, 0, Number(moveX.value)],
-		[0, 1, 0, Number(moveY.value)],
-		[0, 0, 1, Number(moveZ.value)],
-		[0, 0, 0, 1],
-	];
-});
-
 const parallelMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return [
 		[1, 0, 0, 0, Number(moveX.value)],
@@ -45,21 +36,8 @@ const parallelMatrix4D: ComputedRef<number[][]> = computed(() => {
 	];
 });
 
-const rotateMatrix: ComputedRef<number[][]> = computed(() => {
-	return makeRotate3DMatrix44(Number(rotateXW.value), Number(rotateYW.value), Number(rotateZW.value));
-});
-
 const rotateMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return makeRotate4DMatrix55(Number(rotateXW.value), Number(rotateYW.value), Number(rotateZW.value), Number(rotateXY.value), Number(rotateYZ.value), Number(rotateXZ.value));
-});
-
-const sizeMatrix: ComputedRef<number[][]> = computed(() => {
-	return [
-		[Number(sizeX.value), 0, 0, 0],
-		[0, Number(sizeY.value), 0, 0],
-		[0, 0, Number(sizeZ.value), 0],
-		[0, 0, 0, 1],
-	];
 });
 
 const sizeMatrix4D: ComputedRef<number[][]> = computed(() => {
@@ -68,12 +46,8 @@ const sizeMatrix4D: ComputedRef<number[][]> = computed(() => {
 		[0, Number(sizeY.value), 0, 0, 0],
 		[0, 0, Number(sizeZ.value), 0, 0],
 		[0, 0, 0, Number(sizeW.value), 0],
-		[0, 0, 0, 1],
+		[0, 0, 0, 0, 1],
 	];
-});
-
-const transformMatrix: ComputedRef<number[][]> = computed(() => {
-	return chain(parallelMatrix.value).multiply(rotateMatrix.value).multiply(sizeMatrix.value).done();
 });
 
 const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
@@ -83,61 +57,6 @@ const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 
 const myGeometry = new THREE.BufferGeometry();
-
-const vertexes: number[][] = [
-	[-50, 50, 50], // 0
-	[50, 50, 50],
-	[50, -50, 50],
-	[-50, -50, 50],
-	[-50, 50, -50],
-	[50, 50, -50], // 5
-	[50, -50, -50],
-	[-50, -50, -50],
-];
-
-const parts: number[][] = [
-	[0, 3, 1, 2],
-	[1, 2, 5, 6],
-	[5, 6, 4, 7],
-	[4, 7, 0, 3],
-	[4, 0, 5, 1],
-	[3, 7, 2, 6],
-];
-
-const colors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-];
-
-const nextVertexes: number[][] = [
-	[-60, 0, 0], // 0
-	[0, 0, 0],
-	[0, 30, 0],
-	[60, -15, 40],
-	[60, -15, -40], // 4
-];
-
-const nextParts: number[][] = [
-	[0, 3, 2],
-	[0, 2, 4],
-	[4, 1, 0],
-	[1, 3, 0],
-	[2, 3, 1],
-	[2, 1, 4],
-];
-
-const nextColors: ArrayOfColorRGB[] = [
-	[255, 0, 0],
-	[0, 255, 0],
-	[0, 0, 255],
-	[255, 128, 0],
-	[192, 0, 192],
-	[0, 192, 192],
-];
 
 const fourDimensionVertexes: number[][] = [
 	[100, 100, 100, 100], // 0
@@ -188,18 +107,47 @@ const fourDimensionParts: number[][] = [
 	[1, 5, 9, 13],
 	[2, 6, 10, 14],
 	[3, 7, 11, 15],
+];
+
+const fourDimensionColors: number[][] = [
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
+	[0, 255, 0, 0.5],
 ]
 
-const model = new Model3D();
-model.setVertexes(vertexes);
-model.setParts(parts, colors);
+// const model = new Model3D();
+// model.setVertexes(vertexes);
+// model.setParts(parts, colors);
 
 const model4D = new Model4D();
 model4D.setVertexes(fourDimensionVertexes);
 model4D.setParts(fourDimensionParts);
 
-myGeometry.setAttribute("position", new THREE.BufferAttribute(model.toThreeVertexes(), 3));
-myGeometry.setIndex(new THREE.BufferAttribute(model.toTrianglesIndex(), 1));
+const downDimensionModel4D = model4D.toModel3D();
+
+myGeometry.setAttribute("position", new THREE.BufferAttribute(downDimensionModel4D.toThreeVertexes(), 3));
+myGeometry.setIndex(new THREE.BufferAttribute(downDimensionModel4D.toTrianglesIndex(), 1));
 myGeometry.computeVertexNormals();
 
 const initialize = () => {
@@ -218,10 +166,10 @@ const initialize = () => {
 	const material = new THREE.MeshNormalMaterial();
 
 	scene.add(light);
-	const mesh = new THREE.Mesh(model.geometry, model.materialColors);
+	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
-	const face = new THREE.Mesh(model.geometry, model.materialColors);
-	const frame = model.getFrameMesh(0x00ffff);
+	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
+	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(frame);
 	group.add(face);
@@ -246,23 +194,20 @@ const initialize = () => {
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
 
-	const flatTransformMatrix = transformMatrix.value.flat();
-	const transformedModel = model.affine(transformMatrix.value);
+	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D();
 	transformedModel.geometry.computeVertexNormals();
 	frame.geometry = transformedModel.getFrameGeometry();
 	face.geometry = transformedModel.geometry;
 
 	scene.updateMatrix();
+	console.log(frame.geometry, face.geometry);
 	renderer.render(scene, camera);
 
 	if (isLogPush.value) {
-		console.log(frame.geometry);
 		isLogPush.value = false;
 	}
 
 	if (logTimeManager.isPushLog()) {
-		console.log(makeRotate4DMatrix(30, 0, 0, 0, 0, 0));
-
 		logTimeManager.updateLogDate();
 	}
 
