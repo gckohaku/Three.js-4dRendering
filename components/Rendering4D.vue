@@ -109,40 +109,36 @@ const fourDimensionParts: number[][] = [
 	[3, 7, 11, 15],
 ];
 
-const fourDimensionColors: number[][] = [
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
+const fourDimensionColors: ArrayOfColorRGBA[] = [
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.0],
 ]
-
-// const model = new Model3D();
-// model.setVertexes(vertexes);
-// model.setParts(parts, colors);
 
 const model4D = new Model4D();
 model4D.setVertexes(fourDimensionVertexes);
-model4D.setParts(fourDimensionParts);
+model4D.setParts(fourDimensionParts, fourDimensionColors);
 
 const downDimensionModel4D = model4D.toModel3D();
 
@@ -172,10 +168,9 @@ const initialize = () => {
 	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(frame);
-	group.add(face);
+	// group.add(face);
 	scene.add(group);
 	console.log(frame.geometry);
-
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -200,7 +195,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	face.geometry = transformedModel.geometry;
 
 	scene.updateMatrix();
-	console.log(frame.geometry, face.geometry);
+	renderer.clearDepth();
 	renderer.render(scene, camera);
 
 	if (isLogPush.value) {

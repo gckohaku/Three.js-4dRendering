@@ -106,8 +106,8 @@ export class Model3D {
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
 					opacity: this.alphas[i],
 					transparent: true,
-					depthTest: true,
-					depthWrite: false,
+					depthTest: false,
+					depthWrite: true,
 					side: THREE.DoubleSide,
 					wireframe: false,
 					flatShading: true,
@@ -119,31 +119,6 @@ export class Model3D {
 				colorToIndex += 3;
 			}
 		}
-	}
-
-	getLineSegments(color: ArrayOfColorRGB | number, width: number): THREE.LineSegments {
-		const lineGeometryIndexes: [number, number][] = [];
-		const lineGeometries: THREE.BufferGeometry[] = [];
-
-		for (const indexesUnit of this.indexes) {
-			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]]);
-			if (!lineGeometryIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
-				lineGeometryIndexes.push(currentIndexes);
-			}
-		}
-
-		for (const indexPair of lineGeometryIndexes) {
-			lineGeometries.push(
-				new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...this.vertexes[indexPair[0]]), new THREE.Vector3(...this.vertexes[indexPair[1]])]),
-			);
-		}
-
-		const mergedGeometry = BufferGeometryUtils.mergeGeometries(lineGeometries);
-		const material = new THREE.LineBasicMaterial({
-			color: 0x00ffff,
-		});
-
-		return new THREE.LineSegments(mergedGeometry, material);
 	}
 
 	getMeshWithFrame(frameColor: number): THREE.Group {
@@ -205,7 +180,7 @@ export class Model3D {
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
 		}
-		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) && !this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])) {
 			framePositionIndexes.push(currentIndexes);
 		}
 	}
@@ -247,6 +222,14 @@ export class Model3D {
 
 			tubeVectors.push(tubeVector);
 			vertexes.push(add(positions[0], tubeVector), add(positions[1], tubeVector));
+
+			/*
+				デバッグ用
+				geometry の normal だかが NaN になって困ったら使う
+			*/
+			// if (add(positions[0], tubeVector).includes(Number.NaN) || add(positions[1], tubeVector).includes(Number.NaN)) {
+			// 	throw new Error(`NaN!!!!!!!!!!!!!!!!!!!!!!!!!!!\ncounter: ${i}\npos0: ${positions[0]}\npos1: ${positions[1]}\ntube: ${tubeVector}\nresults:\n| 0: ${add(positions[0], tubeVector)}\n| 1: ${add(positions[1], tubeVector)}`)
+			// }
 		}
 
 		const fromStickOutPosition = subtract(positions[0], multiply(normalizeLineVector, radius)) as number[];
@@ -259,13 +242,12 @@ export class Model3D {
 			indexes.push(i, segment * 2, i + 2, i + 1, i + 3, segment * 2 + 1);
 		}
 
-
-
 		const geometry = new THREE.BufferGeometry();
 		geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertexes.flat()), 3));
 		geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexes), 1));
 
 		if (logTimeManager.isPushLog()) {
+			
 		}
 
 		return geometry;

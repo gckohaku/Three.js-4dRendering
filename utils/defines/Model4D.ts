@@ -46,7 +46,7 @@ export class Model4D {
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
 				this.colors.push(colors[i].slice(0, 3) as ArrayOfColorRGB ?? [0, 255, 0]);
 
-				const alpha = colors[i][3] ?? 1.0;
+				const alpha = colors[i][3] ?? 0.5;
 				this.alphas.push(alpha);
 			}
 		}
@@ -79,6 +79,8 @@ export class Model4D {
 
 		model3d.setVertexes(this.vertexes.map(v => v.slice(0, 3)));
 		model3d.setParts(this.indexes, this.colors);
+		model3d.alphas = [...this.alphas];
+		model3d.setColorMesh();
 
 		return model3d
 	}
