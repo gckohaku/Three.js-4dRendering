@@ -225,11 +225,11 @@ export class Model3D {
 
 			/*
 				デバッグ用
-				geometry の normal だかが NaN になって困ったら使う
+				computed radius だかが NaN になって困ったら使う
 			*/
-			// if (add(positions[0], tubeVector).includes(Number.NaN) || add(positions[1], tubeVector).includes(Number.NaN)) {
-			// 	throw new Error(`NaN!!!!!!!!!!!!!!!!!!!!!!!!!!!\ncounter: ${i}\npos0: ${positions[0]}\npos1: ${positions[1]}\ntube: ${tubeVector}\nresults:\n| 0: ${add(positions[0], tubeVector)}\n| 1: ${add(positions[1], tubeVector)}`)
-			// }
+			if (add(positions[0], tubeVector).includes(Number.NaN) || add(positions[1], tubeVector).includes(Number.NaN)) {
+				throw new Error(`NaN!!!!!!!!!!!!!!!!!!!!!!!!!!!\nindexPair: ${indexPair}\ncounter: ${i}\npos0: ${positions[0]}\npos1: ${positions[1]}\ntube: ${tubeVector}\nresults:\n| 0: ${add(positions[0], tubeVector)}\n| 1: ${add(positions[1], tubeVector)}`)
+			}
 		}
 
 		const fromStickOutPosition = subtract(positions[0], multiply(normalizeLineVector, radius)) as number[];

@@ -1,4 +1,4 @@
-import { concat, multiply } from "mathjs";
+import { concat, divide, dotDivide, multiply } from "mathjs";
 import * as THREE from "three";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
@@ -44,13 +44,12 @@ export class Model4D {
 		if (colors) {
 			for (let i = 0; i < colors.length; i++) {
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
-				this.colors.push(colors[i].slice(0, 3) as ArrayOfColorRGB ?? [0, 255, 0]);
+				this.colors.push((colors[i].slice(0, 3) as ArrayOfColorRGB) ?? [0, 255, 0]);
 
 				const alpha = colors[i][3] ?? 0.5;
 				this.alphas.push(alpha);
 			}
-		}
-		else {
+		} else {
 			for (let i = 0; i < this.indexes.length; i++) {
 				this.colors.push([0, 255, 0]);
 				this.alphas.push(1.0);
@@ -64,7 +63,7 @@ export class Model4D {
 
 	affine(m: number[][]): Model4D {
 		const logTimeManager = logTimeManagerStore();
-		
+
 		const returnedModel = new Model4D(this);
 
 		for (let i = 0; i < returnedModel.vertexes.length; i++) {
@@ -74,15 +73,45 @@ export class Model4D {
 		return returnedModel;
 	}
 
-	toModel3D(): Model3D {
+	toModel3D(
+		perspective4dMatrix: number[][] = multiply(
+			[
+				[706.7557097471259, 0, 0, 300],
+				[0, 706.7557097471259, 0, 300],
+				[0, 0, 706.7557097471259, 300],
+				[0, 0, 0, 1],
+			],
+			[
+				[1, 0, 0, 0, 0],
+				[0, 1, 0, 0, 0],
+				[0, 0, 1, 0, 0],
+				[0, 0, 0, 1, 200],
+			],
+		),
+	): Model3D {
 		const model3d = new Model3D();
 
-		model3d.setVertexes(this.vertexes.map(v => v.slice(0, 3)));
+		model3d.setVertexes(this.vertexes.map((v) => {
+			const perspectivePos = multiply(perspective4dMatrix, concat(v, [1])) as number[];
+			const pos3d = perspectivePos.slice(0, 3);
+			return divide(pos3d, perspectivePos[3]) as number[];
+		}));
 		model3d.setParts(this.indexes, this.colors);
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
 
-		return model3d
+		return model3d;
+	}
+
+	toModel3DParallel(): Model3D {
+		const model3d = new Model3D();
+
+		model3d.setVertexes(this.vertexes.map((v) => v.slice(0, 3)));
+		model3d.setParts(this.indexes, this.colors);
+		model3d.alphas = [...this.alphas];
+		model3d.setColorMesh();
+
+		return model3d;
 	}
 
 	toThreeVertexes(): Float32Array {
