@@ -1,5 +1,5 @@
 export const rotationOrderStore = defineStore("rotationOrderStore", () => {
-	const orderList = ref(["xw", "yw", "zw", "xy", "yz", "xz"]);
+	const orderList = ref(["xy", "yz", "xz", "xw", "yw", "zw"]);
 
 	return { orderList };
 });

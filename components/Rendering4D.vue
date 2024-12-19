@@ -190,6 +190,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	release(face, frame);
 
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D();
+
 	transformedModel.geometry.computeVertexNormals();
 	frame.geometry = transformedModel.getFrameGeometry();
 	face.geometry = transformedModel.geometry;

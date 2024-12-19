@@ -67,7 +67,7 @@ export class Model4D {
 		const returnedModel = new Model4D(this);
 
 		for (let i = 0; i < returnedModel.vertexes.length; i++) {
-			returnedModel.vertexes[i] = multiply(m, concat(this.vertexes[i], [1])) as number[];
+			returnedModel.vertexes[i] = (multiply(m, concat(this.vertexes[i], [1])) as number[]).slice(0, 4);
 		}
 
 		return returnedModel;
@@ -76,26 +76,31 @@ export class Model4D {
 	toModel3D(
 		perspective4dMatrix: number[][] = multiply(
 			[
-				[706.7557097471259, 0, 0, 300],
-				[0, 706.7557097471259, 0, 300],
-				[0, 0, 706.7557097471259, 300],
+				[706.7557097471259, 0, 0, 0],
+				[0, 706.7557097471259, 0, 0],
+				[0, 0, 706.7557097471259, 0],
 				[0, 0, 0, 1],
 			],
 			[
 				[1, 0, 0, 0, 0],
 				[0, 1, 0, 0, 0],
 				[0, 0, 1, 0, 0],
-				[0, 0, 0, 1, 200],
+				[0, 0, 0, 1, -500],
 			],
 		),
 	): Model3D {
 		const model3d = new Model3D();
-
-		model3d.setVertexes(this.vertexes.map((v) => {
-			const perspectivePos = multiply(perspective4dMatrix, concat(v, [1])) as number[];
-			const pos3d = perspectivePos.slice(0, 3);
-			return divide(pos3d, perspectivePos[3]) as number[];
-		}));
+		
+		model3d.setVertexes(
+			this.vertexes.map((v, index) => {
+				const perspectivePos = multiply(perspective4dMatrix, concat(v, [1])) as number[];
+				if (v.length > 4 || this.indexes[index].length > 4) {
+					throw new Error(`array length is argument\n${v}`);
+				}
+				const pos3d = perspectivePos.slice(0, 3);
+				return divide(pos3d, perspectivePos[3]) as number[];
+			}),
+		);
 		model3d.setParts(this.indexes, this.colors);
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();

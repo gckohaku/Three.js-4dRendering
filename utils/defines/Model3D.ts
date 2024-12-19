@@ -207,7 +207,7 @@ export class Model3D {
 
 		const lineVector = subtract(positions[1], positions[0]);
 		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
-		const originTubeRawVector = cross(lineVector, positions[0]);
+		const originTubeRawVector = cross(lineVector, (lineVector[1] === 0 && lineVector[2] === 0) ? [0, lineVector[0], 0] : [0, lineVector[2], -lineVector[1]]);
 		const originTubeVector = divide(originTubeRawVector, divide(norm(originTubeRawVector), radius));
 
 		const vertexes: number[][] = [];
