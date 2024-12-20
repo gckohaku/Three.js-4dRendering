@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { chain, pi } from "mathjs";
 import * as THREE from "three";
-import { makeRotate3DMatrix44 } from "~/utils/defines/MatrixUtilities";
+import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/defines/TypeUtilities";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
 
 const logTimeManager = logTimeManagerStore();
 

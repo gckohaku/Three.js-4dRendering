@@ -1,12 +1,8 @@
 <script setup lang="ts">
-interface Props {
-	contents: string[];
-}
+const modelValue = defineModel<string[]>({required: true});
 
-const props = defineProps<Props>();
-
-const contentsList = ref(props.contents.map(content => content));
-const isSelectedContentOfList = ref([...Array(props.contents.length)].map(() => false));
+// const contentsList = ref(modelValue.value.map(content => content));
+const isSelectedContentOfList = ref([...Array(modelValue.value.length)].map(() => false));
 
 function onClickContent(index: number) {
 	isSelectedContentOfList.value.fill(false);
@@ -19,7 +15,7 @@ function onClickUpButton() {
 	if (index <= 0) {
 		return;
 	}
-	const contents = contentsList.value;
+	const contents = modelValue.value;
 	[contents[index], contents[index - 1]] = [contents[index - 1], contents[index]];
 	[isSelected[index], isSelected[index - 1]] = [false, true];
 }
@@ -28,9 +24,10 @@ function onClickDownButton() {
 	const isSelected = isSelectedContentOfList.value;
 	const index = isSelected.indexOf(true);
 	if (index >= isSelected.length - 1) {
+		console.log(index, isSelected);
 		return;
 	}
-	const contents = contentsList.value;
+	const contents = modelValue.value;
 	[contents[index], contents[index + 1]] = [contents[index + 1], contents[index]];
 	[isSelected[index], isSelected[index + 1]] = [false, true];
 }
@@ -39,7 +36,7 @@ function onClickDownButton() {
 <template>
 	<div class="list-wrapper">
 		<div class="list-container">
-			<div v-for="(content, index) of contentsList" class="content" :class="isSelectedContentOfList[index] ? 'selected' : ''" :key="content" @click="onClickContent(index)">
+			<div v-for="(content, index) of modelValue" class="content" :class="isSelectedContentOfList[index] ? 'selected' : ''" :key="content" @click="onClickContent(index)">
 				{{ content }}
 			</div>
 		</div>
