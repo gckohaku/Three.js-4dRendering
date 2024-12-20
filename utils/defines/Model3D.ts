@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "./TypeUtilities";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { add, concat, cos, cross, divide, dotDivide, index, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
-import { makeRodriguesRotationMatrix } from "./MatrixUtilities";
+import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -106,8 +106,8 @@ export class Model3D {
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
 					opacity: this.alphas[i],
 					transparent: true,
-					depthTest: true,
-					depthWrite: false,
+					depthTest: false,
+					depthWrite: true,
 					side: THREE.DoubleSide,
 					wireframe: false,
 					flatShading: true,
@@ -119,31 +119,6 @@ export class Model3D {
 				colorToIndex += 3;
 			}
 		}
-	}
-
-	getLineSegments(color: ArrayOfColorRGB | number, width: number): THREE.LineSegments {
-		const lineGeometryIndexes: [number, number][] = [];
-		const lineGeometries: THREE.BufferGeometry[] = [];
-
-		for (const indexesUnit of this.indexes) {
-			const currentIndexes = this.checkAscending([indexesUnit[0], indexesUnit[1]]);
-			if (!lineGeometryIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
-				lineGeometryIndexes.push(currentIndexes);
-			}
-		}
-
-		for (const indexPair of lineGeometryIndexes) {
-			lineGeometries.push(
-				new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...this.vertexes[indexPair[0]]), new THREE.Vector3(...this.vertexes[indexPair[1]])]),
-			);
-		}
-
-		const mergedGeometry = BufferGeometryUtils.mergeGeometries(lineGeometries);
-		const material = new THREE.LineBasicMaterial({
-			color: 0x00ffff,
-		});
-
-		return new THREE.LineSegments(mergedGeometry, material);
 	}
 
 	getMeshWithFrame(frameColor: number): THREE.Group {
@@ -184,10 +159,6 @@ export class Model3D {
 			
 		}
 
-		if (logTimeManager.isPushLog()) {
-			console.log(framePositionIndexes);
-		}
-
 		for (const indexPair of framePositionIndexes) {
 			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
 		}
@@ -209,7 +180,7 @@ export class Model3D {
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
 		}
-		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1])) {
+		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) && !this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])) {
 			framePositionIndexes.push(currentIndexes);
 		}
 	}
@@ -236,7 +207,7 @@ export class Model3D {
 
 		const lineVector = subtract(positions[1], positions[0]);
 		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
-		const originTubeRawVector = cross(lineVector, positions[0]);
+		const originTubeRawVector = cross(lineVector, (lineVector[1] === 0 && lineVector[2] === 0) ? [0, lineVector[0], 0] : [0, lineVector[2], -lineVector[1]]);
 		const originTubeVector = divide(originTubeRawVector, divide(norm(originTubeRawVector), radius));
 
 		const vertexes: number[][] = [];
@@ -251,6 +222,14 @@ export class Model3D {
 
 			tubeVectors.push(tubeVector);
 			vertexes.push(add(positions[0], tubeVector), add(positions[1], tubeVector));
+
+			/*
+				デバッグ用
+				computed radius だかが NaN になって困ったら使う
+			*/
+			if (add(positions[0], tubeVector).includes(Number.NaN) || add(positions[1], tubeVector).includes(Number.NaN)) {
+				throw new Error(`NaN!!!!!!!!!!!!!!!!!!!!!!!!!!!\nindexPair: ${indexPair}\ncounter: ${i}\npos0: ${positions[0]}\npos1: ${positions[1]}\ntube: ${tubeVector}\noriginTubeVectorRaw: ${originTubeRawVector}\nresults:\n| 0: ${add(positions[0], tubeVector)}\n| 1: ${add(positions[1], tubeVector)}`)
+			}
 		}
 
 		const fromStickOutPosition = subtract(positions[0], multiply(normalizeLineVector, radius)) as number[];
@@ -263,13 +242,12 @@ export class Model3D {
 			indexes.push(i, segment * 2, i + 2, i + 1, i + 3, segment * 2 + 1);
 		}
 
-
-
 		const geometry = new THREE.BufferGeometry();
 		geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertexes.flat()), 3));
 		geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexes), 1));
 
 		if (logTimeManager.isPushLog()) {
+			
 		}
 
 		return geometry;

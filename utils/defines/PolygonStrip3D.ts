@@ -1,5 +1,5 @@
 import { multiply } from "mathjs";
-import type { ArrayOfColorRGB } from "./TypeUtilities";
+import type { ArrayOfColorRGB } from "../typeUtilities";
 import * as THREE from "three";
 
 export class PolygonStrip3D {
