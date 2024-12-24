@@ -170,7 +170,6 @@ const initialize = () => {
 	group.add(frame);
 	// group.add(face);
 	scene.add(group);
-	console.log(frame.geometry);
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -242,7 +241,7 @@ onMounted(() => {
 	<div class="page-container">
 		<canvas id="canvas" ref="threeCanvas"></canvas>
 		<div class="control-container">
-			<ControllerUi4D />
+			<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
 		</div>
 		<div class="rotation-order-container">
 			<ChangeableOrderList v-model="rotationOrder.orderList" />

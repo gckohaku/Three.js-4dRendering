@@ -1,18 +1,18 @@
 <script setup lang="ts">
-const moveX = defineModel<number | string>("moveX");
-const moveY = defineModel<number | string>("moveY");
-const moveZ = defineModel<number | string>("moveZ");
-const moveW = defineModel<number | string>("moveW");
-const rotateXW = defineModel<number | string>("rotateXW");
-const rotateYW = defineModel<number | string>("rotateYW");
-const rotateZW = defineModel<number | string>("rotateZW");
-const rotateXY = defineModel<number | string>("rotateXY");
-const rotateYZ = defineModel<number | string>("rotateYZ");
-const rotateXZ = defineModel<number | string>("rotateXZ");
-const sizeX = defineModel<number | string>("sizeX");
-const sizeY = defineModel<number | string>("sizeY");
-const sizeZ = defineModel<number | string>("sizeZ");
-const sizeW = defineModel<number | string>("sizeW");
+const moveX = defineModel<number | string>("moveX", {required: true});
+const moveY = defineModel<number | string>("moveY", {required: true});
+const moveZ = defineModel<number | string>("moveZ", {required: true});
+const moveW = defineModel<number | string>("moveW", {required: true});
+const rotateXW = defineModel<number | string>("rotateXW", {required: true});
+const rotateYW = defineModel<number | string>("rotateYW", {required: true});
+const rotateZW = defineModel<number | string>("rotateZW", {required: true});
+const rotateXY = defineModel<number | string>("rotateXY", {required: true});
+const rotateYZ = defineModel<number | string>("rotateYZ", {required: true});
+const rotateXZ = defineModel<number | string>("rotateXZ", {required: true});
+const sizeX = defineModel<number | string>("sizeX", {required: true});
+const sizeY = defineModel<number | string>("sizeY", {required: true});
+const sizeZ = defineModel<number | string>("sizeZ", {required: true});
+const sizeW = defineModel<number | string>("sizeW", {required: true});
 </script>
 
 <template>

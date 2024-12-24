@@ -55,7 +55,7 @@ const onPushRightButton = async () => {
 		<p>{{ text }}: {{modelValue}}</p>
 		<div class="slider-container">
 			<button @click="onPushLeftButton"><</button>
-			<input type="range" :name="name" :id="id" :min="min" :max="max" :value="modelValue" :step="step" @input="(e) => modelValue = (e.target as HTMLInputElement).value">
+			<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
 			<button @click="onPushRightButton">></button>
 		</div>
 	</div>
