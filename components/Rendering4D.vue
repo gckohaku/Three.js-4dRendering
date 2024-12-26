@@ -5,6 +5,7 @@ import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
+import ControllerTabContainer from "./ControllerTabContainer.vue";
 
 const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
@@ -241,7 +242,12 @@ onMounted(() => {
 	<div class="page-container">
 		<canvas id="canvas" ref="threeCanvas"></canvas>
 		<div class="control-container">
-			<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+			
+			<ControllerTabContainer>
+				<template v-slot:object>
+					<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+				</template>
+			</ControllerTabContainer>
 		</div>
 		<div class="rotation-order-container">
 			<ChangeableOrderList v-model="rotationOrder.orderList" />
@@ -255,11 +261,5 @@ onMounted(() => {
 	display: flex;
 	gap: 1rem;
 	flex-wrap: nowrap;
-
-	.control-container {
-		display: grid;
-		grid-template-columns: auto;
-		height: min-content;
-	}
 }
 </style>
