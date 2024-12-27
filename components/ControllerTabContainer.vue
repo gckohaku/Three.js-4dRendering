@@ -11,8 +11,8 @@ const onButtonClick = (index: number) => {
 	<div class="controllers-wrapper">
 		<div class="tabs-container">
 			<div class="tab-list" aria-label="Selecting Controller Tabs">
-				<button role="tab" aria-selected="true" aria-controls="object-controller" id="tab-object" tabindex="0" @click="onButtonClick(0)">Object</button>
-				<button role="tab" aria-selected="false" aria-controls="camera-controller" id="tab-camera" tabindex="0" @click="onButtonClick(1)">Camera</button>
+				<button role="tab" :aria-selected="isOpenPanel[0]" aria-controls="object-controller" id="tab-object" tabindex="0" @click="onButtonClick(0)">Object</button>
+				<button role="tab" :aria-selected="isOpenPanel[1]" aria-controls="camera-controller" id="tab-camera" tabindex="0" @click="onButtonClick(1)">Camera</button>
 			</div>
 		</div>
 		
@@ -41,6 +41,15 @@ const onButtonClick = (index: number) => {
 				margin: 0;
 				padding: .1rem .2rem;
 				font-size: .9rem;
+				background-color: #e8e8e8;
+
+				&:hover {
+					background-color: #c8c8c8;
+				}
+
+				&[aria-selected="true"] {
+					background-color: #c8e0e0;
+				}
 			}
 		}
 	}

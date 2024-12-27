@@ -62,5 +62,9 @@ const onPushRightButton = async () => {
 </template>
 
 <style scoped>
-/* style here */
+.module-wrapper {
+	.slider-container {
+		display: flex;
+	}
+}
 </style>

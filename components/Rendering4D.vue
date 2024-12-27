@@ -6,6 +6,7 @@ import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
 import ControllerTabContainer from "./ControllerTabContainer.vue";
+import ControllerUi4D from "./ControllerUi4D.vue";
 
 const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
@@ -24,6 +25,21 @@ const sizeX: Ref<string> = ref("1.0");
 const sizeY: Ref<string> = ref("1.0");
 const sizeZ: Ref<string> = ref("1.0");
 const sizeW: Ref<string> = ref("1.0");
+
+const cameraMoveX: Ref<string> = ref("0");
+const cameraMoveY: Ref<string> = ref("0");
+const cameraMoveZ: Ref<string> = ref("0");
+const cameraMoveW: Ref<string> = ref("0");
+const cameraRotateXW: Ref<string> = ref("0");
+const cameraRotateYW: Ref<string> = ref("0");
+const cameraRotateZW: Ref<string> = ref("0");
+const cameraRotateXY: Ref<string> = ref("0");
+const cameraRotateYZ: Ref<string> = ref("0");
+const cameraRotateXZ: Ref<string> = ref("0");
+const cameraSizeX: Ref<string> = ref("1.0");
+const cameraSizeY: Ref<string> = ref("1.0");
+const cameraSizeZ: Ref<string> = ref("1.0");
+const cameraSizeW: Ref<string> = ref("1.0");
 
 const isLogPush: Ref<boolean> = ref(false);
 
@@ -242,10 +258,13 @@ onMounted(() => {
 	<div class="page-container">
 		<canvas id="canvas" ref="threeCanvas"></canvas>
 		<div class="control-container">
-			
+
 			<ControllerTabContainer>
 				<template v-slot:object>
 					<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+				</template>
+				<template v-slot:camera>
+					<ControllerUi4D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:move-w="cameraMoveW" v-model:rotate-x-w="cameraRotateXW" v-model:rotate-y-w="cameraRotateYW" v-model:rotate-z-w="cameraRotateZW" v-model:rotate-x-y="cameraRotateXY" v-model:rotate-y-z="cameraRotateYZ" v-model:rotate-x-z="cameraRotateXZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" v-model:size-w="cameraSizeW" />
 				</template>
 			</ControllerTabContainer>
 		</div>
