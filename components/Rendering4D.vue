@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { chain, pi } from "mathjs";
+import { chain, cot, multiply, pi } from "mathjs";
 import * as THREE from "three";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
@@ -69,6 +69,27 @@ const sizeMatrix4D: ComputedRef<number[][]> = computed(() => {
 
 const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return chain(parallelMatrix4D.value).multiply(rotateMatrix4D.value).multiply(sizeMatrix4D.value).done();
+});
+
+const focalLength = 300 * cot(23 * pi / 180);
+console.log(focalLength)
+
+const cameraRtMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return [
+		[1, 0, 0, 0, Number(cameraMoveX)],
+		[0, 1, 0, 0, Number(cameraMoveY)],
+		[0, 0, 1, 0, Number(cameraMoveZ)],
+		[0, 0, 0, 1, Number(cameraMoveW)],
+	];
+});
+
+const cameraAMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return [
+		[focalLength, 0, 0, 0],
+		[0, focalLength, 0, 0],
+		[0, 0, focalLength, 0],
+		[0, 0, 0, 1],
+	];
 });
 
 const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
@@ -205,7 +226,7 @@ const initialize = () => {
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
 
-	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D();
+	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(multiply(cameraAMatrix4D.value, cameraRtMatrix4D.value) as number[][]);
 
 	transformedModel.geometry.computeVertexNormals();
 	frame.geometry = transformedModel.getFrameGeometry();
