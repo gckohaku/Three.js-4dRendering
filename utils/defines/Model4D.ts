@@ -87,23 +87,34 @@ export class Model4D {
 				[0, 0, 1, 0, 0],
 				[0, 0, 0, 1, -500],
 			],
-		),
+		) as number[][],
 	): Model3D {
 		const model3d = new Model3D();
-		
-		model3d.setVertexes(
-			this.vertexes.map((v, index) => {
-				const perspectivePos = multiply(perspective4dMatrix, concat(v, [1])) as number[];
-				if (v.length > 4 || this.indexes[index].length > 4) {
-					throw new Error(`array length is argument\n${v}`);
-				}
-				const pos3d = perspectivePos.slice(0, 3);
-				return divide(pos3d, perspectivePos[3]) as number[];
-			}),
-		);
+		const vertexes3d: number[][] = [];
+
+		for (let i = 0; i < this.vertexes.length; i++) {
+			const perspectivePos = multiply(perspective4dMatrix, concat(this.vertexes[i], [1])) as number[];
+			if (this.vertexes[i].length > 4 || this.indexes[i].length > 4) {
+				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
+			}
+			const pos3d = perspectivePos.slice(0, 3);
+			vertexes3d.push(divide(pos3d, perspectivePos[3]) as number[]);
+		}
+
+		model3d.setVertexes(vertexes3d);
 		model3d.setParts(this.indexes, this.colors);
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
+
+		/*
+			デバッグ用
+			computed radius だかが NaN になって困ったら使う
+		*/
+		// for (let i = 0; i < model3d.vertexes.length; i++) {
+		// 	if (model3d.vertexes[i].includes(Number.NaN)) {
+		// 		throw new Error(`created Model3D is NaN!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\nindex: ${i}\nvertexes: ${model3d.vertexes[i]}`);
+		// 	}
+		// }
 
 		return model3d;
 	}
