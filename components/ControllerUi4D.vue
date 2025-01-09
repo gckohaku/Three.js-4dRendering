@@ -17,10 +17,10 @@ const sizeW = defineModel<number | string>("sizeW", { required: true });
 
 <template>
 	<div class="controller-container">
-		<ModuleSlider text="x" max="300" min="-300" v-model="moveX" />
-		<ModuleSlider text="y" max="300" min="-300" v-model="moveY" />
-		<ModuleSlider text="z" max="300" min="-300" v-model="moveZ" />
-		<ModuleSlider text="w" max="300" min="-300" v-model="moveW" />
+		<ModuleSlider text="x" max="500" min="-500" v-model="moveX" />
+		<ModuleSlider text="y" max="500" min="-500" v-model="moveY" />
+		<ModuleSlider text="z" max="500" min="-500" v-model="moveZ" />
+		<ModuleSlider text="w" max="500" min="-500" v-model="moveW" />
 		<ModuleSlider text="rotateXW" max="360" min="-360" v-model="rotateXW" :isRolling="true" />
 		<ModuleSlider text="rotateYW" max="360" min="-360" v-model="rotateYW" :isRolling="true" />
 		<ModuleSlider text="rotateZW" max="360" min="-360" v-model="rotateZW" :isRolling="true" />

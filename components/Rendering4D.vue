@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { chain, pi } from "mathjs";
+import { chain, concat, cot, multiply, pi, type MathType } from "mathjs";
 import * as THREE from "three";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
@@ -29,7 +29,7 @@ const sizeW: Ref<string> = ref("1.0");
 const cameraMoveX: Ref<string> = ref("0");
 const cameraMoveY: Ref<string> = ref("0");
 const cameraMoveZ: Ref<string> = ref("0");
-const cameraMoveW: Ref<string> = ref("0");
+const cameraMoveW: Ref<string> = ref("-500");
 const cameraRotateXW: Ref<string> = ref("0");
 const cameraRotateYW: Ref<string> = ref("0");
 const cameraRotateZW: Ref<string> = ref("0");
@@ -69,6 +69,35 @@ const sizeMatrix4D: ComputedRef<number[][]> = computed(() => {
 
 const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return chain(parallelMatrix4D.value).multiply(rotateMatrix4D.value).multiply(sizeMatrix4D.value).done();
+});
+
+const focalLength = 300 * cot(23 * pi / 180);
+
+const cameraRMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return makeRotate4DMatrix(Number(cameraRotateXW.value), Number(cameraRotateYW.value), Number(cameraRotateZW.value), Number(cameraRotateXY.value), Number(cameraRotateYZ.value), Number(cameraRotateXZ.value));
+});
+
+const cameraRtMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return concat(cameraRMatrix4D.value,
+	[
+		[Number(cameraMoveX.value)],
+		[Number(cameraMoveY.value)],
+		[Number(cameraMoveZ.value)],
+		[Number(cameraMoveW.value)],
+	]) as number[][];
+});
+
+const cameraAMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return [
+		[focalLength, 0, 0, 0],
+		[0, focalLength, 0, 0],
+		[0, 0, focalLength, 0],
+		[0, 0, 0, 1],
+	];
+});
+
+const cameraMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return multiply<number[][]>(cameraAMatrix4D.value, cameraRtMatrix4D.value) as MathType as number[][];
 });
 
 const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
@@ -205,7 +234,7 @@ const initialize = () => {
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
 
-	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D();
+	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraMatrix4D.value);
 
 	transformedModel.geometry.computeVertexNormals();
 	frame.geometry = transformedModel.getFrameGeometry();
@@ -261,16 +290,26 @@ onMounted(() => {
 
 			<ControllerTabContainer>
 				<template v-slot:object>
-					<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+					<div class="tab-slot-container">
+						<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+						<div class="rotation-order-container">
+							<ChangeableOrderList v-model="rotationOrder.orderList" />
+						</div>
+					</div>
+
 				</template>
 				<template v-slot:camera>
-					<ControllerUi4D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:move-w="cameraMoveW" v-model:rotate-x-w="cameraRotateXW" v-model:rotate-y-w="cameraRotateYW" v-model:rotate-z-w="cameraRotateZW" v-model:rotate-x-y="cameraRotateXY" v-model:rotate-y-z="cameraRotateYZ" v-model:rotate-x-z="cameraRotateXZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" v-model:size-w="cameraSizeW" />
+					<div class="tab-slot-container">
+						<ControllerUi4D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:move-w="cameraMoveW" v-model:rotate-x-w="cameraRotateXW" v-model:rotate-y-w="cameraRotateYW" v-model:rotate-z-w="cameraRotateZW" v-model:rotate-x-y="cameraRotateXY" v-model:rotate-y-z="cameraRotateYZ" v-model:rotate-x-z="cameraRotateXZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" v-model:size-w="cameraSizeW" />
+						<div class="rotation-order-container">
+							<ChangeableOrderList v-model="rotationOrder.cameraOrderList" />
+						</div>
+					</div>
+
 				</template>
 			</ControllerTabContainer>
 		</div>
-		<div class="rotation-order-container">
-			<ChangeableOrderList v-model="rotationOrder.orderList" />
-		</div>
+
 	</div>
 	<button id="push-log" @click="isLogPush = true">push log</button>
 </template>
@@ -280,5 +319,11 @@ onMounted(() => {
 	display: flex;
 	gap: 1rem;
 	flex-wrap: nowrap;
+
+	.tab-slot-container {
+		display: flex;
+		flex-direction: row;
+		gap: .5rem;
+	}
 }
 </style>
