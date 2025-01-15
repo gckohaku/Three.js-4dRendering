@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { chain, concat, cot, multiply, pi, type MathType } from "mathjs";
+import { chain, concat, cot, Matrix, multiply, pi, unaryMinus, type MathType } from "mathjs";
 import * as THREE from "three";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
@@ -77,14 +77,17 @@ const cameraRMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return makeRotate4DMatrix(Number(cameraRotateXW.value), Number(cameraRotateYW.value), Number(cameraRotateZW.value), Number(cameraRotateXY.value), Number(cameraRotateYZ.value), Number(cameraRotateXZ.value));
 });
 
-const cameraRtMatrix4D: ComputedRef<number[][]> = computed(() => {
-	return concat(cameraRMatrix4D.value,
-	[
+const cameraTMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return multiply<MathType>(unaryMinus(cameraRMatrix4D.value), [
 		[Number(cameraMoveX.value)],
 		[Number(cameraMoveY.value)],
 		[Number(cameraMoveZ.value)],
 		[Number(cameraMoveW.value)],
 	]) as number[][];
+});
+
+const cameraRtMatrix4D: ComputedRef<number[][]> = computed(() => {
+	return concat(cameraRMatrix4D.value, cameraTMatrix4D.value) as number[][];
 });
 
 const cameraAMatrix4D: ComputedRef<number[][]> = computed(() => {
