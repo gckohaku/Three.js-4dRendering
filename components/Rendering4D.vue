@@ -5,8 +5,6 @@ import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
-import ControllerTabContainer from "./ControllerTabContainer.vue";
-import ControllerUi4D from "./ControllerUi4D.vue";
 
 const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
@@ -26,20 +24,30 @@ const sizeY: Ref<string> = ref("1.0");
 const sizeZ: Ref<string> = ref("1.0");
 const sizeW: Ref<string> = ref("1.0");
 
+const camera4dMoveX: Ref<string> = ref("0");
+const camera4dMoveY: Ref<string> = ref("0");
+const camera4dMoveZ: Ref<string> = ref("0");
+const camera4dMoveW: Ref<string> = ref("-500");
+const camera4dRotateXW: Ref<string> = ref("0");
+const camera4dRotateYW: Ref<string> = ref("0");
+const camera4dRotateZW: Ref<string> = ref("0");
+const camera4dRotateXY: Ref<string> = ref("0");
+const camera4dRotateYZ: Ref<string> = ref("0");
+const camera4dRotateXZ: Ref<string> = ref("0");
+const camera4dSizeX: Ref<string> = ref("1.0");
+const camera4dSizeY: Ref<string> = ref("1.0");
+const camera4dSizeZ: Ref<string> = ref("1.0");
+const camera4dSizeW: Ref<string> = ref("1.0");
+
 const cameraMoveX: Ref<string> = ref("0");
 const cameraMoveY: Ref<string> = ref("0");
-const cameraMoveZ: Ref<string> = ref("0");
-const cameraMoveW: Ref<string> = ref("-500");
-const cameraRotateXW: Ref<string> = ref("0");
-const cameraRotateYW: Ref<string> = ref("0");
-const cameraRotateZW: Ref<string> = ref("0");
-const cameraRotateXY: Ref<string> = ref("0");
-const cameraRotateYZ: Ref<string> = ref("0");
-const cameraRotateXZ: Ref<string> = ref("0");
+const cameraMoveZ: Ref<string> = ref("500");
+const cameraRotateX: Ref<string> = ref("0");
+const cameraRotateY: Ref<string> = ref("0");
+const cameraRotateZ: Ref<string> = ref("0");
 const cameraSizeX: Ref<string> = ref("1.0");
 const cameraSizeY: Ref<string> = ref("1.0");
 const cameraSizeZ: Ref<string> = ref("1.0");
-const cameraSizeW: Ref<string> = ref("1.0");
 
 const isLogPush: Ref<boolean> = ref(false);
 
@@ -74,15 +82,15 @@ const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 const focalLength = 300 * cot(23 * pi / 180);
 
 const cameraRMatrix4D: ComputedRef<number[][]> = computed(() => {
-	return makeRotate4DMatrix(Number(cameraRotateXW.value), Number(cameraRotateYW.value), Number(cameraRotateZW.value), Number(cameraRotateXY.value), Number(cameraRotateYZ.value), Number(cameraRotateXZ.value));
+	return makeRotate4DMatrix(Number(camera4dRotateXW.value), Number(camera4dRotateYW.value), Number(camera4dRotateZW.value), Number(camera4dRotateXY.value), Number(camera4dRotateYZ.value), Number(camera4dRotateXZ.value));
 });
 
 const cameraTMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return multiply<MathType>(unaryMinus(cameraRMatrix4D.value), [
-		[Number(cameraMoveX.value)],
-		[Number(cameraMoveY.value)],
-		[Number(cameraMoveZ.value)],
-		[Number(cameraMoveW.value)],
+		[Number(camera4dMoveX.value)],
+		[Number(camera4dMoveY.value)],
+		[Number(camera4dMoveZ.value)],
+		[Number(camera4dMoveW.value)],
 	]) as number[][];
 });
 
@@ -201,7 +209,8 @@ const initialize = () => {
 	scene.background = new THREE.Color().setRGB(0, 0, 0);
 
 	const camera = new THREE.PerspectiveCamera(45, 1);
-	camera.position.set(0, 0, 1000);
+	camera.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
+	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
 	const light = new THREE.PointLight(0xffffff, pi * 300, 2000, 0.9);
 	light.position.set(0, 0, 1000);
@@ -236,6 +245,7 @@ const initialize = () => {
 
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
+	camera.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
 
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraMatrix4D.value);
 
@@ -291,7 +301,7 @@ onMounted(() => {
 		<canvas id="canvas" ref="threeCanvas"></canvas>
 		<div class="control-container">
 
-			<ControllerTabContainer>
+			<Controller4dTabContainer>
 				<template v-slot:object>
 					<div class="tab-slot-container">
 						<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
@@ -301,16 +311,18 @@ onMounted(() => {
 					</div>
 
 				</template>
-				<template v-slot:camera>
+				<template v-slot:camera-4d>
 					<div class="tab-slot-container">
-						<ControllerUi4D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:move-w="cameraMoveW" v-model:rotate-x-w="cameraRotateXW" v-model:rotate-y-w="cameraRotateYW" v-model:rotate-z-w="cameraRotateZW" v-model:rotate-x-y="cameraRotateXY" v-model:rotate-y-z="cameraRotateYZ" v-model:rotate-x-z="cameraRotateXZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" v-model:size-w="cameraSizeW" />
+						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY" v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW" v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW" v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY" v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ" v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ" v-model:size-w="camera4dSizeW" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.cameraOrderList" />
 						</div>
 					</div>
-
 				</template>
-			</ControllerTabContainer>
+				<template v-slot:camera-3d>
+					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY" v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" />
+				</template>
+			</Controller4dTabContainer>
 		</div>
 
 	</div>
