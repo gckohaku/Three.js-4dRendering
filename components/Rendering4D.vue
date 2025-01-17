@@ -239,13 +239,17 @@ const initialize = () => {
 	renderer.render(scene, camera);
 
 	renderer.setAnimationLoop(() => {
-		update(renderer, scene, camera, face, frame);
+		update(renderer, scene, camera, light, face, frame);
 	});
 };
 
-const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, face: THREE.Mesh, frame: THREE.Mesh) => {
+const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, light: THREE.Light, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
 	camera.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
+	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
+
+	light.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
+	light.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraMatrix4D.value);
 
