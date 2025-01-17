@@ -98,7 +98,13 @@ export class Model4D {
 				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
 			}
 			const pos3d = perspectivePos.slice(0, 3);
-			vertexes3d.push(divide(pos3d, perspectivePos[3]) as number[]);
+			if (perspectivePos[3] <= 0) {
+				vertexes3d.push(pos3d);
+			}
+			else {
+				vertexes3d.push(divide(pos3d, perspectivePos[3]) as number[]);
+			}
+
 		}
 
 		model3d.setVertexes(vertexes3d);
