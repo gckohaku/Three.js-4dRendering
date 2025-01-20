@@ -82,7 +82,7 @@ const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 const focalLength = 300 * cot(23 * pi / 180);
 
 const cameraRMatrix4D: ComputedRef<number[][]> = computed(() => {
-	return makeRotate4DMatrix(Number(camera4dRotateXW.value), Number(camera4dRotateYW.value), Number(camera4dRotateZW.value), Number(camera4dRotateXY.value), Number(camera4dRotateYZ.value), Number(camera4dRotateXZ.value));
+	return makeRotate4DMatrix(-Number(camera4dRotateXW.value), -Number(camera4dRotateYW.value), -Number(camera4dRotateZW.value), -Number(camera4dRotateXY.value), -Number(camera4dRotateYZ.value), -Number(camera4dRotateXZ.value));
 });
 
 const cameraTMatrix4D: ComputedRef<number[][]> = computed(() => {

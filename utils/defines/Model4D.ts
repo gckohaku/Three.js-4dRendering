@@ -1,4 +1,4 @@
-import { concat, divide, dotDivide, multiply } from "mathjs";
+import { concat, divide, multiply } from "mathjs";
 import * as THREE from "three";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
@@ -92,9 +92,10 @@ export class Model4D {
 		const model3d = new Model3D();
 		const vertexes3d: number[][] = [];
 
+		
 		for (let i = 0; i < this.vertexes.length; i++) {
 			const perspectivePos = multiply(perspective4dMatrix, concat(this.vertexes[i], [1])) as number[];
-			if (this.vertexes[i].length > 4 || this.indexes[i].length > 4) {
+			if (this.vertexes[i].length > 4) {
 				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
 			}
 			const pos3d = perspectivePos.slice(0, 3);
