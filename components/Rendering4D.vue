@@ -27,7 +27,7 @@ const sizeW: Ref<string> = ref("1.0");
 const camera4dMoveX: Ref<string> = ref("0");
 const camera4dMoveY: Ref<string> = ref("0");
 const camera4dMoveZ: Ref<string> = ref("0");
-const camera4dMoveW: Ref<string> = ref("-500");
+const camera4dMoveW: Ref<string> = ref("500");
 const camera4dRotateXW: Ref<string> = ref("0");
 const camera4dRotateYW: Ref<string> = ref("0");
 const camera4dRotateZW: Ref<string> = ref("0");
@@ -116,22 +116,22 @@ const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const myGeometry = new THREE.BufferGeometry();
 
 const fourDimensionVertexes: number[][] = [
-	[100, 100, 100, 100], // 0
-	[100, -100, 100, 100],
-	[-100, 100, 100, 100],
-	[-100, -100, 100, 100],
-	[100, 100, -100, 100], // 4
-	[100, -100, -100, 100],
-	[-100, 100, -100, 100],
-	[-100, -100, -100, 100],
-	[100, 100, 100, -100], // 8
-	[100, -100, 100, -100],
-	[-100, 100, 100, -100],
-	[-100, -100, 100, -100],
-	[100, 100, -100, -100], // 12
-	[100, -100, -100, -100],
-	[-100, 100, -100, -100],
-	[-100, -100, -100, -100],
+	[50, 50, 50, 50], // 0
+	[50, -50, 50, 50],
+	[-50, 50, 50, 50],
+	[-50, -50, 50, 50],
+	[50, 50, -50, 50], // 4
+	[50, -50, -50, 50],
+	[-50, 50, -50, 50],
+	[-50, -50, -50, 50],
+	[50, 50, 50, -50], // 8
+	[50, -50, 50, -50],
+	[-50, 50, 50, -50],
+	[-50, -50, 50, -50],
+	[50, 50, -50, -50], // 12
+	[50, -50, -50, -50],
+	[-50, 50, -50, -50],
+	[-50, -50, -50, -50],
 ]
 
 const fourDimensionParts: number[][] = [
@@ -213,7 +213,7 @@ const initialize = () => {
 	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
 	const light = new THREE.PointLight(0xffffff, pi * 300, 2000, 0.9);
-	light.position.set(0, 0, 1000);
+	light.position.set(0, 0, 500);
 	light.castShadow = true;
 
 	const geometry = new THREE.BoxGeometry(300, 300, 300);
@@ -254,7 +254,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraMatrix4D.value);
 
 	transformedModel.geometry.computeVertexNormals();
-	frame.geometry = transformedModel.getFrameGeometry();
+	frame.geometry = transformedModel.getFrameGeometry(4);
 	face.geometry = transformedModel.geometry;
 
 	scene.updateMatrix();

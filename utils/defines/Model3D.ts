@@ -141,7 +141,7 @@ export class Model3D {
 		return mesh;
 	}
 
-	getFrameGeometry(): THREE.BufferGeometry {
+	getFrameGeometry(radius = 6): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();
 
 		const framePositionIndexes: [number, number][] = [];
@@ -160,7 +160,7 @@ export class Model3D {
 		}
 
 		for (const indexPair of framePositionIndexes) {
-			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
+			frameGeometries.push(this.generateLineTubeGeometry(indexPair, radius));
 		}
 
 		const mergedGeometry = BufferGeometryUtils.mergeGeometries(frameGeometries);

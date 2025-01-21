@@ -92,7 +92,8 @@ export class Model4D {
 		const model3d = new Model3D();
 		const vertexes3d: number[][] = [];
 
-		
+		const vertexesW: number[] = [];
+
 		for (let i = 0; i < this.vertexes.length; i++) {
 			const perspectivePos = multiply(perspective4dMatrix, concat(this.vertexes[i], [1])) as number[];
 			if (this.vertexes[i].length > 4) {
@@ -100,13 +101,15 @@ export class Model4D {
 			}
 			const pos3d = perspectivePos.slice(0, 3);
 			if (perspectivePos[3] <= 0) {
-				vertexes3d.push(pos3d);
-			}
-			else {
 				vertexes3d.push(divide(pos3d, perspectivePos[3]) as number[]);
 			}
+			else {
+				vertexes3d.push(pos3d);
+			}
 
+			vertexesW.push(perspectivePos[3]);
 		}
+
 
 		model3d.setVertexes(vertexes3d);
 		model3d.setParts(this.indexes, this.colors);
