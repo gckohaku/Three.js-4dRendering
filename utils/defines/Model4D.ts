@@ -74,42 +74,47 @@ export class Model4D {
 	}
 
 	toModel3D(
-		perspective4dMatrix: number[][] = multiply(
-			[
-				[706.7557097471259, 0, 0, 0],
-				[0, 706.7557097471259, 0, 0],
-				[0, 0, 706.7557097471259, 0],
-				[0, 0, 0, 1],
-			],
-			[
-				[1, 0, 0, 0, 0],
-				[0, 1, 0, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 0, 1, -500],
-			],
-		) as number[][],
+		cameraInternalMatrix: number[][] = [
+			[706.7557097471259, 0, 0, 0],
+			[0, 706.7557097471259, 0, 0],
+			[0, 0, 706.7557097471259, 0],
+			[0, 0, 0, 1],
+		],
+		cameraExternalMatrix: number[][] = [
+			[1, 0, 0, 0, 0],
+			[0, 1, 0, 0, 0],
+			[0, 0, 1, 0, 0],
+			[0, 0, 0, 1, -500],
+		],
 	): Model3D {
-		const model3d = new Model3D();
-		const vertexes3d: number[][] = [];
+		const vertexesView = [];
+		const ignoreVertexIndexes: number[] = [];
 
-		const vertexesW: number[] = [];
 
+		// カメラ座標への変換
 		for (let i = 0; i < this.vertexes.length; i++) {
-			const perspectivePos = multiply(perspective4dMatrix, concat(this.vertexes[i], [1])) as number[];
+			const viewPosition = multiply(cameraExternalMatrix, concat(this.vertexes[i], [1])) as number[];
+
 			if (this.vertexes[i].length > 4) {
 				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
 			}
-			const pos3d = perspectivePos.slice(0, 3);
-			if (perspectivePos[3] <= 0) {
-				vertexes3d.push(divide(pos3d, perspectivePos[3]) as number[]);
-			}
-			else {
-				vertexes3d.push(pos3d);
-			}
 
-			vertexesW.push(perspectivePos[3]);
+			vertexesView.push(viewPosition);
+
+			if (this.vertexes[i][3] > 0.1) {
+				ignoreVertexIndexes.push(i);
+			}
 		}
 
+		// カメラの裏側に来ている頂点の処理
+		for (const ignoreIndex of ignoreVertexIndexes) {
+
+		}
+
+		const model3d = new Model3D();
+		const vertexes3d: number[][] = [];
+
+		// 三次元座標への変換
 
 		model3d.setVertexes(vertexes3d);
 		model3d.setParts(this.indexes, this.colors);

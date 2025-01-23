@@ -251,7 +251,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	light.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
 	light.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
-	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraMatrix4D.value);
+	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value);
 
 	transformedModel.geometry.computeVertexNormals();
 	frame.geometry = transformedModel.getFrameGeometry(4);
