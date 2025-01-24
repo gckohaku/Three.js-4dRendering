@@ -1,5 +1,6 @@
 import { concat, divide, dotDivide, multiply } from "mathjs";
 import * as THREE from "three";
+import * as PolygonUtilities from "@/utils/polygonUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
 
@@ -7,6 +8,7 @@ export class Model4D {
 	vertexes: number[][] = [];
 	indexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
+	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
@@ -20,6 +22,7 @@ export class Model4D {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
 			this.colors = [...m.colors];
+			this.colorIndexes = [...m.colorIndexes]
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
@@ -33,16 +36,26 @@ export class Model4D {
 
 	addVertexes(vs: number[][]) {
 		for (let i = 0; i < vs.length; i++) {
-			this.vertexes.push(vs[i]);
+			this.vertexes.push((vs[i]));
 		}
 	}
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
-		this.indexes = partsIndexes;
+		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
 
-		this.colors = [];
+		for (let i = 0; i < partsIndexes.length; i++) {
+			let count = partsIndexes[i].length - 2;
+			while (count > 0) {
+				this.colorIndexes.push(i);
+
+				count--;
+			}
+		}
+
+		this.colors;
 		if (colors) {
 			for (let i = 0; i < colors.length; i++) {
+
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
 				this.colors.push((colors[i].slice(0, 3) as ArrayOfColorRGB) ?? [0, 255, 0]);
 
@@ -57,8 +70,8 @@ export class Model4D {
 		}
 
 		this.geometry.setIndex(new THREE.BufferAttribute(this.toTrianglesIndex(), 1));
-
 		this.setColorMesh();
+		console.log(this.vertexes);
 	}
 
 	affine(m: number[][]): Model4D {
@@ -148,7 +161,7 @@ export class Model4D {
 		this.geometry.clearGroups();
 		let colorToIndex = 0;
 
-		for (let i = 0; i < this.indexes.length; i++) {
+		for (let i = 0; i < this.colors.length; i++) {
 			this.materialColors.push(
 				new THREE.MeshStandardMaterial({
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
@@ -162,10 +175,19 @@ export class Model4D {
 				}),
 			);
 
-			for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
-				this.geometry.addGroup(colorToIndex, 3, i);
-				colorToIndex += 3;
+			// for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
+			// 	this.geometry.addGroup(colorToIndex, 3, i);
+			// 	colorToIndex += 3;
+			// }
+		}
+
+		for (let i = 0; i < this.colorIndexes.length; i++) {
+			if (this.colorIndexes[i] === null) {
+				throw new Error(`undefined: ${this.colorIndexes[i]}`);
 			}
+
+			this.geometry.addGroup(colorToIndex, 3, this.colorIndexes[i]);
+			colorToIndex += 3;
 		}
 	}
 

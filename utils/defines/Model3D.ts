@@ -8,6 +8,7 @@ export class Model3D {
 	vertexes: number[][] = [];
 	indexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
+	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
@@ -21,6 +22,7 @@ export class Model3D {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
 			this.colors = [...m.colors];
+			this.colorIndexes = [...m.colorIndexes]
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
@@ -100,7 +102,7 @@ export class Model3D {
 		this.geometry.clearGroups();
 		let colorToIndex = 0;
 
-		for (let i = 0; i < this.indexes.length; i++) {
+		for (let i = 0; i < this.colors.length; i++) {
 			this.materialColors.push(
 				new THREE.MeshStandardMaterial({
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
@@ -113,11 +115,15 @@ export class Model3D {
 					flatShading: true,
 				}),
 			);
+		}
 
-			for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
-				this.geometry.addGroup(colorToIndex, 3, i);
-				colorToIndex += 3;
+		for (let i = 0; i < this.colorIndexes.length; i++) {
+			if (this.colorIndexes[i] === null) {
+				throw new Error(`undefined: ${this.colorIndexes[i]}`);
 			}
+
+			this.geometry.addGroup(colorToIndex, 3, this.colorIndexes[i]);
+			colorToIndex += 3;
 		}
 	}
 
