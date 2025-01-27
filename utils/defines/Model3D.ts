@@ -1,12 +1,13 @@
+import * as PolygonUtilities from "@/utils/polygonUtilities";
+import { add, concat, cross, divide, multiply, norm, pi, subtract } from "mathjs";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
-import { add, concat, cos, cross, divide, dotDivide, index, multiply, norm, pi, pow, sin, subtract, unaryMinus } from "mathjs";
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
+import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 
 export class Model3D {
 	vertexes: number[][] = [];
-	indexes: number[][] = [];
+	indexes: number[][][] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -49,7 +50,7 @@ export class Model3D {
 	}
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
-		this.indexes = partsIndexes;
+		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
 
 		if (colors) {
 			this.colors = [];

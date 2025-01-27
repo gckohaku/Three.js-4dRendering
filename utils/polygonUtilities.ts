@@ -1,4 +1,4 @@
-export function toAllTrianglePolygons(polygonIndexes: number[][]): number[][] {
+export function toAllTrianglePolygons(polygonIndexes: number[][]): number[][][] {
 	const trianglesIndexesArray: number[] = [];
 
 	for (let i = 0; i < polygonIndexes.length; i++) {
@@ -7,7 +7,7 @@ export function toAllTrianglePolygons(polygonIndexes: number[][]): number[][] {
 		trianglesIndexesArray.push(...onePolygonIndexToTriangles(polygonIndexes[i]));
 	}
 
-	return trianglesIndexesArray.flatMap((_value: number, index: number, arr: number[]) => (index % 3 ? [] : [arr.slice(index, index + 3)]));
+	return trianglesIndexesArray.map((_value: number, index: number, arr: number[]) => (index % 3 ? [] : [arr.slice(index, index + 3)]));
 }
 
 function onePolygonIndexToTriangles(monoIndexes: number[]): number[] {

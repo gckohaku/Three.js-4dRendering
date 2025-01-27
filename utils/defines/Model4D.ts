@@ -6,7 +6,7 @@ import { Model3D } from "./Model3D";
 
 export class Model4D {
 	vertexes: number[][] = [];
-	indexes: number[][] = [];
+	indexes: number[][][] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -115,7 +115,9 @@ export class Model4D {
 		}
 
 		model3d.setVertexes(vertexes3d);
-		model3d.setParts(this.indexes, this.colors);
+		model3d.indexes = this.indexes;
+		model3d.colors = this.colors;
+		model3d.colorIndexes = this.colorIndexes;
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
 
