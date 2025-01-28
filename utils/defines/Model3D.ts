@@ -1,9 +1,10 @@
 import * as PolygonUtilities from "@/utils/polygonUtilities";
-import { add, concat, cross, divide, multiply, norm, pi, subtract } from "mathjs";
+import { add, concat, cross, divide, index, multiply, norm, pi, subtract } from "mathjs";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
+import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -63,7 +64,7 @@ export class Model3D {
 			}
 		}
 
-		this.geometry.setIndex(new THREE.BufferAttribute(this.toTrianglesIndex(), 1));
+		this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(this.indexes.flat(2)), 1));
 
 		this.setColorMesh();
 	}
@@ -89,15 +90,15 @@ export class Model3D {
 		return new Float32Array(this.vertexes.flat());
 	}
 
-	toTrianglesIndex(): Uint32Array {
-		const trianglesVertexesArray: number[] = [];
+	// toTrianglesIndex(): Uint32Array {
+	// 	const trianglesVertexesArray: number[] = [];
 
-		for (let i = 0; i < this.indexes.length; i++) {
-			trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
-		}
+	// 	for (let i = 0; i < this.indexes.length; i++) {
+	// 		trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
+	// 	}
 
-		return new Uint32Array(trianglesVertexesArray);
-	}
+	// 	return new Uint32Array(trianglesVertexesArray);
+	// }
 
 	setColorMesh() {
 		this.geometry.clearGroups();
@@ -182,8 +183,9 @@ export class Model3D {
 		return [tuple[1], tuple[0]];
 	}
 
-	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
-		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
+	private frameIndexesPushProcess(indexes: number[][], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
+		const macroIndexes = this.toNotTrianglePolygon(indexes);
+		const currentIndexes = this.checkAscending([macroIndexes[fromOffset], macroIndexes[toOffset]]);
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
 		}
@@ -192,20 +194,34 @@ export class Model3D {
 		}
 	}
 
-	private onePolygonToTrianglesIndexes(index: number): number[] {
-		const onePolygonIndexes: number[] = [...this.indexes[index]];
-		const ret: number[] = [];
+	private toNotTrianglePolygon(indexes: number[][]): number[] {
+		const retArray: number[] = [];
 
-		for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
-			if (i % 2 === 0) {
-				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
-			} else {
-				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
+		for (let i = 0; i < indexes.length; i++) {
+			if (i === indexes.length - 1) {
+				retArray.push(...indexes[i]);
+				continue;
 			}
+			retArray.push(indexes[i][0]);
 		}
 
-		return ret;
+		return retArray;
 	}
+
+	// private onePolygonToTrianglesIndexes(index: number): number[] {
+	// 	const onePolygonIndexes: number[] = [...this.indexes[index]];
+	// 	const ret: number[] = [];
+
+	// 	for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
+	// 		if (i % 2 === 0) {
+	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
+	// 		} else {
+	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
+	// 		}
+	// 	}
+
+	// 	return ret;
+	// }
 
 	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();

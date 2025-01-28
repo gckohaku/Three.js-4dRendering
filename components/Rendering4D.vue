@@ -200,7 +200,7 @@ model4D.setParts(fourDimensionParts, fourDimensionColors);
 const downDimensionModel4D = model4D.toModel3D();
 
 myGeometry.setAttribute("position", new THREE.BufferAttribute(downDimensionModel4D.toThreeVertexes(), 3));
-myGeometry.setIndex(new THREE.BufferAttribute(downDimensionModel4D.toTrianglesIndex(), 1));
+myGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(downDimensionModel4D.indexes.flat(2)), 1));
 myGeometry.computeVertexNormals();
 
 const initialize = () => {

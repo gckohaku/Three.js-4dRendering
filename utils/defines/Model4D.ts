@@ -69,7 +69,7 @@ export class Model4D {
 			}
 		}
 
-		this.geometry.setIndex(new THREE.BufferAttribute(this.toTrianglesIndex(), 1));
+		this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(this.indexes.flat(2)), 1));
 		this.setColorMesh();
 		console.log(this.vertexes);
 	}
@@ -138,7 +138,9 @@ export class Model4D {
 		const model3d = new Model3D();
 
 		model3d.setVertexes(this.vertexes.map((v) => v.slice(0, 3)));
-		model3d.setParts(this.indexes, this.colors);
+		model3d.indexes = this.indexes;
+		model3d.colors = this.colors;
+		model3d.colorIndexes = this.colorIndexes;
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
 
@@ -149,15 +151,15 @@ export class Model4D {
 		return new Float32Array(this.vertexes.flat());
 	}
 
-	toTrianglesIndex(): Uint32Array {
-		const trianglesVertexesArray: number[] = [];
+	// toTrianglesIndex(): Uint32Array {
+	// 	const trianglesVertexesArray: number[] = [];
 
-		for (let i = 0; i < this.indexes.length; i++) {
-			trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
-		}
+	// 	for (let i = 0; i < this.indexes.length; i++) {
+	// 		trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
+	// 	}
 
-		return new Uint32Array(trianglesVertexesArray);
-	}
+	// 	return new Uint32Array(trianglesVertexesArray);
+	// }
 
 	setColorMesh() {
 		this.geometry.clearGroups();
@@ -193,18 +195,18 @@ export class Model4D {
 		}
 	}
 
-	private onePolygonToTrianglesIndexes(index: number): number[] {
-		const onePolygonIndexes: number[] = [...this.indexes[index]];
-		const ret: number[] = [];
+	// private onePolygonToTrianglesIndexes(index: number): number[] {
+	// 	const onePolygonIndexes: number[] = [...this.indexes[index]];
+	// 	const ret: number[] = [];
 
-		for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
-			if (i % 2 === 0) {
-				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
-			} else {
-				ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
-			}
-		}
+	// 	for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
+	// 		if (i % 2 === 0) {
+	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
+	// 		} else {
+	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
+	// 		}
+	// 	}
 
-		return ret;
-	}
+	// 	return ret;
+	// }
 }
