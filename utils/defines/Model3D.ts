@@ -164,7 +164,7 @@ export class Model3D {
 			for (let i = indexesUnit.length - 1 - (indexesUnit.length + 1) % 2; i > 0; i -= 2) {
 				this.frameIndexesPushProcess(indexesUnit, i, i - 2, framePositionIndexes);
 			}
-			
+
 		}
 
 		for (const indexPair of framePositionIndexes) {
@@ -185,10 +185,13 @@ export class Model3D {
 
 	private frameIndexesPushProcess(indexes: number[][], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
 		const macroIndexes = this.toNotTrianglePolygon(indexes);
+		console.log(macroIndexes);
 		const currentIndexes = this.checkAscending([macroIndexes[fromOffset], macroIndexes[toOffset]]);
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
 		}
+		console.log(currentIndexes);
+		console.log(currentIndexes[0]);
 		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) && !this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])) {
 			framePositionIndexes.push(currentIndexes);
 		}
@@ -270,7 +273,7 @@ export class Model3D {
 		geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexes), 1));
 
 		if (logTimeManager.isPushLog()) {
-			
+
 		}
 
 		return geometry;

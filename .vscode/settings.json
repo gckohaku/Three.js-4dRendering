@@ -17,4 +17,5 @@
         "rgba(79,236,236,0.25)"
     ],
     "workbench.editor.pinnedTabSizing": "compact",
+    "editor.wordWrap": "on",
 }
