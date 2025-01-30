@@ -9,12 +9,14 @@ import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
 export class Model3D {
 	vertexes: number[][] = [];
 	indexes: number[][][] = [];
+	comulativeIndexCounts: number[] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 	lineGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
+	
 
 	constructor();
 	constructor(m: Model3D);
@@ -23,8 +25,9 @@ export class Model3D {
 		if (m) {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
+			this.comulativeIndexCounts = [...m.comulativeIndexCounts];
 			this.colors = [...m.colors];
-			this.colorIndexes = [...m.colorIndexes]
+			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
@@ -52,6 +55,7 @@ export class Model3D {
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
+		this.comulativeIndexCounts = PolygonUtilities.getComulativeIndexCounts(this.indexes);
 
 		if (colors) {
 			this.colors = [];
@@ -156,15 +160,15 @@ export class Model3D {
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
 		for (const indexesUnit of this.indexes) {
-			this.frameIndexesPushProcess(indexesUnit, 0, 1, framePositionIndexes);
+			const macroIndexesUnit = this.toNotTrianglePolygon(indexesUnit);
+			this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
 			for (let i = 1; i < indexesUnit.length - 2; i += 2) {
-				this.frameIndexesPushProcess(indexesUnit, i, i + 2, framePositionIndexes);
+				this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
 			}
-			this.frameIndexesPushProcess(indexesUnit, indexesUnit.length - 1, indexesUnit.length - 2, framePositionIndexes);
-			for (let i = indexesUnit.length - 1 - (indexesUnit.length + 1) % 2; i > 0; i -= 2) {
-				this.frameIndexesPushProcess(indexesUnit, i, i - 2, framePositionIndexes);
+			this.frameIndexesPushProcess(macroIndexesUnit, indexesUnit.length - 1, indexesUnit.length - 2, framePositionIndexes);
+			for (let i = indexesUnit.length - 1 - ((indexesUnit.length + 1) % 2); i > 0; i -= 2) {
+				this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
 			}
-
 		}
 
 		for (const indexPair of framePositionIndexes) {
@@ -183,16 +187,15 @@ export class Model3D {
 		return [tuple[1], tuple[0]];
 	}
 
-	private frameIndexesPushProcess(indexes: number[][], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
-		const macroIndexes = this.toNotTrianglePolygon(indexes);
-		console.log(macroIndexes);
-		const currentIndexes = this.checkAscending([macroIndexes[fromOffset], macroIndexes[toOffset]]);
+	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
+		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
 		}
-		console.log(currentIndexes);
-		console.log(currentIndexes[0]);
-		if (!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) && !this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])) {
+		if (
+			!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) &&
+			!this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])
+		) {
 			framePositionIndexes.push(currentIndexes);
 		}
 	}
@@ -233,7 +236,7 @@ export class Model3D {
 
 		const lineVector = subtract(positions[1], positions[0]);
 		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
-		const originTubeRawVector = cross(lineVector, (lineVector[1] === 0 && lineVector[2] === 0) ? [0, lineVector[0], 0] : [0, lineVector[2], -lineVector[1]]);
+		const originTubeRawVector = cross(lineVector, lineVector[1] === 0 && lineVector[2] === 0 ? [0, lineVector[0], 0] : [0, lineVector[2], -lineVector[1]]);
 		const originTubeVector = divide(originTubeRawVector, divide(norm(originTubeRawVector), radius));
 
 		const vertexes: number[][] = [];
@@ -273,7 +276,6 @@ export class Model3D {
 		geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexes), 1));
 
 		if (logTimeManager.isPushLog()) {
-
 		}
 
 		return geometry;

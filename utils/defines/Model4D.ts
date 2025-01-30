@@ -7,6 +7,7 @@ import { Model3D } from "./Model3D";
 export class Model4D {
 	vertexes: number[][] = [];
 	indexes: number[][][] = [];
+	comulativeIndexCounts: number[] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -21,6 +22,7 @@ export class Model4D {
 		if (m) {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
+			this.comulativeIndexCounts = [...m.comulativeIndexCounts];
 			this.colors = [...m.colors];
 			this.colorIndexes = [...m.colorIndexes]
 			this.materialColors = [...m.materialColors];
@@ -42,6 +44,7 @@ export class Model4D {
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
+		this.comulativeIndexCounts = PolygonUtilities.getComulativeIndexCounts(this.indexes);
 
 		for (let i = 0; i < partsIndexes.length; i++) {
 			let count = partsIndexes[i].length - 2;
@@ -116,6 +119,7 @@ export class Model4D {
 
 		model3d.setVertexes(vertexes3d);
 		model3d.indexes = this.indexes;
+		model3d.comulativeIndexCounts = this.comulativeIndexCounts;
 		model3d.colors = this.colors;
 		model3d.colorIndexes = this.colorIndexes;
 		model3d.alphas = [...this.alphas];
