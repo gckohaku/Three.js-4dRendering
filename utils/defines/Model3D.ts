@@ -9,14 +9,13 @@ import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
 export class Model3D {
 	vertexes: number[][] = [];
 	indexes: number[][][] = [];
-	comulativeIndexCounts: number[] = [];
+	macroIndexesMap: Map<number, number> = new Map<number, number>();
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 	lineGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
-	
 
 	constructor();
 	constructor(m: Model3D);
@@ -25,7 +24,7 @@ export class Model3D {
 		if (m) {
 			this.vertexes = [...m.vertexes];
 			this.indexes = [...m.indexes];
-			this.comulativeIndexCounts = [...m.comulativeIndexCounts];
+			this.macroIndexesMap = new Map(m.macroIndexesMap);
 			this.colors = [...m.colors];
 			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
@@ -55,7 +54,7 @@ export class Model3D {
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
-		this.comulativeIndexCounts = PolygonUtilities.getComulativeIndexCounts(this.indexes);
+		this.macroIndexesMap = PolygonUtilities.getMacroIndexesMap(this.indexes);
 
 		if (colors) {
 			this.colors = [];
@@ -160,7 +159,7 @@ export class Model3D {
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
 		for (const indexesUnit of this.indexes) {
-			const macroIndexesUnit = this.toNotTrianglePolygon(indexesUnit);
+			const macroIndexesUnit = this.toMacroIndexes(indexesUnit);
 			this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
 			for (let i = 1; i < indexesUnit.length - 2; i += 2) {
 				this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
@@ -170,6 +169,8 @@ export class Model3D {
 				this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
 			}
 		}
+
+		console.log(framePositionIndexes.length);
 
 		for (const indexPair of framePositionIndexes) {
 			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
@@ -188,7 +189,15 @@ export class Model3D {
 	}
 
 	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
+		const fromTruthOffset = this.macroIndexesMap.get(indexes[fromOffset]);
+		const toTruthOffset = this.macroIndexesMap.get(indexes[toOffset]);
+
+		if (typeof fromTruthOffset !== "number" || typeof toTruthOffset !== "number") {
+			throw new Error(`invalid undefined error in frameIndexesPushProcess\nfrom truth offset: ${fromTruthOffset}\nto truth offset: ${toTruthOffset}`);
+		}
+
 		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
+
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
 		}
@@ -200,7 +209,7 @@ export class Model3D {
 		}
 	}
 
-	private toNotTrianglePolygon(indexes: number[][]): number[] {
+	private toMacroIndexes(indexes: number[][]): number[] {
 		const retArray: number[] = [];
 
 		for (let i = 0; i < indexes.length; i++) {
