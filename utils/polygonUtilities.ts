@@ -1,4 +1,6 @@
-export function toAllTrianglePolygons(polygonIndexes: number[][]): number[][][] {
+import type { PolygonIndexes } from "./defines/polygonTypes";
+
+export function toAllTrianglePolygons(polygonIndexes: number[][]): PolygonIndexes {
 	const trianglesIndexes: number[][][] = [];
 
 	for (let i = 0; i < polygonIndexes.length; i++) {
@@ -24,7 +26,7 @@ function onePolygonIndexToTriangles(monoIndexes: number[]): number[][] {
 	return ret;
 }
 
-export function getComulativeIndexCounts(indexes: number[][][]): number[] {
+export function getComulativeIndexCounts(indexes: PolygonIndexes): number[] {
 	const comulativeIndexCounts: number[] = [0];
 
 	for (let i = 0; i < indexes.length; i++) {
@@ -34,7 +36,7 @@ export function getComulativeIndexCounts(indexes: number[][][]): number[] {
 	return comulativeIndexCounts;
 }
 
-export function getMacroIndexesMap(indexes: number[][][]): Map<number, number> {
+export function getMacroIndexesMap(indexes: PolygonIndexes): Map<number, number> {
 	// macroIndex -> truthIndex
 	const returnedMap = new Map<number, number>();
 	let macroIndexCount = 0;

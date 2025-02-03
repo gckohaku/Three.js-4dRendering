@@ -5,10 +5,11 @@ import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js"
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
+import type { PolygonIndexes, PolygonPart } from "./polygonTypes";
 
 export class Model3D {
 	vertexes: number[][] = [];
-	indexes: number[][][] = [];
+	indexes: PolygonIndexes = [];
 	macroIndexesMap: Map<number, number> = new Map<number, number>();
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
@@ -209,7 +210,7 @@ export class Model3D {
 		}
 	}
 
-	private toMacroIndexes(indexes: number[][]): number[] {
+	private toMacroIndexes(indexes: PolygonPart): number[] {
 		const retArray: number[] = [];
 
 		for (let i = 0; i < indexes.length; i++) {

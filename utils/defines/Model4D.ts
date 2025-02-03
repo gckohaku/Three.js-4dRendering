@@ -3,10 +3,11 @@ import * as THREE from "three";
 import * as PolygonUtilities from "@/utils/polygonUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
+import type { PolygonIndexes } from "./polygonTypes";
 
 export class Model4D {
 	vertexes: number[][] = [];
-	indexes: number[][][] = [];
+	indexes: PolygonIndexes = [];
 	macroIndexes: Map<number, number> = new Map<number, number>();
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
