@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { chain, pi } from "mathjs";
+import { chain, mode, pi } from "mathjs";
 import * as THREE from "three";
+import * as PolygonUtilities from "@/utils/polygonUtilities";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
+import { toTrianglesDrawMode } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 const logTimeManager = logTimeManagerStore();
 
@@ -111,7 +113,7 @@ model.setVertexes(vertexes);
 model.setParts(parts, colors);
 
 myGeometry.setAttribute("position", new THREE.BufferAttribute(model.toThreeVertexes(), 3));
-myGeometry.setIndex(new THREE.BufferAttribute(model.toTrianglesIndex(), 1));
+myGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(model.vertexes.flat()), 1));
 myGeometry.computeVertexNormals();
 
 const initialize = () => {

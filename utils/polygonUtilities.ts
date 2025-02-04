@@ -1,4 +1,4 @@
-import type { PolygonIndexes } from "./defines/polygonTypes";
+import type { PolygonIndexes, PolygonPart } from "./defines/polygonTypes";
 
 export function toAllTrianglePolygons(polygonIndexes: number[][]): PolygonIndexes {
 	const trianglesIndexes: number[][][] = [];
@@ -26,14 +26,14 @@ function onePolygonIndexToTriangles(monoIndexes: number[]): number[][] {
 	return ret;
 }
 
-export function getComulativeIndexCounts(indexes: PolygonIndexes): number[] {
-	const comulativeIndexCounts: number[] = [0];
+export function getCumulativeIndexCounts(indexes: PolygonIndexes): number[] {
+	const cumulativeIndexCounts: number[] = [0];
 
 	for (let i = 0; i < indexes.length; i++) {
-		comulativeIndexCounts.push(indexes[i].length + 2);
+		cumulativeIndexCounts.push(indexes[i].length + 2);
 	}
 
-	return comulativeIndexCounts;
+	return cumulativeIndexCounts;
 }
 
 export function getMacroIndexesMap(indexes: PolygonIndexes): Map<number, number> {
@@ -56,4 +56,23 @@ export function getMacroIndexesMap(indexes: PolygonIndexes): Map<number, number>
 	}
 
 	return returnedMap;
-} 
+}
+
+export function toMacroIndexes(indexes: PolygonPart): number[] {
+	const cloneIndexes = structuredClone(indexes);
+	for (let i = 1; i < cloneIndexes.length; i += 2) {
+		[cloneIndexes[i][1], cloneIndexes[i][2]] = [cloneIndexes[i][2], cloneIndexes[i][1]];
+	}
+
+	const retArray: number[] = []
+
+	for (let i = 0; i < cloneIndexes.length; i++) {
+		if (i === cloneIndexes.length - 1) {
+			retArray.push(...cloneIndexes[i]);
+			continue;
+		}
+		retArray.push(cloneIndexes[i][0]);
+	}
+
+	return retArray;
+}
