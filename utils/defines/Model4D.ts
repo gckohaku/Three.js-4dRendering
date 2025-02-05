@@ -133,10 +133,10 @@ export class Model4D {
 		// 三次元座標への変換
 
 		model3d.setVertexes(vertexes3d);
-		model3d.indexes = this.indexes;
+		model3d.indexes = [...this.indexes];
 		model3d.macroIndexesMap = new Map(this.macroIndexes);
-		model3d.colors = this.colors;
-		model3d.colorIndexes = this.colorIndexes;
+		model3d.colors = [...this.colors];
+		model3d.colorIndexes = [...this.colorIndexes];
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
 

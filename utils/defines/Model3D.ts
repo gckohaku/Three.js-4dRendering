@@ -267,6 +267,8 @@ export class Model3D {
 	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();
 
+		console.log(indexPair, this.vertexes[indexPair[0]], this.vertexes[indexPair[1]], this.vertexes);
+
 		const positions = [this.vertexes[indexPair[0]].slice(0, 3), this.vertexes[indexPair[1]].slice(0, 3)];
 
 		const lineVector = subtract(positions[1], positions[0]);
