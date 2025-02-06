@@ -1,9 +1,10 @@
-import { concat, divide, multiply } from "mathjs";
+import { chain, concat, divide, multiply, transpose } from "mathjs";
 import * as THREE from "three";
 import * as PolygonUtilities from "@/utils/polygonUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
 import type { PolygonIndexes } from "./polygonTypes";
+import { viewport } from "three/tsl";
 
 export class Model4D {
 	vertexes: number[][] = [];
@@ -103,9 +104,8 @@ export class Model4D {
 			[0, 0, 0, 1, -500],
 		],
 	): Model3D {
-		const vertexesView = [];
+		const vertexesView: number[][] = [];
 		const ignoreVertexIndexes: number[] = [];
-
 
 		// カメラ座標への変換
 		for (let i = 0; i < this.vertexes.length; i++) {
@@ -115,22 +115,31 @@ export class Model4D {
 				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
 			}
 
+			console.log(viewPosition);
+
 			vertexesView.push(viewPosition);
 
-			if (this.vertexes[i][3] > 0.1) {
+			if (viewPosition[3] > -0.1) {
 				ignoreVertexIndexes.push(i);
 			}
 		}
 
-		// カメラの裏側に来ている頂点の処理
-		for (const ignoreIndex of ignoreVertexIndexes) {
+		console.log("ignore: ", ignoreVertexIndexes);
 
-		}
+		// カメラの裏側に来ている頂点の処理
+		// for (const ignoreIndex of ignoreVertexIndexes) {
+
+		// }
 
 		const model3d = new Model3D();
 		const vertexes3d: number[][] = [];
 
+		console.log(vertexesView);
+
 		// 三次元座標への変換
+		for (let i = 0; i < vertexesView.length; i++) {
+			vertexes3d.push(chain(cameraInternalMatrix).multiply(vertexesView[i]).divide(vertexesView[i][3]).done() as number[]);
+		}
 
 		model3d.setVertexes(vertexes3d);
 		model3d.indexes = [...this.indexes];
