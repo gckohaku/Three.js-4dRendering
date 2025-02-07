@@ -159,15 +159,8 @@ export class Model3D {
 		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
-		if (logTimeManager.isPushLog()) {
-			console.log("length: ", this.indexes.length);
-		}
-
 		for (const indexesUnit of this.indexes) {
 			const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
-			if (logTimeManager.isPushLog()) {
-				console.log(macroIndexesUnit);
-			}
 			
 			this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
 			for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {
@@ -176,9 +169,6 @@ export class Model3D {
 			this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes);
 			for (let i = macroIndexesUnit.length - 1 - ((macroIndexesUnit.length + 1) % 2); i > 0; i -= 2) {
 				this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
-				if (logTimeManager.isPushLog()) {
-					console.log(framePositionIndexes.length);
-				}
 			}
 		}
 
@@ -210,28 +200,14 @@ export class Model3D {
 
 		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
 
-		if (logTimeManager.isPushLog()) {
-			console.log(currentIndexes);
-		}
 		if (currentIndexes[0] === currentIndexes[1]) {
-			if (logTimeManager.isPushLog()) {
-				console.log("return");
-			}
 			return;
 		}
 		if (
-			!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) /*&&
-			!this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])*/
+			!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) &&
+			!this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])
 		) {
-			if (logTimeManager.isPushLog()) {
-				console.log("push");
-			}
 			framePositionIndexes.push(currentIndexes);
-		}
-		else {
-			if (logTimeManager.isPushLog()) {
-				console.log("no push");
-			}
 		}
 	}
 
@@ -266,8 +242,6 @@ export class Model3D {
 
 	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();
-
-		console.log(indexPair, this.vertexes[indexPair[0]], this.vertexes[indexPair[1]], this.vertexes);
 
 		const positions = [this.vertexes[indexPair[0]].slice(0, 3), this.vertexes[indexPair[1]].slice(0, 3)];
 

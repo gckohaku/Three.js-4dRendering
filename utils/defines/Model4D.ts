@@ -3,7 +3,7 @@ import * as THREE from "three";
 import * as PolygonUtilities from "@/utils/polygonUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
-import type { PolygonIndexes } from "./polygonTypes";
+import type { PolygonIndexes, PolygonPart, TrianglePolygon } from "./polygonTypes";
 import { viewport } from "three/tsl";
 
 export class Model4D {
@@ -115,8 +115,6 @@ export class Model4D {
 				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
 			}
 
-			console.log(viewPosition);
-
 			vertexesView.push(viewPosition);
 
 			if (viewPosition[3] > -0.1) {
@@ -124,17 +122,20 @@ export class Model4D {
 			}
 		}
 
-		console.log("ignore: ", ignoreVertexIndexes);
-
 		// カメラの裏側に来ている頂点の処理
-		// for (const ignoreIndex of ignoreVertexIndexes) {
-
-		// }
+		for (const ignoreIndex of ignoreVertexIndexes) {
+			const targetPolygons: PolygonPart[] = this.indexes.filter((part) => {
+				for (const triangle of part) {
+					if (triangle.includes(ignoreIndex)) {
+						return true;
+					}
+				}
+				return false;
+			});
+		}
 
 		const model3d = new Model3D();
 		const vertexes3d: number[][] = [];
-
-		console.log(vertexesView);
 
 		// 三次元座標への変換
 		for (let i = 0; i < vertexesView.length; i++) {
