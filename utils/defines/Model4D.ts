@@ -104,6 +104,8 @@ export class Model4D {
 			[0, 0, 0, 1, -500],
 		],
 	): Model3D {
+		const logTimeManager = logTimeManagerStore();
+
 		const vertexesView: number[][] = [];
 		const ignoreVertexIndexes: number[] = [];
 
@@ -122,9 +124,11 @@ export class Model4D {
 			}
 		}
 
+		const indexesClone = structuredClone(this.indexes);
+
 		// カメラの裏側に来ている頂点の処理
 		for (const ignoreIndex of ignoreVertexIndexes) {
-			const targetPolygons: PolygonPart[] = this.indexes.filter((part) => {
+			const targetPolygons: PolygonPart[] = indexesClone.filter((part) => {
 				for (const triangle of part) {
 					if (triangle.includes(ignoreIndex)) {
 						return true;
@@ -132,6 +136,14 @@ export class Model4D {
 				}
 				return false;
 			});
+
+			for (const polygon of targetPolygons) {
+				for (const [index, triangle] of polygon.entries()) {
+					if (triangle.includes(ignoreIndex)) {
+						polygon.splice(index, 1);
+					}
+				}
+			}
 		}
 
 		const model3d = new Model3D();
@@ -143,7 +155,7 @@ export class Model4D {
 		}
 
 		model3d.setVertexes(vertexes3d);
-		model3d.indexes = [...this.indexes];
+		model3d.indexes = indexesClone;
 		model3d.macroIndexesMap = new Map(this.macroIndexes);
 		model3d.colors = [...this.colors];
 		model3d.colorIndexes = [...this.colorIndexes];
