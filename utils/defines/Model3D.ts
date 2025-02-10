@@ -1,10 +1,9 @@
 import * as PolygonUtilities from "@/utils/polygonUtilities";
-import { add, concat, cross, divide, index, multiply, norm, pi, subtract } from "mathjs";
+import { add, concat, cross, divide, multiply, norm, pi, subtract } from "mathjs";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
-import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
 import type { PolygonIndexes, PolygonPart } from "./polygonTypes";
 
 export class Model3D {
@@ -133,8 +132,8 @@ export class Model3D {
 		}
 	}
 
-	getMeshWithFrame(frameColor: number): THREE.Group {
-		const frameGeometry = this.getFrameGeometry();
+	getMeshWithFrame(frameColor: number, radius = 6): THREE.Group {
+		const frameGeometry = this.getFrameGeometry(radius);
 
 		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
 		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));

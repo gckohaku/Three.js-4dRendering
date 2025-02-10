@@ -49,12 +49,7 @@ export class Model4D {
 		this.macroIndexes = PolygonUtilities.getMacroIndexesMap(this.indexes);
 
 		for (let i = 0; i < partsIndexes.length; i++) {
-			let count = partsIndexes[i].length - 2;
-			while (count > 0) {
-				this.colorIndexes.push(i);
-
-				count--;
-			}
+			this.colorIndexes.push(i);
 		}
 
 		this.colors;
@@ -109,6 +104,10 @@ export class Model4D {
 		const vertexesView: number[][] = [];
 		const ignoreVertexIndexes: number[] = [];
 
+		// if (logTimeManager.isPushLog()) {
+		// 	console.log(this.colorIndexes);
+		// }
+
 		// カメラ座標への変換
 		for (let i = 0; i < this.vertexes.length; i++) {
 			const viewPosition = multiply(cameraExternalMatrix, concat(this.vertexes[i], [1])) as number[];
@@ -120,6 +119,7 @@ export class Model4D {
 			vertexesView.push(viewPosition);
 
 			if (viewPosition[3] > -0.1) {
+				console.log("over: ", i);
 				ignoreVertexIndexes.push(i);
 			}
 		}
@@ -127,22 +127,21 @@ export class Model4D {
 		const indexesClone = structuredClone(this.indexes);
 
 		// カメラの裏側に来ている頂点の処理
-		for (const ignoreIndex of ignoreVertexIndexes) {
-			const targetPolygons: PolygonPart[] = indexesClone.filter((part) => {
-				for (const triangle of part) {
-					if (triangle.includes(ignoreIndex)) {
-						return true;
-					}
-				}
-				return false;
-			});
+		for (let partsIndex = 0; partsIndex < indexesClone.length; partsIndex++) {
+			const polygon = indexesClone[partsIndex];
+			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
+				const triangle = polygon[triangleIndex];
 
-			for (const polygon of targetPolygons) {
-				for (const [index, triangle] of polygon.entries()) {
-					if (triangle.includes(ignoreIndex)) {
-						polygon.splice(index, 1);
+				const filteredIgnoreIndexes = ignoreVertexIndexes.filter((v) => triangle.includes(v));
+
+				for (const ignore of filteredIgnoreIndexes) {
+					if (triangle.includes(ignore)) {
+						console.log(`delete [${partsIndex}][${triangleIndex}]: `);
+						polygon.splice(triangleIndex, 1);
 					}
 				}
+
+
 			}
 		}
 
@@ -192,16 +191,6 @@ export class Model4D {
 		return new Float32Array(this.vertexes.flat());
 	}
 
-	// toTrianglesIndex(): Uint32Array {
-	// 	const trianglesVertexesArray: number[] = [];
-
-	// 	for (let i = 0; i < this.indexes.length; i++) {
-	// 		trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
-	// 	}
-
-	// 	return new Uint32Array(trianglesVertexesArray);
-	// }
-
 	setColorMesh() {
 		this.geometry.clearGroups();
 		let colorToIndex = 0;
@@ -219,11 +208,6 @@ export class Model4D {
 					flatShading: true,
 				}),
 			);
-
-			// for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
-			// 	this.geometry.addGroup(colorToIndex, 3, i);
-			// 	colorToIndex += 3;
-			// }
 		}
 
 		for (let i = 0; i < this.colorIndexes.length; i++) {
@@ -235,19 +219,4 @@ export class Model4D {
 			colorToIndex += 3;
 		}
 	}
-
-	// private onePolygonToTrianglesIndexes(index: number): number[] {
-	// 	const onePolygonIndexes: number[] = [...this.indexes[index]];
-	// 	const ret: number[] = [];
-
-	// 	for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
-	// 		if (i % 2 === 0) {
-	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
-	// 		} else {
-	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
-	// 		}
-	// 	}
-
-	// 	return ret;
-	// }
 }
