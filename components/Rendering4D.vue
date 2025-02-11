@@ -100,9 +100,9 @@ const cameraRtMatrix4D: ComputedRef<number[][]> = computed(() => {
 
 const cameraAMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return [
-		[focalLength, 0, 0, 0],
-		[0, focalLength, 0, 0],
-		[0, 0, focalLength, 0],
+		[focalLength * Number(camera4dSizeX.value), 0, 0, 0],
+		[0, focalLength * Number(camera4dSizeY.value), 0, 0],
+		[0, 0, focalLength * Number(camera4dSizeZ.value), 0],
 		[0, 0, 0, 1],
 	];
 });
@@ -254,8 +254,11 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value);
 
 	transformedModel.geometry.computeVertexNormals();
-	frame.geometry = transformedModel.getFrameGeometry(4);
+	if (transformedModel.indexes.length) {
+		frame.geometry = transformedModel.getFrameGeometry(4);
 	face.geometry = transformedModel.geometry;
+	}
+	
 
 	scene.updateMatrix();
 	renderer.clearDepth();

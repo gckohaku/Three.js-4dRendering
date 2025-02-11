@@ -158,17 +158,24 @@ export class Model3D {
 		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
+
 		for (const indexesUnit of this.indexes) {
-			const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
-			
-			this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
-			for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {
-				this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
+			if (indexesUnit.length) {
+				const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
+
+				this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
+				for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {
+					this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
+				}
+				this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes);
+				for (let i = macroIndexesUnit.length - 1 - ((macroIndexesUnit.length + 1) % 2); i > 0; i -= 2) {
+					this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
+				}
 			}
-			this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes);
-			for (let i = macroIndexesUnit.length - 1 - ((macroIndexesUnit.length + 1) % 2); i > 0; i -= 2) {
-				this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
-			}
+		}
+
+		if (framePositionIndexes.length === 0) {
+			return new THREE.BufferGeometry();
 		}
 
 		for (const indexPair of framePositionIndexes) {

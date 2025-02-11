@@ -119,7 +119,10 @@ export class Model4D {
 			vertexesView.push(viewPosition);
 
 			if (viewPosition[3] > -0.1) {
-				console.log("over: ", i);
+				if (logTimeManager.isPushLog()) {
+					console.log("over: ", i);
+				}
+
 				ignoreVertexIndexes.push(i);
 			}
 		}
@@ -136,8 +139,13 @@ export class Model4D {
 
 				for (const ignore of filteredIgnoreIndexes) {
 					if (triangle.includes(ignore)) {
-						console.log(`delete [${partsIndex}][${triangleIndex}]: `);
-						polygon.splice(triangleIndex, 1);
+						// ここでポリゴンを欠けさせる
+						// -> ignore を最後尾に
+						const ignoreIndex = triangle.indexOf(ignore);
+						const rotatedTriangle = triangle.slice(ignoreIndex + 1).concat(triangle).slice(0, 3);
+						// -> ignore との間にある頂点を追加
+						//   -> 新しい頂点の位置を計算
+						
 					}
 				}
 
