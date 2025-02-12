@@ -135,7 +135,12 @@ export class Model4D {
 			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
 				const triangle = polygon[triangleIndex];
 
-				const filteredIgnoreIndexes = ignoreVertexIndexes.filter((v) => triangle.includes(v));
+				if (triangle.every((index) => ignoreVertexIndexes.includes(index))) {
+					triangle.splice(0);
+					continue;
+				}
+
+				const filteredIgnoreIndexes = ignoreVertexIndexes.filter((value) => triangle.includes(value));
 
 				for (const ignore of filteredIgnoreIndexes) {
 					if (triangle.includes(ignore)) {
@@ -145,7 +150,7 @@ export class Model4D {
 						const rotatedTriangle = triangle.slice(ignoreIndex + 1).concat(triangle).slice(0, 3);
 						// -> ignore との間にある頂点を追加
 						//   -> 新しい頂点の位置を計算
-						
+						const newVertexA = null; // ここに新しい頂点の位置を入れる
 					}
 				}
 
