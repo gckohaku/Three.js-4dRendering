@@ -118,6 +118,7 @@ export class Model4D {
 
 			vertexesView.push(viewPosition);
 
+			// ここの if はいらない可能性がある (ignoreVertexIndexes 自体がいらないかも)
 			if (viewPosition[3] > -0.1) {
 				if (logTimeManager.isPushLog()) {
 					console.log("over: ", i);
@@ -132,30 +133,38 @@ export class Model4D {
 		// カメラの裏側に来ている頂点の処理
 		for (let partsIndex = 0; partsIndex < indexesClone.length; partsIndex++) {
 			const polygon = indexesClone[partsIndex];
-			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
-				const triangle = polygon[triangleIndex];
 
-				if (triangle.every((index) => ignoreVertexIndexes.includes(index))) {
-					triangle.splice(0);
-					continue;
-				}
+			polygon.forEach((triangle, triangleIndex) => {
+				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > -0.1);
 
-				const filteredIgnoreIndexes = ignoreVertexIndexes.filter((value) => triangle.includes(value));
+				// 三角形に 4D カメラの裏側に頂点がある場合、除外、ポリゴンの再形成を行う
+				switch (ignoreIndexes.length) {
+					default:
+					case 0:
+						return;
 
-				for (const ignore of filteredIgnoreIndexes) {
-					if (triangle.includes(ignore)) {
-						// ここでポリゴンを欠けさせる
+					case 1:
 						// -> ignore を最後尾に
-						const ignoreIndex = triangle.indexOf(ignore);
+						const ignoreIndex = ignoreIndexes[0];
 						const rotatedTriangle = triangle.slice(ignoreIndex + 1).concat(triangle).slice(0, 3);
 						// -> ignore との間にある頂点を追加
 						//   -> 新しい頂点の位置を計算
 						const newVertexA = null; // ここに新しい頂点の位置を入れる
-					}
+
+						
+						return;
+
+					case 2:
+						// TODO: 二つ除外する頂点がある時は除外しない頂点を先頭に移動して、後ろ二つの頂点を新しいものに置き換える
+						return;
+
+					case 3:
+						triangle.splice(0);
+						return;
 				}
+			});
 
-
-			}
+			// TODO: polygon 配列内の空の配列要素を除外
 		}
 
 		const model3d = new Model3D();
