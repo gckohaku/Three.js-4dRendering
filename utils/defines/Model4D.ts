@@ -1,4 +1,4 @@
-import { chain, concat, divide, multiply, transpose } from "mathjs";
+import { add, chain, concat, divide, multiply, subtract, transpose, type MathType } from "mathjs";
 import * as THREE from "three";
 import * as PolygonUtilities from "@/utils/polygonUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
@@ -26,7 +26,7 @@ export class Model4D {
 			this.indexes = [...m.indexes];
 			this.macroIndexes = new Map(m.macroIndexes);
 			this.colors = [...m.colors];
-			this.colorIndexes = [...m.colorIndexes]
+			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
@@ -40,7 +40,7 @@ export class Model4D {
 
 	addVertexes(vs: number[][]) {
 		for (let i = 0; i < vs.length; i++) {
-			this.vertexes.push((vs[i]));
+			this.vertexes.push(vs[i]);
 		}
 	}
 
@@ -55,7 +55,6 @@ export class Model4D {
 		this.colors;
 		if (colors) {
 			for (let i = 0; i < colors.length; i++) {
-
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
 				this.colors.push((colors[i].slice(0, 3) as ArrayOfColorRGB) ?? [0, 255, 0]);
 
@@ -138,29 +137,45 @@ export class Model4D {
 				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > -0.1);
 
 				// 三角形に 4D カメラの裏側に頂点がある場合、除外、ポリゴンの再形成を行う
-				switch (ignoreIndexes.length) {
-					default:
-					case 0:
-						return;
+				if (ignoreIndexes.length === 0) {
+					return;
+				}
+				if (ignoreIndexes.length === 1) {
+					// -> ignore を最後尾に
+					const ignoreIndex = ignoreIndexes[0];
+					const rotatedTriangle = triangle
+						.slice(triangle.indexOf(ignoreIndex) + 1)
+						.concat(triangle)
+						.slice(0, 3);
+					// -> ignore との間にある頂点を追加
+					//   -> 新しい頂点の位置を計算
+					const directionA: number[] = subtract(vertexesView[triangle[2]], vertexesView[triangle[0]]);
+					const directionB = subtract(vertexesView[triangle[2]], vertexesView[triangle[1]]);
+					const newVertexA = add<number[]>(
+						vertexesView[triangle[0]],
+						multiply(divide(0.1 - vertexesView[triangle[0]][3], directionA[3]) as number, directionA) as number[],
+					);
+					const newVertexB = add<number[]>(
+						vertexesView[triangle[1]],
+						multiply(divide(0.1 - vertexesView[triangle[1]][3], directionA[3]) as number, directionA) as number[],
+					);
 
-					case 1:
-						// -> ignore を最後尾に
-						const ignoreIndex = ignoreIndexes[0];
-						const rotatedTriangle = triangle.slice(ignoreIndex + 1).concat(triangle).slice(0, 3);
-						// -> ignore との間にある頂点を追加
-						//   -> 新しい頂点の位置を計算
-						const newVertexA = null; // ここに新しい頂点の位置を入れる
+					const newIndexA = vertexesView.push(newVertexA) - 1;
+					const newIndexB = vertexesView.push(newVertexB) - 1;
 
-						
-						return;
+					polygon.push([triangle[0], triangle[1], newIndexA], [triangle[1], newIndexB, newIndexA]);
 
-					case 2:
-						// TODO: 二つ除外する頂点がある時は除外しない頂点を先頭に移動して、後ろ二つの頂点を新しいものに置き換える
-						return;
+					triangle.splice(0);
 
-					case 3:
-						triangle.splice(0);
-						return;
+					return;
+				}
+				if (ignoreIndexes.length === 2) {
+					// TODO: 二つ除外する頂点がある時は除外しない頂点を先頭に移動して、後ろ二つの頂点を新しいものに置き換える
+					return;
+				}
+				if (ignoreIndexes.length === 3) {
+					triangle.splice(0);
+					return;
 				}
 			});
 
