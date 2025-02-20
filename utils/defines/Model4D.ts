@@ -133,12 +133,14 @@ export class Model4D {
 		for (let partsIndex = 0; partsIndex < indexesClone.length; partsIndex++) {
 			const polygon = indexesClone[partsIndex];
 
-			polygon.forEach((triangle, triangleIndex) => {
+			// polygon.forEach((triangle, triangleIndex) => {
+			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
+				const triangle = polygon[triangleIndex]
 				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > -0.1);
 
 				// 三角形に 4D カメラの裏側に頂点がある場合、除外、ポリゴンの再形成を行う
 				if (ignoreIndexes.length === 0) {
-					return;
+					continue;
 				}
 				if (ignoreIndexes.length === 1) {
 					// -> ignore を最後尾に
@@ -163,23 +165,18 @@ export class Model4D {
 					const newIndexA = vertexesView.push(newVertexA) - 1;
 					const newIndexB = vertexesView.push(newVertexB) - 1;
 
-					polygon.push([triangle[0], triangle[1], newIndexA], [triangle[1], newIndexB, newIndexA]);
+					polygon.splice(triangleIndex++, 1, [triangle[0], triangle[1], newIndexA], [triangle[1], newIndexB, newIndexA]);
 
-					triangle.splice(0);
-
-					return;
+					continue;
 				}
 				if (ignoreIndexes.length === 2) {
 					// TODO: 二つ除外する頂点がある時は除外しない頂点を先頭に移動して、後ろ二つの頂点を新しいものに置き換える
-					return;
+					continue;
 				}
 				if (ignoreIndexes.length === 3) {
-					triangle.splice(0);
-					return;
+					polygon.splice(triangleIndex--, 1);
 				}
-			});
-
-			// TODO: polygon 配列内の空の配列要素を除外
+			}
 		}
 
 		const model3d = new Model3D();

@@ -197,13 +197,6 @@ export class Model3D {
 	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
 		const logTimeManager = logTimeManagerStore();
 
-		// const fromTruthOffset = this.macroIndexesMap.get(indexes[fromOffset]);
-		// const toTruthOffset = this.macroIndexesMap.get(indexes[toOffset]);
-
-		// if (typeof fromTruthOffset !== "number" || typeof toTruthOffset !== "number") {
-		// 	throw new Error(`invalid undefined error in frameIndexesPushProcess\nfrom truth offset: ${fromTruthOffset}\nto truth offset: ${toTruthOffset}`);
-		// }
-
 		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
 
 		if (currentIndexes[0] === currentIndexes[1]) {
@@ -215,20 +208,6 @@ export class Model3D {
 		) {
 			framePositionIndexes.push(currentIndexes);
 		}
-	}
-
-	private _toMacroIndexes(indexes: PolygonPart): number[] {
-		const retArray: number[] = [];
-
-		for (let i = 0; i < indexes.length; i++) {
-			if (i === indexes.length - 1) {
-				retArray.push(...indexes[i]);
-				continue;
-			}
-			retArray.push(indexes[i][0]);
-		}
-
-		return retArray;
 	}
 
 	// private onePolygonToTrianglesIndexes(index: number): number[] {
