@@ -5,6 +5,7 @@ import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
 import type { PolygonIndexes, PolygonPart, TrianglePolygon } from "./polygonTypes";
 import { viewport } from "three/tsl";
+import * as TupleUtilities from "@/utils/tupleUtilities";
 
 export class Model4D {
 	vertexes: number[][] = [];
@@ -97,6 +98,7 @@ export class Model4D {
 			[0, 0, 1, 0, 0],
 			[0, 0, 0, 1, -500],
 		],
+		near = -0.1,
 	): Model3D {
 		const logTimeManager = logTimeManagerStore();
 
@@ -118,9 +120,9 @@ export class Model4D {
 			vertexesView.push(viewPosition);
 
 			// ここの if はいらない可能性がある (ignoreVertexIndexes 自体がいらないかも)
-			if (viewPosition[3] > -0.1) {
+			if (viewPosition[3] > near) {
 				if (logTimeManager.isPushLog()) {
-					console.log("over: ", i);
+					// console.log("over: ", i);
 				}
 
 				ignoreVertexIndexes.push(i);
@@ -135,8 +137,8 @@ export class Model4D {
 
 			// polygon.forEach((triangle, triangleIndex) => {
 			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
-				const triangle = polygon[triangleIndex]
-				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > -0.1);
+				const triangle = polygon[triangleIndex];
+				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > near);
 
 				// 三角形に 4D カメラの裏側に頂点がある場合、除外、ポリゴンの再形成を行う
 				if (ignoreIndexes.length === 0) {

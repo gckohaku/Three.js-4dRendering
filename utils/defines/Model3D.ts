@@ -5,6 +5,7 @@ import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js"
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import type { PolygonIndexes, PolygonPart } from "./polygonTypes";
+import * as TupleUtilities from "@/utils/tupleUtilities"
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -187,17 +188,17 @@ export class Model3D {
 		return mergedGeometry;
 	}
 
-	private checkAscending(tuple: [number, number]): [number, number] {
-		if (tuple[0] <= tuple[1]) {
-			return tuple;
-		}
-		return [tuple[1], tuple[0]];
-	}
+	// private checkAscending(tuple: [number, number]): [number, number] {
+	// 	if (tuple[0] <= tuple[1]) {
+	// 		return tuple;
+	// 	}
+	// 	return [tuple[1], tuple[0]];
+	// }
 
 	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
 		const logTimeManager = logTimeManagerStore();
 
-		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
+		const currentIndexes = TupleUtilities.checkAscending([indexes[fromOffset], indexes[toOffset]]);
 
 		if (currentIndexes[0] === currentIndexes[1]) {
 			return;
