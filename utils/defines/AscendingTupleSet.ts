@@ -1,5 +1,33 @@
+class AscendingTupleSetIterator {
+	first: number;
+	second: number;
+	nextIterator: AscendingTupleSetIterator | null = null;
+
+	constructor(a: number, b: number) {
+		if (a <= b) {
+			this.first = a;
+			this.second = b;
+		} else {
+			this.first = b;
+			this.second = a;
+		}
+	}
+
+	next() {
+		if (!this.nextIterator) {
+			return {done: true}
+		}
+
+		return { value: this.nextIterator, done: false };
+	}
+
+	setNextIterator(iterator: AscendingTupleSetIterator) {
+		this.nextIterator = iterator
+	}
+}
+
 export class AscendingTupleSet {
-	data: [number, number][] = [];
+	data?: AscendingTupleSetIterator;
 	cursor = 0;
 
 	[Symbol.iterator]() {
@@ -7,8 +35,6 @@ export class AscendingTupleSet {
 	}
 
 	add(tuple: [number, number]) {
-		if (this.data.some((v) => (v[0] === tuple[0] && v[1] === tuple[1]))) {
-			
-		}
+		this.data = new AscendingTupleSetIterator(tuple[0], tuple[1]);
 	}
 }
