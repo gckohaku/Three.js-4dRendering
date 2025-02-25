@@ -1,40 +1,36 @@
-class AscendingTupleSetIterator {
-	first: number;
-	second: number;
-	nextIterator: AscendingTupleSetIterator | null = null;
+import * as TupleUtilities from "@/utils/tupleUtilities";
 
-	constructor(a: number, b: number) {
-		if (a <= b) {
-			this.first = a;
-			this.second = b;
-		} else {
-			this.first = b;
-			this.second = a;
+export class AscendingTupleSet<T = number> {
+	private data: [T, T][] = [];
+	size = 0;
+
+	*[Symbol.iterator]() {
+		yield* this.data;
+	}
+
+	add(tuple: [T, T]): this {
+		if (this.has(tuple)) {
+			return this;
 		}
+		const ascendingTuple = TupleUtilities.checkAscending(tuple);
+		this.data.push(ascendingTuple);
+		this.size++;
+		return this;
 	}
 
-	next() {
-		if (!this.nextIterator) {
-			return {done: true}
+	has(tuple: [T, T]): boolean {
+		const ascendingTuple = TupleUtilities.checkAscending(tuple);
+		if (this.data.some((datum) => ascendingTuple[0] === datum[0] && ascendingTuple[1] === datum[1])) {
+			return true;
 		}
-
-		return { value: this.nextIterator, done: false };
+		return false;
 	}
 
-	setNextIterator(iterator: AscendingTupleSetIterator) {
-		this.nextIterator = iterator
-	}
-}
-
-export class AscendingTupleSet {
-	data?: AscendingTupleSetIterator;
-	cursor = 0;
-
-	[Symbol.iterator]() {
-		
+	*values() {
+		yield* this;
 	}
 
-	add(tuple: [number, number]) {
-		this.data = new AscendingTupleSetIterator(tuple[0], tuple[1]);
+	*keys() {
+		yield* this;
 	}
 }
