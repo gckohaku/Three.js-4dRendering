@@ -7,6 +7,14 @@ export class AscendingTupleSet<T = number> {
 	*[Symbol.iterator]() {
 		yield* this.data;
 	}
+	
+	*values() {
+		yield* this;
+	}
+
+	*keys() {
+		yield* this;
+	}
 
 	add(tuple: [T, T]): this {
 		if (this.has(tuple)) {
@@ -26,11 +34,7 @@ export class AscendingTupleSet<T = number> {
 		return false;
 	}
 
-	*values() {
-		yield* this;
-	}
-
-	*keys() {
-		yield* this;
+	indexOf(searchTuple: [T, T]): number {
+		return this.data.findIndex((datum) => (searchTuple[0] === datum[0] && searchTuple[1] === datum[1]));
 	}
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AscendingTupleMap } from '~/utils/defines/AscendingTupleMap';
 import { AscendingTupleSet } from '~/utils/defines/AscendingTupleSet';
 
 const tupleSet = new AscendingTupleSet();
@@ -13,6 +14,12 @@ tupleSet.add([8, 6]);
 tupleSet.add([20, 30]).add([90, 70]);
 
 const anotherSet = new Set<[number, number]>();
+
+const tupleMap = new AscendingTupleMap();
+
+tupleMap.set([1 ,2], 3);
+tupleMap.set([4, 5], 6);
+tupleMap.set([7, 8], 9);
 </script>
 
 <template>
@@ -25,6 +32,8 @@ const anotherSet = new Set<[number, number]>();
 		<p>has [70, 90]?: {{ tupleSet.has([70, 90]) }}</p>
 		<p>has [30, 20]?: {{ tupleSet.has([30, 20]) }}</p>
 		<hr>
+		<h2>AscendingTupleMap test</h2>
+		<p v-for="tuple of tupleMap.entries()">{{ tuple }}</p>
 	</div>
 </template>
 
