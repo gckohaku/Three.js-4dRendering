@@ -16,6 +16,12 @@ export class AscendingTupleSet<T = number> {
 		yield* this;
 	}
 
+	*entries() {
+		for (const key of this.keys()) {
+			yield [key, key];
+		}
+	}
+
 	add(tuple: [T, T]): this {
 		if (this.has(tuple)) {
 			return this;
@@ -26,15 +32,29 @@ export class AscendingTupleSet<T = number> {
 		return this;
 	}
 
-	has(tuple: [T, T]): boolean {
-		const ascendingTuple = TupleUtilities.checkAscending(tuple);
-		if (this.data.some((datum) => ascendingTuple[0] === datum[0] && ascendingTuple[1] === datum[1])) {
-			return true;
+	clear() {
+		this.data.splice(0);
+		this.size = 0;
+	}
+
+	delete(tuple: [T, T]): boolean {
+		const index = this.indexOf(tuple);
+		if (index === -1) {
+			return false;
 		}
-		return false;
+
+		this.data.splice(index, 1);
+
+		this.size--;
+		return true;
+	}
+
+	has(tuple: [T, T]): boolean {
+		return this.indexOf(tuple) !== -1;
 	}
 
 	indexOf(searchTuple: [T, T]): number {
-		return this.data.findIndex((datum) => (searchTuple[0] === datum[0] && searchTuple[1] === datum[1]));
+		const ascendingTuple = TupleUtilities.checkAscending(searchTuple);
+		return this.data.findIndex((datum) => (ascendingTuple[0] === datum[0] && ascendingTuple[1] === datum[1]));
 	}
 }
