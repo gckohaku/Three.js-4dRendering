@@ -6,6 +6,7 @@ import { Model3D } from "./Model3D";
 import type { PolygonIndexes, PolygonPart, TrianglePolygon } from "./polygonTypes";
 import { viewport } from "three/tsl";
 import * as TupleUtilities from "@/utils/tupleUtilities";
+import { AscendingTupleMap } from "./AscendingTupleMap";
 
 export class Model4D {
 	vertexes: number[][] = [];
@@ -104,6 +105,7 @@ export class Model4D {
 
 		const vertexesView: number[][] = [];
 		const ignoreVertexIndexes: number[] = [];
+		const cuttingPointMap = new AscendingTupleMap();
 
 		// if (logTimeManager.isPushLog()) {
 		// 	console.log(this.colorIndexes);
@@ -130,12 +132,13 @@ export class Model4D {
 		}
 
 		const indexesClone = structuredClone(this.indexes);
+		
 
 		// カメラの裏側に来ている頂点の処理
 		for (let partsIndex = 0; partsIndex < indexesClone.length; partsIndex++) {
 			const polygon = indexesClone[partsIndex];
-
-			// polygon.forEach((triangle, triangleIndex) => {
+			let beforeIndex = 0;
+			
 			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
 				const triangle = polygon[triangleIndex];
 				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > near);
@@ -178,7 +181,13 @@ export class Model4D {
 				if (ignoreIndexes.length === 3) {
 					polygon.splice(triangleIndex--, 1);
 				}
+
+				beforeIndex++;
 			}
+
+			// ここで有効なポリゴンストリップとなるように調整する ([1, 2, 3] -> [2, 3, 4] -> [3, 4, 5] -> ... となるようにする)
+			// そして、偶数番目の三角形の 2, 3 番目を入れ替える ([2, 3, 4] から [2, 4, 3] にする)
+
 		}
 
 		const model3d = new Model3D();
