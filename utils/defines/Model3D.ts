@@ -10,7 +10,7 @@ import * as TupleUtilities from "@/utils/tupleUtilities"
 export class Model3D {
 	vertexes: number[][] = [];
 	indexes: PolygonIndexes = [];
-	macroIndexesMap: Map<number, number> = new Map<number, number>();
+	macroIndexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -23,9 +23,9 @@ export class Model3D {
 
 	constructor(m?: Model3D) {
 		if (m) {
-			this.vertexes = [...m.vertexes];
-			this.indexes = [...m.indexes];
-			this.macroIndexesMap = new Map(m.macroIndexesMap);
+			this.vertexes = structuredClone(m.vertexes);
+			this.indexes = structuredClone(m.indexes);
+			this.macroIndexes = structuredClone(m.macroIndexes);
 			this.colors = [...m.colors];
 			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
@@ -55,7 +55,7 @@ export class Model3D {
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
-		this.macroIndexesMap = PolygonUtilities.getMacroIndexesMap(this.indexes);
+		this.macroIndexes = partsIndexes;
 
 		if (colors) {
 			this.colors = [];

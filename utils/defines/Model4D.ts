@@ -11,7 +11,7 @@ import { AscendingTupleMap } from "./AscendingTupleMap";
 export class Model4D {
 	vertexes: number[][] = [];
 	indexes: PolygonIndexes = [];
-	macroIndexes: Map<number, number> = new Map<number, number>();
+	macroIndexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -24,9 +24,9 @@ export class Model4D {
 
 	constructor(m?: Model4D) {
 		if (m) {
-			this.vertexes = [...m.vertexes];
-			this.indexes = [...m.indexes];
-			this.macroIndexes = new Map(m.macroIndexes);
+			this.vertexes = structuredClone(m.vertexes);
+			this.indexes = structuredClone(m.indexes);
+			this.macroIndexes = m.macroIndexes;
 			this.colors = [...m.colors];
 			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
@@ -48,7 +48,7 @@ export class Model4D {
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
-		this.macroIndexes = PolygonUtilities.getMacroIndexesMap(this.indexes);
+		this.macroIndexes = partsIndexes;
 
 		for (let i = 0; i < partsIndexes.length; i++) {
 			this.colorIndexes.push(i);
@@ -99,7 +99,7 @@ export class Model4D {
 			[0, 0, 1, 0, 0],
 			[0, 0, 0, 1, -500],
 		],
-		near = -0.1,
+		near = -400,
 	): Model3D {
 		const logTimeManager = logTimeManagerStore();
 
@@ -131,14 +131,30 @@ export class Model4D {
 			}
 		}
 
-		const indexesClone = structuredClone(this.indexes);
-		
-
 		// カメラの裏側に来ている頂点の処理
+		for (let i = 0; i < this.vertexes.length; i++) {
+			const relatedTriangles = this.indexes.flat().filter((triangle) => triangle.includes(i));
+			for (const triangle of relatedTriangles) {
+				const relatedVertexes = triangle.filter((index) => index !== i);
+
+				for (const index of relatedVertexes) {
+					if (!ignoreVertexIndexes.includes(index) && !cuttingPointMap.has([i, index])) {
+						const direction: number[] = subtract(vertexesView[triangle[2]], vertexesView[triangle[0]]);
+						const newVertex = add<number[]>(
+							vertexesView[triangle[0]],
+							multiply(divide(-near - vertexesView[triangle[0]][3], direction[3]) as number, direction) as number[],
+						);
+					}
+				}
+			}
+		}
+
+		const indexesClone = structuredClone(this.indexes);
+
 		for (let partsIndex = 0; partsIndex < indexesClone.length; partsIndex++) {
 			const polygon = indexesClone[partsIndex];
 			let beforeIndex = 0;
-			
+
 			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
 				const triangle = polygon[triangleIndex];
 				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > near);
@@ -187,7 +203,7 @@ export class Model4D {
 
 			// ここで有効なポリゴンストリップとなるように調整する ([1, 2, 3] -> [2, 3, 4] -> [3, 4, 5] -> ... となるようにする)
 			// そして、偶数番目の三角形の 2, 3 番目を入れ替える ([2, 3, 4] から [2, 4, 3] にする)
-
+			for (let indexOffset = 0; indexOffset < polygon.length - 1; indexOffset++) {}
 		}
 
 		const model3d = new Model3D();
@@ -199,8 +215,8 @@ export class Model4D {
 		}
 
 		model3d.setVertexes(vertexes3d);
-		model3d.indexes = indexesClone;
-		model3d.macroIndexesMap = new Map(this.macroIndexes);
+		model3d.indexes = structuredClone(indexesClone);
+		model3d.macroIndexes = structuredClone(this.macroIndexes);
 		model3d.colors = [...this.colors];
 		model3d.colorIndexes = [...this.colorIndexes];
 		model3d.alphas = [...this.alphas];
