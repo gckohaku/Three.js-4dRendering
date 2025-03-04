@@ -131,22 +131,34 @@ export class Model4D {
 			}
 		}
 
+		const vertexesLengthBeforeProcess = this.vertexes.length;
+
 		// カメラの裏側に来ている頂点の処理
-		for (let i = 0; i < this.vertexes.length; i++) {
-			const relatedTriangles = this.indexes.flat().filter((triangle) => triangle.includes(i));
+		for (const ignoreIndex of ignoreVertexIndexes) {
+			const relatedTriangles = this.indexes.flat().filter((triangle) => triangle.includes(ignoreIndex));
 			for (const triangle of relatedTriangles) {
-				const relatedVertexes = triangle.filter((index) => index !== i);
+				const relatedVertexes = triangle.filter((index) => index !== ignoreIndex);
 
 				for (const index of relatedVertexes) {
-					if (!ignoreVertexIndexes.includes(index) && !cuttingPointMap.has([i, index])) {
+					if (!ignoreVertexIndexes.includes(index) && !cuttingPointMap.has([ignoreIndex, index])) {
+						if (vertexesView[index][3] > near) {
+							throw new Error("something went wrong");
+						}
 						const direction: number[] = subtract(vertexesView[triangle[2]], vertexesView[triangle[0]]);
 						const newVertex = add<number[]>(
 							vertexesView[triangle[0]],
 							multiply(divide(-near - vertexesView[triangle[0]][3], direction[3]) as number, direction) as number[],
 						);
+
+						const newIndex = vertexesView.push(newVertex);
+						cuttingPointMap.set([index, ignoreIndex], newIndex);
 					}
 				}
 			}
+		}
+
+		if (logTimeManager.isPushLog()) {
+			console.log(vertexesView);
 		}
 
 		const indexesClone = structuredClone(this.indexes);
@@ -164,29 +176,23 @@ export class Model4D {
 					continue;
 				}
 				if (ignoreIndexes.length === 1) {
-					// -> ignore を最後尾に
-					const ignoreIndex = ignoreIndexes[0];
-					const rotatedTriangle = triangle
-						.slice(triangle.indexOf(ignoreIndex) + 1)
-						.concat(triangle)
-						.slice(0, 3);
-					// -> ignore との間にある頂点を追加
-					//   -> 新しい頂点の位置を計算
-					const directionA: number[] = subtract(vertexesView[triangle[2]], vertexesView[triangle[0]]);
-					const directionB = subtract(vertexesView[triangle[2]], vertexesView[triangle[1]]);
-					const newVertexA = add<number[]>(
-						vertexesView[triangle[0]],
-						multiply(divide(0.1 - vertexesView[triangle[0]][3], directionA[3]) as number, directionA) as number[],
-					);
-					const newVertexB = add<number[]>(
-						vertexesView[triangle[1]],
-						multiply(divide(0.1 - vertexesView[triangle[1]][3], directionA[3]) as number, directionA) as number[],
-					);
+					const firstIndex = ignoreIndexes[0] === triangle[0] ? cuttingPointMap.get([triangle[0], triangle[1]]) : triangle[0];
+					const secondIndex = ignoreIndexes[0] === triangle[1] ? cuttingPointMap.get([triangle[0], triangle[1]]) : triangle[1];
+					const thirdIndex = ignoreIndexes[0] !== triangle[1] ? cuttingPointMap.get([triangle[0], triangle[2]]) : triangle[2];
+					const forthIndex = ignoreIndexes[0] !== triangle[0] ? cuttingPointMap.get([triangle[1], triangle[2]]) : triangle[2];
 
-					const newIndexA = vertexesView.push(newVertexA) - 1;
-					const newIndexB = vertexesView.push(newVertexB) - 1;
-
-					polygon.splice(triangleIndex++, 1, [triangle[0], triangle[1], newIndexA], [triangle[1], newIndexB, newIndexA]);
+					if (logTimeManager.isPushLog()) {
+						console.group(partsIndex, triangleIndex);
+						console.log(triangle);
+						console.log(
+							ignoreIndexes[0],
+							cuttingPointMap.get([triangle[0], triangle[1]]),
+							cuttingPointMap.get([triangle[1], triangle[2]]),
+							cuttingPointMap.get([triangle[0], triangle[2]]),
+						);
+						console.log(firstIndex, secondIndex, thirdIndex, forthIndex);
+						console.groupEnd();
+					}
 
 					continue;
 				}
