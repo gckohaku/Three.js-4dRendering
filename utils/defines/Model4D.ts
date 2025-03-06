@@ -150,7 +150,7 @@ export class Model4D {
 							multiply(divide(-near - vertexesView[triangle[0]][3], direction[3]) as number, direction) as number[],
 						);
 
-						const newIndex = vertexesView.push(newVertex);
+						const newIndex = vertexesView.push(newVertex) - 1;
 						cuttingPointMap.set([index, ignoreIndex], newIndex);
 					}
 				}
@@ -168,39 +168,56 @@ export class Model4D {
 			let beforeIndex = 0;
 
 			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
+				const isMatchBeforeIndexEven = beforeIndex % 2 === triangleIndex % 2;
 				const triangle = polygon[triangleIndex];
 				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > near);
 
 				// 三角形に 4D カメラの裏側に頂点がある場合、除外、ポリゴンの再形成を行う
-				if (ignoreIndexes.length === 0) {
-					continue;
-				}
 				if (ignoreIndexes.length === 1) {
-					const firstIndex = ignoreIndexes[0] === triangle[0] ? cuttingPointMap.get([triangle[0], triangle[1]]) : triangle[0];
-					const secondIndex = ignoreIndexes[0] === triangle[1] ? cuttingPointMap.get([triangle[0], triangle[1]]) : triangle[1];
-					const thirdIndex = ignoreIndexes[0] !== triangle[1] ? cuttingPointMap.get([triangle[0], triangle[2]]) : triangle[2];
-					const forthIndex = ignoreIndexes[0] !== triangle[0] ? cuttingPointMap.get([triangle[1], triangle[2]]) : triangle[2];
+					const firstIndex = ignoreIndexes[0] === triangle[0] ? (cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1) : triangle[0];
+					const secondIndex = ignoreIndexes[0] === triangle[1] ? (cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1) : triangle[1];
+					const thirdIndex = ignoreIndexes[0] !== triangle[1] ? (cuttingPointMap.get([triangle[0], triangle[2]]) ?? -1) : triangle[2];
+					const forthIndex = ignoreIndexes[0] !== triangle[0] ? (cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1) : triangle[2];
 
-					if (logTimeManager.isPushLog()) {
-						console.group(partsIndex, triangleIndex);
-						console.log(triangle);
-						console.log(
-							ignoreIndexes[0],
-							cuttingPointMap.get([triangle[0], triangle[1]]),
-							cuttingPointMap.get([triangle[1], triangle[2]]),
-							cuttingPointMap.get([triangle[0], triangle[2]]),
-						);
-						console.log(firstIndex, secondIndex, thirdIndex, forthIndex);
-						console.groupEnd();
-					}
+					const newFirstTriangle = [firstIndex, secondIndex, thirdIndex];
+					const newSecondTriangle = [secondIndex, forthIndex, thirdIndex];
 
-					continue;
-				}
-				if (ignoreIndexes.length === 2) {
-					// TODO: 二つ除外する頂点がある時は除外しない頂点を先頭に移動して、後ろ二つの頂点を新しいものに置き換える
-					continue;
-				}
-				if (ignoreIndexes.length === 3) {
+					polygon.splice(triangleIndex++, 1, newFirstTriangle, newSecondTriangle);
+				} else if (ignoreIndexes.length === 2) {
+					// 値を const で保持したいので、即時関数 (=ラムダ式) を使用 (三項演算子だと三項演算子自体のネストが必要になり見づらい)
+					// というかこれに関しては共通化できそう？
+					const firstIndex = (() => {
+						if (ignoreIndexes.includes(triangle[0])) {
+							if (ignoreIndexes.includes(triangle[1])) {
+								return cuttingPointMap.get([triangle[0], triangle[2]]) ?? -1;
+							}
+							return cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1;
+						}
+						return triangle[0];
+					})();
+					const secondIndex = (() => {
+						if (ignoreIndexes.includes(triangle[1])) {
+							if (ignoreIndexes.includes(triangle[0])) {
+								return cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1;
+							}
+							return cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1;
+						}
+						return triangle[1];
+					})();
+					const thirdIndex = (() => {
+						if (ignoreIndexes.includes(triangle[2])) {
+							if (ignoreIndexes.includes(triangle[0])) {
+								return cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1;
+							}
+							return cuttingPointMap.get([triangle[0], triangle[2]]) ?? -1;
+						}
+						return triangle[2];
+					})();
+
+					const newIndex = [firstIndex, secondIndex, thirdIndex];
+
+					polygon.splice(triangleIndex, 1, newIndex);
+				} else if (ignoreIndexes.length === 3) {
 					polygon.splice(triangleIndex--, 1);
 				}
 
@@ -209,7 +226,18 @@ export class Model4D {
 
 			// ここで有効なポリゴンストリップとなるように調整する ([1, 2, 3] -> [2, 3, 4] -> [3, 4, 5] -> ... となるようにする)
 			// そして、偶数番目の三角形の 2, 3 番目を入れ替える ([2, 3, 4] から [2, 4, 3] にする)
-			for (let indexOffset = 0; indexOffset < polygon.length - 1; indexOffset++) {}
+			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset++) {
+				const currentTriangle = vertexesView[indexOffset];
+				const beforeTriangle = vertexesView[indexOffset - 1];
+				
+				const indexToFirst = currentTriangle.findIndex((index) => index === beforeTriangle[1]);
+				const indexToSecond = currentTriangle.findIndex((index) => index === beforeTriangle[2]);
+				const indexToThird = currentTriangle.findIndex((index => ![indexToFirst, indexToSecond].includes(index)));
+
+				// console.log();
+
+				polygon.splice(indexOffset, 1, [currentTriangle[indexToFirst], currentTriangle[indexToSecond], currentTriangle[indexToThird]]);
+			}
 		}
 
 		const model3d = new Model3D();
