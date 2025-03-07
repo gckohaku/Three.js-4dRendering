@@ -107,10 +107,6 @@ export class Model4D {
 		const ignoreVertexIndexes: number[] = [];
 		const cuttingPointMap = new AscendingTupleMap();
 
-		// if (logTimeManager.isPushLog()) {
-		// 	console.log(this.colorIndexes);
-		// }
-
 		// カメラ座標への変換
 		for (let i = 0; i < this.vertexes.length; i++) {
 			const viewPosition = multiply(cameraExternalMatrix, concat(this.vertexes[i], [1])) as number[];
@@ -130,6 +126,8 @@ export class Model4D {
 				ignoreVertexIndexes.push(i);
 			}
 		}
+
+
 
 		const vertexesLengthBeforeProcess = this.vertexes.length;
 
@@ -227,16 +225,23 @@ export class Model4D {
 			// ここで有効なポリゴンストリップとなるように調整する ([1, 2, 3] -> [2, 3, 4] -> [3, 4, 5] -> ... となるようにする)
 			// そして、偶数番目の三角形の 2, 3 番目を入れ替える ([2, 3, 4] から [2, 4, 3] にする)
 			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset++) {
-				const currentTriangle = vertexesView[indexOffset];
-				const beforeTriangle = vertexesView[indexOffset - 1];
+				const currentTriangle = polygon[indexOffset];
+				const beforeTriangle = polygon[indexOffset - 1];
 				
 				const indexToFirst = currentTriangle.findIndex((index) => index === beforeTriangle[1]);
 				const indexToSecond = currentTriangle.findIndex((index) => index === beforeTriangle[2]);
-				const indexToThird = currentTriangle.findIndex((index => ![indexToFirst, indexToSecond].includes(index)));
+				const indexToThird = currentTriangle.findIndex((index) => ![beforeTriangle[1], beforeTriangle[2]].includes(index));
 
-				// console.log();
+				if (indexToFirst === undefined || indexToSecond === undefined || indexToThird === undefined) {
+					throw new Error(`${indexToFirst}, ${indexToSecond}, ${indexToThird}`);
+				}
 
 				polygon.splice(indexOffset, 1, [currentTriangle[indexToFirst], currentTriangle[indexToSecond], currentTriangle[indexToThird]]);
+			}
+
+			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset += 2) {
+				const triangle = polygon[indexOffset];
+				[triangle[1], triangle[2]] = [triangle[2], triangle[1]];
 			}
 		}
 
