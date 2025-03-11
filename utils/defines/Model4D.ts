@@ -127,8 +127,6 @@ export class Model4D {
 			}
 		}
 
-
-
 		const vertexesLengthBeforeProcess = this.vertexes.length;
 
 		// カメラの裏側に来ている頂点の処理
@@ -227,16 +225,18 @@ export class Model4D {
 			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset++) {
 				const currentTriangle = polygon[indexOffset];
 				const beforeTriangle = polygon[indexOffset - 1];
-				
+
 				const indexToFirst = currentTriangle.findIndex((index) => index === beforeTriangle[1]);
 				const indexToSecond = currentTriangle.findIndex((index) => index === beforeTriangle[2]);
 				const indexToThird = currentTriangle.findIndex((index) => ![beforeTriangle[1], beforeTriangle[2]].includes(index));
 
-				if (indexToFirst === undefined || indexToSecond === undefined || indexToThird === undefined) {
-					throw new Error(`${indexToFirst}, ${indexToSecond}, ${indexToThird}`);
-				}
-
 				polygon.splice(indexOffset, 1, [currentTriangle[indexToFirst], currentTriangle[indexToSecond], currentTriangle[indexToThird]]);
+
+				if (polygon.flat().some((index) => index === undefined)) {
+					throw new Error(
+						`polygon has undefined:\n\tpolygons: ${JSON.stringify(polygon)}\n\tindex: ${indexOffset}\n\tfirst: ${indexToFirst}, ${currentTriangle[indexToFirst]}\n\tsecond: ${indexToSecond}, ${currentTriangle[indexToSecond]}\n\tthird: ${indexToThird}, ${currentTriangle[indexToThird]}\n\tbefore triangle: ${beforeTriangle}\n\tcurrent triangle: ${currentTriangle}\n`,
+					);
+				}
 			}
 
 			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset += 2) {
