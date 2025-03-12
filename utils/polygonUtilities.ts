@@ -1,3 +1,5 @@
+import { index } from "mathjs";
+import { AscendingTupleSet } from "./defines/AscendingTupleSet";
 import type { PolygonIndexes, PolygonPart } from "./defines/polygonTypes";
 
 export function toAllTrianglePolygons(polygonIndexes: number[][]): PolygonIndexes {
@@ -64,7 +66,7 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 		[cloneIndexes[i][1], cloneIndexes[i][2]] = [cloneIndexes[i][2], cloneIndexes[i][1]];
 	}
 
-	const retArray: number[] = []
+	const retArray: number[] = [];
 
 	for (let i = 0; i < cloneIndexes.length; i++) {
 		if (i === cloneIndexes.length - 1) {
@@ -72,6 +74,28 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 			continue;
 		}
 		retArray.push(cloneIndexes[i][0]);
+	}
+
+	const indexPairSet = new AscendingTupleSet();
+
+	for (const triangle of cloneIndexes) {
+		if (triangle.length !== 3) {
+			throw new Error(`triangle index length is not 3\nlength: ${triangle.length}`);
+		}
+
+		indexPairSet.add([triangle[0], triangle[1]]).add([triangle[0], triangle[2]]).add([triangle[1], triangle[2]]);
+	}
+
+	for (const pair of indexPairSet) {
+		const firstIndex = pair[0];
+		const secondIndex = pair[1];
+
+		const indexOfConnectingWithFirst = indexPairSet
+			.values()
+			.filter((pair) => pair.includes(firstIndex))
+			.map((pair) => pair.filter((index) => index !== firstIndex))
+			.toArray()
+			.flat();
 	}
 
 	return retArray;
