@@ -220,29 +220,9 @@ export class Model4D {
 				beforeIndex++;
 			}
 
-			// ここで有効なポリゴンストリップとなるように調整する ([1, 2, 3] -> [2, 3, 4] -> [3, 4, 5] -> ... となるようにする)
-			// そして、偶数番目の三角形の 2, 3 番目を入れ替える ([2, 3, 4] から [2, 4, 3] にする)
-			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset++) {
-				const currentTriangle = polygon[indexOffset];
-				const beforeTriangle = polygon[indexOffset - 1];
-
-				const indexToFirst = currentTriangle.findIndex((index) => index === beforeTriangle[1]);
-				const indexToSecond = currentTriangle.findIndex((index) => index === beforeTriangle[2]);
-				const indexToThird = currentTriangle.findIndex((index) => ![beforeTriangle[1], beforeTriangle[2]].includes(index));
-
-				polygon.splice(indexOffset, 1, [currentTriangle[indexToFirst], currentTriangle[indexToSecond], currentTriangle[indexToThird]]);
-
-				if (polygon.flat().some((index) => index === undefined)) {
-					throw new Error(
-						`polygon has undefined:\n\tpolygons: ${JSON.stringify(polygon)}\n\tindex: ${indexOffset}\n\tfirst: ${indexToFirst}, ${currentTriangle[indexToFirst]}\n\tsecond: ${indexToSecond}, ${currentTriangle[indexToSecond]}\n\tthird: ${indexToThird}, ${currentTriangle[indexToThird]}\n\tbefore triangle: ${beforeTriangle}\n\tcurrent triangle: ${currentTriangle}\n`,
-					);
-				}
-			}
-
-			for (let indexOffset = 1; indexOffset < polygon.length; indexOffset += 2) {
-				const triangle = polygon[indexOffset];
-				[triangle[1], triangle[2]] = [triangle[2], triangle[1]];
-			}
+			// 有効なポリゴンの形式に変換
+			const newIndexes: PolygonPart = PolygonUtilities.onePolygonIndexToTriangles(PolygonUtilities.toMacroIndexes(polygon));
+			indexesClone[partsIndex] = newIndexes;
 		}
 
 		const model3d = new Model3D();
