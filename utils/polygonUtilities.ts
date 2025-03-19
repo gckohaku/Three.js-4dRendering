@@ -110,15 +110,19 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 		}
 	}
 
-	const indexPairArray = indexPairSet.values().toArray();
+	// const indexPairArray = indexPairSet.values().toArray();
 
-	retArray.push(...indexPairArray[0]);
-	indexPairArray.splice(0, 1);
+	const chainFirst = indexPairSet.values().next().value;
+	if (!chainFirst) {
+		throw new Error("cannot get chain first");
+	}
+	retArray.push(...chainFirst);
+	indexPairSet.delete(chainFirst);
 
 	while (true) {
-		if (indexPairArray.length === 1) {
-			const pair = indexPairArray[0];
-			if (retArray.includes(pair[0]) && retArray.includes(pair[1])) {
+		if (indexPairSet.size === 1) {
+			const pair = indexPairSet.values().next().value;
+			if (pair && retArray.includes(pair[0]) && retArray.includes(pair[1])) {
 				break;
 			}
 			throw new Error("something went wrong");
@@ -134,19 +138,17 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 				break;
 			}
 
-			const chainPairIndex = indexPairArray.findIndex((pair) => pair.includes(taleIndex) && !(retArray.includes(pair[0]) && retArray.includes(pair[1])));
-			if (chainPairIndex === -1) {
-				throw new Error(`indexes is not chainable:\nindexes: ${JSON.stringify(indexes)}\nindexPairArray: ${JSON.stringify(indexPairArray)}\nchainPairIndex: ${JSON.stringify(chainPairIndex)}\nretArray: ${retArray}`);
+			const chainPair = indexPairSet.values().filter((pair) => pair.includes(taleIndex) && !(retArray.includes(pair[0]) && retArray.includes(pair[1]))).toArray();
+
+			if (chainPair.length === 0) {
+				throw new Error(`indexes is not chainable:\nindexes: ${JSON.stringify(indexes)}\nindexPairArray: ${JSON.stringify(indexPairSet.values().toArray())}\nretArray: ${retArray}`);
 			}
-			const chainPair = indexPairArray[chainPairIndex]
-
-			if (typeof chainPair === "undefined") {
-				throw new Error(`indexes is not chainable:\nindexes: ${JSON.stringify(indexes)}\nindexPairArray: ${JSON.stringify(indexPairArray)}\nretArray: ${retArray}`);
+			if (chainPair.length >= 2) {
+				throw new Error(`chainPair length is too long: chainPair: ${JSON.stringify(chainPair)}`);
 			}
 
-
-			retArray.push(chainPair[0] === taleIndex ? chainPair[1] : chainPair[0]);
-			indexPairArray.splice(0, 1);
+			retArray.push(chainPair[0][0] === taleIndex ? chainPair[0][1] : chainPair[0][0]);
+			indexPairSet.delete(chainPair[0]);
 		}
 	}
 
