@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<Test4D />
+		<Rendering4D />
 	</div>
 </template>
 

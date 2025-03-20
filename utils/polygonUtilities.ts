@@ -1,7 +1,5 @@
-import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { AscendingTupleSet } from "./defines/AscendingTupleSet";
 import type { PolygonIndexes, PolygonPart } from "./defines/polygonTypes";
-import { pushScopeId } from "vue";
 
 export function toAllTrianglePolygons(polygonIndexes: number[][]): PolygonIndexes {
 	const trianglesIndexes: number[][][] = [];
@@ -82,21 +80,28 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 		indexPairSet.add([triangle[0], triangle[1]]).add([triangle[0], triangle[2]]).add([triangle[1], triangle[2]]);
 	}
 
-	// console.log(indexPairSet);
+	let logTextOfDeleteUnnecessity = `indexPairSet: ${JSON.stringify(indexPairSet.values().toArray())}\n\n`;
+	const deleteSegments: [number, number][] = []
 
 	for (const pair of indexPairSet) {
 		const firstIndex = pair[0];
 		const secondIndex = pair[1];
+
+		logTextOfDeleteUnnecessity += `[${firstIndex}, ${secondIndex}]\n`;
 
 		const indexOfConnectingWithFirst = indexPairSet
 			.values()
 			.flatMap((pair) => (pair.includes(firstIndex) ? pair.filter((index) => index !== firstIndex) : []))
 			.toArray();
 
+			
+
 		const indexOfConnectingWithSecond = indexPairSet
 			.values()
 			.flatMap((pair) => (pair.includes(secondIndex) ? pair.filter((index) => index !== secondIndex) : []))
 			.toArray();
+			
+			logTextOfDeleteUnnecessity += `\nget connecting:\n\tfirst: ${JSON.stringify(indexOfConnectingWithFirst)}\n\tsecond: ${JSON.stringify(indexOfConnectingWithSecond)}\n\n`
 
 		let connectingCount = 0;
 		for (const index of indexOfConnectingWithFirst) {
@@ -106,55 +111,81 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 		}
 
 		if (connectingCount >= 2) {
-			indexPairSet.delete(pair);
+			logTextOfDeleteUnnecessity += "delete\n";
+			deleteSegments.push(pair);
 		}
 	}
 
-	// const indexPairArray = indexPairSet.values().toArray();
+	for (const segment of deleteSegments) {
+		indexPairSet.delete(segment);
+	}
+
+	// console.log(logTextOfDeleteUnnecessity);
+
+	let logTextOfTraceAround = `parameter indexes: ${JSON.stringify(indexes)}\n\nbefore loop\n\n`;
+
+	logTextOfTraceAround += `indexPairSet: ${JSON.stringify(indexPairSet.values().toArray())}\n`;
 
 	const chainFirst = indexPairSet.values().next().value;
 	if (!chainFirst) {
-		throw new Error("cannot get chain first");
+		throw new Error(`cannot get chain first\n\n${logTextOfTraceAround}`);
 	}
 	retArray.push(...chainFirst);
 	indexPairSet.delete(chainFirst);
 
+	if (indexPairSet.has(chainFirst)) {
+		throw new Error(`chain first is not deleted\n\n${logTextOfTraceAround}`);
+	}
+
+	logTextOfTraceAround += `chainFirst: ${JSON.stringify(chainFirst)}\nretArray: ${JSON.stringify(retArray)}\nindexPairSet: ${JSON.stringify(indexPairSet.values().toArray())}\n`;
+
+	logTextOfTraceAround += "\nloop start\n";
 	while (true) {
+		logTextOfTraceAround += "\n";
+
 		if (indexPairSet.size === 1) {
 			const pair = indexPairSet.values().next().value;
 			if (pair && retArray.includes(pair[0]) && retArray.includes(pair[1])) {
 				break;
 			}
-			throw new Error("something went wrong");
+			throw new Error(`something went wrong\n\n${logTextOfTraceAround}`);
 		}
 
 		const taleIndex = retArray.at(-1);
 
 		if (taleIndex) {
 			if (taleIndex === retArray.at(0)) {
-				if (logTimeManager.isPushLog()) {
-					console.log(retArray, taleIndex);
-				} 
+				console.log(retArray, taleIndex);
 				break;
 			}
 
-			const chainPair = indexPairSet.values().filter((pair) => pair.includes(taleIndex) && !(retArray.includes(pair[0]) && retArray.includes(pair[1]))).toArray();
+			const chainPair = indexPairSet
+				.values()
+				.filter((pair) => pair.includes(taleIndex) && !(retArray.includes(pair[0]) && retArray.includes(pair[1])))
+				.toArray();
 
 			if (chainPair.length === 0) {
-				throw new Error(`indexes is not chainable:\nindexes: ${JSON.stringify(indexes)}\nindexPairArray: ${JSON.stringify(indexPairSet.values().toArray())}\nretArray: ${retArray}`);
+				throw new Error(`indexes is not chainable:\n\n${logTextOfTraceAround}`);
 			}
 			if (chainPair.length >= 2) {
-				throw new Error(`chainPair length is too long: chainPair: ${JSON.stringify(chainPair)}`);
+				throw new Error(`chainPair length is too long: chainPair: ${JSON.stringify(chainPair)}\n\n${logTextOfTraceAround}`);
 			}
 
 			retArray.push(chainPair[0][0] === taleIndex ? chainPair[0][1] : chainPair[0][0]);
 			indexPairSet.delete(chainPair[0]);
+			if (indexPairSet.has(chainPair[0])) {
+				throw new Error(`something went wrong\n\n${logTextOfTraceAround}`);
+			}
+
+			logTextOfTraceAround += `retArray: ${retArray}\nindexPairSet: ${JSON.stringify(indexPairSet.values().toArray())}\n`;
 		}
 	}
 
+	logTextOfTraceAround += "\nloop end\n";
+
 	if (logTimeManager.isPushLog()) {
 		console.log(retArray);
-	} 
+	}
 
 	return retArray;
 }

@@ -143,7 +143,7 @@ export class Model4D {
 						const direction: number[] = subtract(vertexesView[triangle[2]], vertexesView[triangle[0]]);
 						const newVertex = add<number[]>(
 							vertexesView[triangle[0]],
-							multiply(divide(-near - vertexesView[triangle[0]][3], direction[3]) as number, direction) as number[],
+							multiply(divide(-(near - 1) - vertexesView[triangle[0]][3], direction[3]) as number, direction) as number[],
 						);
 
 						const newIndex = vertexesView.push(newVertex) - 1;
