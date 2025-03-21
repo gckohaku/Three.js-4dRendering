@@ -164,9 +164,9 @@ export class Model3D {
 			if (indexesUnit.length) {
 				const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
 
-				if (indexesUnit.length >= 3) {
-					console.log(indexesUnit, macroIndexesUnit);
-				}
+				// if (indexesUnit.length >= 3) {
+				// 	console.log(indexesUnit, macroIndexesUnit);
+				// }
 
 				this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
 				for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {

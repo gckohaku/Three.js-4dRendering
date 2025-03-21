@@ -120,8 +120,6 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 		indexPairSet.delete(segment);
 	}
 
-	// console.log(logTextOfDeleteUnnecessity);
-
 	let logTextOfTraceAround = `parameter indexes: ${JSON.stringify(indexes)}\n\nbefore loop\n\n`;
 
 	logTextOfTraceAround += `indexPairSet: ${JSON.stringify(indexPairSet.values().toArray())}\n`;
@@ -155,7 +153,6 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 
 		if (taleIndex) {
 			if (taleIndex === retArray.at(0)) {
-				console.log(retArray, taleIndex);
 				break;
 			}
 
@@ -183,9 +180,9 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 
 	logTextOfTraceAround += "\nloop end\n";
 
-	if (logTimeManager.isPushLog()) {
-		console.log(retArray);
-	}
+	// if (logTimeManager.isPushLog()) {
+	// 	console.log(retArray);
+	// }
 
 	return retArray;
 }

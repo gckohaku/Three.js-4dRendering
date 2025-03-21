@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { chain, concat, cot, Matrix, multiply, pi, unaryMinus, type MathType } from "mathjs";
+import { chain, concat, cot, multiply, pi, unaryMinus, type MathType } from "mathjs";
 import * as THREE from "three";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
-import { Model3D } from "~/utils/defines/Model3D";
-import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
+import type { ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
 
 const logTimeManager = logTimeManagerStore();

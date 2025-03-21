@@ -131,19 +131,21 @@ export class Model4D {
 
 		// カメラの裏側に来ている頂点の処理
 		for (const ignoreIndex of ignoreVertexIndexes) {
+			// ignoreIndex が含まれている三角形を取得
 			const relatedTriangles = this.indexes.flat().filter((triangle) => triangle.includes(ignoreIndex));
 			for (const triangle of relatedTriangles) {
 				const relatedVertexes = triangle.filter((index) => index !== ignoreIndex);
 
 				for (const index of relatedVertexes) {
+					// その頂点の位置がカメラの裏側でなければ処理をする
 					if (!ignoreVertexIndexes.includes(index) && !cuttingPointMap.has([ignoreIndex, index])) {
 						if (vertexesView[index][3] > near) {
 							throw new Error("something went wrong");
 						}
-						const direction: number[] = subtract(vertexesView[triangle[2]], vertexesView[triangle[0]]);
+						const direction: number[] = subtract(vertexesView[ignoreIndex], vertexesView[index]);
 						const newVertex = add<number[]>(
-							vertexesView[triangle[0]],
-							multiply(divide(-(near - 1) - vertexesView[triangle[0]][3], direction[3]) as number, direction) as number[],
+							vertexesView[ignoreIndex],
+							multiply(divide(-(near + 1) - vertexesView[ignoreIndex][3], direction[3]) as number, direction) as number[],
 						);
 
 						const newIndex = vertexesView.push(newVertex) - 1;
@@ -230,7 +232,7 @@ export class Model4D {
 
 		// 三次元座標への変換
 		for (let i = 0; i < vertexesView.length; i++) {
-			vertexes3d.push(chain(cameraInternalMatrix).multiply(vertexesView[i]).divide(vertexesView[i][3]).done() as number[]);
+			vertexes3d.push(chain(cameraInternalMatrix).multiply(vertexesView[i]).divide(-vertexesView[i][3]).done() as number[]);
 		}
 
 		model3d.setVertexes(vertexes3d);
