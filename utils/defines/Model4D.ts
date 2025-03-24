@@ -143,9 +143,9 @@ export class Model4D {
 							throw new Error("something went wrong");
 						}
 						const direction: number[] = subtract(vertexesView[ignoreIndex], vertexesView[index]);
-						const newVertex = add<number[]>(
+						const newVertex = subtract<number[]>(
 							vertexesView[ignoreIndex],
-							multiply(divide(-(near + 1) - vertexesView[ignoreIndex][3], direction[3]) as number, direction) as number[],
+							multiply(divide(vertexesView[ignoreIndex][3] - near, direction[3]) as number, direction) as number[],
 						);
 
 						const newIndex = vertexesView.push(newVertex) - 1;
@@ -153,10 +153,6 @@ export class Model4D {
 					}
 				}
 			}
-		}
-
-		if (logTimeManager.isPushLog()) {
-			console.log(vertexesView);
 		}
 
 		const indexesClone = structuredClone(this.indexes);
@@ -178,7 +174,7 @@ export class Model4D {
 					const forthIndex = ignoreIndexes[0] !== triangle[0] ? (cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1) : triangle[2];
 
 					const newFirstTriangle = [firstIndex, secondIndex, thirdIndex];
-					const newSecondTriangle = [secondIndex, forthIndex, thirdIndex];
+					const newSecondTriangle = [secondIndex, thirdIndex, forthIndex];
 
 					polygon.splice(triangleIndex++, 1, newFirstTriangle, newSecondTriangle);
 				} else if (ignoreIndexes.length === 2) {
@@ -212,9 +208,9 @@ export class Model4D {
 						return triangle[2];
 					})();
 
-					const newIndex = [firstIndex, secondIndex, thirdIndex];
+					const newIndexes = [firstIndex, secondIndex, thirdIndex];
 
-					polygon.splice(triangleIndex, 1, newIndex);
+					polygon.splice(triangleIndex, 1, newIndexes);
 				} else if (ignoreIndexes.length === 3) {
 					polygon.splice(triangleIndex--, 1);
 				}
@@ -223,8 +219,16 @@ export class Model4D {
 			}
 
 			// 有効なポリゴンの形式に変換
-			const newIndexes: PolygonPart = PolygonUtilities.onePolygonIndexToTriangles(PolygonUtilities.toMacroIndexes(polygon));
+			const newIndexes: PolygonPart = PolygonUtilities.MacroAroundIndexesToTriangle(PolygonUtilities.toMacroAroundIndexes(polygon));
 			indexesClone[partsIndex] = newIndexes;
+			if (logTimeManager.isPushLog()) {
+				console.log(newIndexes);
+			}
+		}
+
+		if (logTimeManager.isPushLog()) {
+			console.log(vertexesView);
+			console.log(indexesClone);
 		}
 
 		const model3d = new Model3D();

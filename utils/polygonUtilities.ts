@@ -59,12 +59,16 @@ export function getMacroIndexesMap(indexes: PolygonIndexes): Map<number, number>
 	return returnedMap;
 }
 
-export function toMacroIndexes(indexes: PolygonPart): number[] {
+export function toMacroAroundIndexes(indexes: PolygonPart): number[] {
 	if (indexes.length === 0) {
 		return [];
 	}
 
 	const logTimeManager = logTimeManagerStore();
+
+	if (logTimeManager.isPushLog()) {
+		console.log(indexes);
+	}
 
 	const cloneIndexes = structuredClone(indexes);
 
@@ -180,9 +184,41 @@ export function toMacroIndexes(indexes: PolygonPart): number[] {
 
 	logTextOfTraceAround += "\nloop end\n";
 
-	// if (logTimeManager.isPushLog()) {
-	// 	console.log(retArray);
-	// }
+	if (logTimeManager.isPushLog()) {
+		console.log(retArray);
+	}
+
+	return retArray;
+}
+
+export function MacroAroundIndexesToTriangle(macroAroundIndexes: number[]): number[][] {
+	const retArray: number[][] = [];
+
+	const cloneMacroIndexes: number[] = structuredClone(macroAroundIndexes);
+	const intermediateArray: number[] = [];
+
+	intermediateArray.push(cloneMacroIndexes.shift() ?? -1);
+
+	while (cloneMacroIndexes.length > 0) {
+		intermediateArray.push(cloneMacroIndexes.shift() ?? -1);
+
+		if (cloneMacroIndexes.length > 0) {
+			break;
+		}
+
+		intermediateArray.push(cloneMacroIndexes.pop() ?? -1);
+	}
+
+	for (let i = 0; i < intermediateArray.length - 2; i++) {
+		if (i % 2 === 0) {
+			retArray.push([intermediateArray[i], intermediateArray[i + 1], intermediateArray[i + 2]]);
+		}
+		else {
+			retArray.push([intermediateArray[i], intermediateArray[i + 2], intermediateArray[i + 1]]);
+		}
+	}
+
+	// 多分 retArray が空配列になっている
 
 	return retArray;
 }

@@ -17,6 +17,7 @@ export const logTimeManagerStore = defineStore("logTimeManagerStore", () => {
 
 	function updateLogDate() {
 		logDate.value = Date.now();
+		console.log("update log date");
 	}
 
 	return { logDate, currentDate, logIntervalMilliseconds, isPushLog, updateCurrentDate, updateLogDate };

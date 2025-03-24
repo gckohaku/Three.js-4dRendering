@@ -162,7 +162,7 @@ export class Model3D {
 
 		for (const indexesUnit of this.indexes) {
 			if (indexesUnit.length) {
-				const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
+				const macroIndexesUnit = PolygonUtilities.toMacroAroundIndexes(indexesUnit);
 
 				// if (indexesUnit.length >= 3) {
 				// 	console.log(indexesUnit, macroIndexesUnit);
