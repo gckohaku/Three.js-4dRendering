@@ -1,16 +1,16 @@
 import * as PolygonUtilities from "@/utils/polygonUtilities";
-import { add, concat, cross, divide, index, multiply, norm, pi, subtract } from "mathjs";
+import { add, concat, cross, divide, multiply, norm, pi, subtract } from "mathjs";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
-import { retarget } from "three/examples/jsm/utils/SkeletonUtils.js";
 import type { PolygonIndexes, PolygonPart } from "./polygonTypes";
+import * as TupleUtilities from "@/utils/tupleUtilities"
 
 export class Model3D {
 	vertexes: number[][] = [];
 	indexes: PolygonIndexes = [];
-	macroIndexesMap: Map<number, number> = new Map<number, number>();
+	macroIndexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -23,9 +23,9 @@ export class Model3D {
 
 	constructor(m?: Model3D) {
 		if (m) {
-			this.vertexes = [...m.vertexes];
-			this.indexes = [...m.indexes];
-			this.macroIndexesMap = new Map(m.macroIndexesMap);
+			this.vertexes = structuredClone(m.vertexes);
+			this.indexes = structuredClone(m.indexes);
+			this.macroIndexes = structuredClone(m.macroIndexes);
 			this.colors = [...m.colors];
 			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
@@ -55,7 +55,7 @@ export class Model3D {
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
-		this.macroIndexesMap = PolygonUtilities.getMacroIndexesMap(this.indexes);
+		this.macroIndexes = partsIndexes;
 
 		if (colors) {
 			this.colors = [];
@@ -133,8 +133,8 @@ export class Model3D {
 		}
 	}
 
-	getMeshWithFrame(frameColor: number): THREE.Group {
-		const frameGeometry = this.getFrameGeometry();
+	getMeshWithFrame(frameColor: number, radius = 6): THREE.Group {
+		const frameGeometry = this.getFrameGeometry(radius);
 
 		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
 		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
@@ -153,41 +153,38 @@ export class Model3D {
 		return mesh;
 	}
 
-	getFrameGeometry(): THREE.BufferGeometry {
+	getFrameGeometry(radius = 6): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();
 
 		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
 
-		if (logTimeManager.isPushLog()) {
-			console.log("length: ", this.indexes.length);
-		}
 
 		for (const indexesUnit of this.indexes) {
-			const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
-			if (logTimeManager.isPushLog()) {
-				console.log(macroIndexesUnit);
-			}
-			
-			this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
-			for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {
-				this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
-			}
-			this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes);
-			for (let i = macroIndexesUnit.length - 1 - ((macroIndexesUnit.length + 1) % 2); i > 0; i -= 2) {
-				this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
-				if (logTimeManager.isPushLog()) {
-					console.log(framePositionIndexes.length);
+			if (indexesUnit.length) {
+				const macroIndexesUnit = PolygonUtilities.toMacroIndexes(indexesUnit);
+
+				// if (indexesUnit.length >= 3) {
+				// 	console.log(indexesUnit, macroIndexesUnit);
+				// }
+
+				this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
+				for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {
+					this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
+				}
+				this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes);
+				for (let i = macroIndexesUnit.length - 1 - ((macroIndexesUnit.length + 1) % 2); i > 0; i -= 2) {
+					this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
 				}
 			}
 		}
 
-		for (const indexPair of framePositionIndexes) {
-			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
+		if (framePositionIndexes.length === 0) {
+			return new THREE.BufferGeometry();
 		}
 
-		if (logTimeManager.isPushLog()) {
-			console.log(framePositionIndexes);
+		for (const indexPair of framePositionIndexes) {
+			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
 		}
 
 		const mergedGeometry = BufferGeometryUtils.mergeGeometries(frameGeometries);
@@ -195,62 +192,27 @@ export class Model3D {
 		return mergedGeometry;
 	}
 
-	private checkAscending(tuple: [number, number]): [number, number] {
-		if (tuple[0] <= tuple[1]) {
-			return tuple;
-		}
-		return [tuple[1], tuple[0]];
-	}
+	// private checkAscending(tuple: [number, number]): [number, number] {
+	// 	if (tuple[0] <= tuple[1]) {
+	// 		return tuple;
+	// 	}
+	// 	return [tuple[1], tuple[0]];
+	// }
 
 	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
 		const logTimeManager = logTimeManagerStore();
 
-		// const fromTruthOffset = this.macroIndexesMap.get(indexes[fromOffset]);
-		// const toTruthOffset = this.macroIndexesMap.get(indexes[toOffset]);
+		const currentIndexes = TupleUtilities.checkAscending([indexes[fromOffset], indexes[toOffset]]);
 
-		// if (typeof fromTruthOffset !== "number" || typeof toTruthOffset !== "number") {
-		// 	throw new Error(`invalid undefined error in frameIndexesPushProcess\nfrom truth offset: ${fromTruthOffset}\nto truth offset: ${toTruthOffset}`);
-		// }
-
-		const currentIndexes = this.checkAscending([indexes[fromOffset], indexes[toOffset]]);
-
-		if (logTimeManager.isPushLog()) {
-			console.log(currentIndexes);
-		}
 		if (currentIndexes[0] === currentIndexes[1]) {
-			if (logTimeManager.isPushLog()) {
-				console.log("return");
-			}
 			return;
 		}
 		if (
-			!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) /*&&
-			!this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])*/
+			!framePositionIndexes.find((e) => e[0] === currentIndexes[0] && e[1] === currentIndexes[1]) &&
+			!this.vertexes[currentIndexes[0]].every((e, index) => e === this.vertexes[currentIndexes[1]][index])
 		) {
-			if (logTimeManager.isPushLog()) {
-				console.log("push");
-			}
 			framePositionIndexes.push(currentIndexes);
 		}
-		else {
-			if (logTimeManager.isPushLog()) {
-				console.log("no push");
-			}
-		}
-	}
-
-	private _toMacroIndexes(indexes: PolygonPart): number[] {
-		const retArray: number[] = [];
-
-		for (let i = 0; i < indexes.length; i++) {
-			if (i === indexes.length - 1) {
-				retArray.push(...indexes[i]);
-				continue;
-			}
-			retArray.push(indexes[i][0]);
-		}
-
-		return retArray;
 	}
 
 	// private onePolygonToTrianglesIndexes(index: number): number[] {

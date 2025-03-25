@@ -1,14 +1,17 @@
-import { concat, divide, dotDivide, multiply } from "mathjs";
+import { add, chain, concat, divide, multiply, subtract, transpose, type MathType } from "mathjs";
 import * as THREE from "three";
 import * as PolygonUtilities from "@/utils/polygonUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import { Model3D } from "./Model3D";
-import type { PolygonIndexes } from "./polygonTypes";
+import type { PolygonIndexes, PolygonPart, TrianglePolygon } from "./polygonTypes";
+import { viewport } from "three/tsl";
+import * as TupleUtilities from "@/utils/tupleUtilities";
+import { AscendingTupleMap } from "./AscendingTupleMap";
 
 export class Model4D {
 	vertexes: number[][] = [];
 	indexes: PolygonIndexes = [];
-	macroIndexes: Map<number, number> = new Map<number, number>();
+	macroIndexes: number[][] = [];
 	colors: ArrayOfColorRGB[] = [];
 	colorIndexes: number[] = [];
 	materialColors: THREE.Material[] = [];
@@ -21,11 +24,11 @@ export class Model4D {
 
 	constructor(m?: Model4D) {
 		if (m) {
-			this.vertexes = [...m.vertexes];
-			this.indexes = [...m.indexes];
-			this.macroIndexes = new Map(m.macroIndexes);
+			this.vertexes = structuredClone(m.vertexes);
+			this.indexes = structuredClone(m.indexes);
+			this.macroIndexes = m.macroIndexes;
 			this.colors = [...m.colors];
-			this.colorIndexes = [...m.colorIndexes]
+			this.colorIndexes = [...m.colorIndexes];
 			this.materialColors = [...m.materialColors];
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
@@ -39,27 +42,21 @@ export class Model4D {
 
 	addVertexes(vs: number[][]) {
 		for (let i = 0; i < vs.length; i++) {
-			this.vertexes.push((vs[i]));
+			this.vertexes.push(vs[i]);
 		}
 	}
 
 	setParts(partsIndexes: number[][], colors?: (ArrayOfColorRGB | ArrayOfColorRGBA)[]) {
 		this.indexes = PolygonUtilities.toAllTrianglePolygons(partsIndexes);
-		this.macroIndexes = PolygonUtilities.getMacroIndexesMap(this.indexes);
+		this.macroIndexes = partsIndexes;
 
 		for (let i = 0; i < partsIndexes.length; i++) {
-			let count = partsIndexes[i].length - 2;
-			while (count > 0) {
-				this.colorIndexes.push(i);
-
-				count--;
-			}
+			this.colorIndexes.push(i);
 		}
 
 		this.colors;
 		if (colors) {
 			for (let i = 0; i < colors.length; i++) {
-
 				// ArrayOfColorRGBA から Alpha を除くと ArrayOfColorRGB になる
 				this.colors.push((colors[i].slice(0, 3) as ArrayOfColorRGB) ?? [0, 255, 0]);
 
@@ -90,38 +87,155 @@ export class Model4D {
 	}
 
 	toModel3D(
-		perspective4dMatrix: number[][] = multiply(
-			[
-				[706.7557097471259, 0, 0, 0],
-				[0, 706.7557097471259, 0, 0],
-				[0, 0, 706.7557097471259, 0],
-				[0, 0, 0, 1],
-			],
-			[
-				[1, 0, 0, 0, 0],
-				[0, 1, 0, 0, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 0, 1, -500],
-			],
-		) as number[][],
+		cameraInternalMatrix: number[][] = [
+			[706.7557097471259, 0, 0, 0],
+			[0, 706.7557097471259, 0, 0],
+			[0, 0, 706.7557097471259, 0],
+			[0, 0, 0, 1],
+		],
+		cameraExternalMatrix: number[][] = [
+			[1, 0, 0, 0, 0],
+			[0, 1, 0, 0, 0],
+			[0, 0, 1, 0, 0],
+			[0, 0, 0, 1, -500],
+		],
+		near = -400,
 	): Model3D {
+		const logTimeManager = logTimeManagerStore();
+
+		const vertexesView: number[][] = [];
+		const ignoreVertexIndexes: number[] = [];
+		const cuttingPointMap = new AscendingTupleMap();
+
+		// カメラ座標への変換
+		for (let i = 0; i < this.vertexes.length; i++) {
+			const viewPosition = multiply(cameraExternalMatrix, concat(this.vertexes[i], [1])) as number[];
+
+			if (this.vertexes[i].length > 4) {
+				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
+			}
+
+			vertexesView.push(viewPosition);
+
+			// ここの if はいらない可能性がある (ignoreVertexIndexes 自体がいらないかも)
+			if (viewPosition[3] > near) {
+				if (logTimeManager.isPushLog()) {
+					// console.log("over: ", i);
+				}
+
+				ignoreVertexIndexes.push(i);
+			}
+		}
+
+		const vertexesLengthBeforeProcess = this.vertexes.length;
+
+		// カメラの裏側に来ている頂点の処理
+		for (const ignoreIndex of ignoreVertexIndexes) {
+			// ignoreIndex が含まれている三角形を取得
+			const relatedTriangles = this.indexes.flat().filter((triangle) => triangle.includes(ignoreIndex));
+			for (const triangle of relatedTriangles) {
+				const relatedVertexes = triangle.filter((index) => index !== ignoreIndex);
+
+				for (const index of relatedVertexes) {
+					// その頂点の位置がカメラの裏側でなければ処理をする
+					if (!ignoreVertexIndexes.includes(index) && !cuttingPointMap.has([ignoreIndex, index])) {
+						if (vertexesView[index][3] > near) {
+							throw new Error("something went wrong");
+						}
+						const direction: number[] = subtract(vertexesView[ignoreIndex], vertexesView[index]);
+						const newVertex = subtract<number[]>(
+							vertexesView[ignoreIndex],
+							multiply(divide(vertexesView[ignoreIndex][3] - near, direction[3]) as number, direction) as number[],
+						);
+
+						const newIndex = vertexesView.push(newVertex) - 1;
+						cuttingPointMap.set([index, ignoreIndex], newIndex);
+					}
+				}
+			}
+		}
+
+		const indexesClone = structuredClone(this.indexes);
+
+		for (let partsIndex = 0; partsIndex < indexesClone.length; partsIndex++) {
+			const polygon = indexesClone[partsIndex];
+			let beforeIndex = 0;
+
+			for (let triangleIndex = 0; triangleIndex < polygon.length; triangleIndex++) {
+				const isMatchBeforeIndexEven = beforeIndex % 2 === triangleIndex % 2;
+				const triangle = polygon[triangleIndex];
+				const ignoreIndexes = triangle.filter((index) => vertexesView[index][3] > near);
+
+				// 三角形に 4D カメラの裏側に頂点がある場合、除外、ポリゴンの再形成を行う
+				if (ignoreIndexes.length === 1) {
+					const firstIndex = ignoreIndexes[0] === triangle[0] ? (cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1) : triangle[0];
+					const secondIndex = ignoreIndexes[0] === triangle[1] ? (cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1) : triangle[1];
+					const thirdIndex = ignoreIndexes[0] !== triangle[1] ? (cuttingPointMap.get([triangle[0], triangle[2]]) ?? -1) : triangle[2];
+					const forthIndex = ignoreIndexes[0] !== triangle[0] ? (cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1) : triangle[2];
+
+					const newFirstTriangle = [firstIndex, secondIndex, thirdIndex];
+					const newSecondTriangle = [secondIndex, thirdIndex, forthIndex];
+
+					polygon.splice(triangleIndex++, 1, newFirstTriangle, newSecondTriangle);
+				} else if (ignoreIndexes.length === 2) {
+					// 値を const で保持したいので、即時関数 (=ラムダ式) を使用 (三項演算子だと三項演算子自体のネストが必要になり見づらい)
+					// というかこれに関しては共通化できそう？
+					const firstIndex = (() => {
+						if (ignoreIndexes.includes(triangle[0])) {
+							if (ignoreIndexes.includes(triangle[1])) {
+								return cuttingPointMap.get([triangle[0], triangle[2]]) ?? -1;
+							}
+							return cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1;
+						}
+						return triangle[0];
+					})();
+					const secondIndex = (() => {
+						if (ignoreIndexes.includes(triangle[1])) {
+							if (ignoreIndexes.includes(triangle[0])) {
+								return cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1;
+							}
+							return cuttingPointMap.get([triangle[0], triangle[1]]) ?? -1;
+						}
+						return triangle[1];
+					})();
+					const thirdIndex = (() => {
+						if (ignoreIndexes.includes(triangle[2])) {
+							if (ignoreIndexes.includes(triangle[0])) {
+								return cuttingPointMap.get([triangle[1], triangle[2]]) ?? -1;
+							}
+							return cuttingPointMap.get([triangle[0], triangle[2]]) ?? -1;
+						}
+						return triangle[2];
+					})();
+
+					const newIndexes = [firstIndex, secondIndex, thirdIndex];
+
+					polygon.splice(triangleIndex, 1, newIndexes);
+				} else if (ignoreIndexes.length === 3) {
+					polygon.splice(triangleIndex--, 1);
+				}
+
+				beforeIndex++;
+			}
+
+			// 有効なポリゴンの形式に変換
+			const newIndexes: PolygonPart = PolygonUtilities.MacroAroundIndexesToTriangle(PolygonUtilities.toMacroAroundIndexes(polygon));
+			indexesClone[partsIndex] = newIndexes;
+		}
+
 		const model3d = new Model3D();
 		const vertexes3d: number[][] = [];
 
-		for (let i = 0; i < this.vertexes.length; i++) {
-			const perspectivePos = multiply(perspective4dMatrix, concat(this.vertexes[i], [1])) as number[];
-			if (this.vertexes[i].length > 4 || this.indexes[i].length > 4) {
-				throw new Error(`array length is argument\nindex: ${i}\n${this.vertexes[i]}`);
-			}
-			const pos3d = perspectivePos.slice(0, 3);
-			vertexes3d.push(divide(pos3d, perspectivePos[3]) as number[]);
+		// 三次元座標への変換
+		for (let i = 0; i < vertexesView.length; i++) {
+			vertexes3d.push(chain(cameraInternalMatrix).multiply(vertexesView[i]).divide(-vertexesView[i][3]).done() as number[]);
 		}
 
 		model3d.setVertexes(vertexes3d);
-		model3d.indexes = this.indexes;
-		model3d.macroIndexesMap = new Map(this.macroIndexes);
-		model3d.colors = this.colors;
-		model3d.colorIndexes = this.colorIndexes;
+		model3d.indexes = structuredClone(indexesClone);
+		model3d.macroIndexes = structuredClone(this.macroIndexes);
+		model3d.colors = [...this.colors];
+		model3d.colorIndexes = [...this.colorIndexes];
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
 
@@ -155,16 +269,6 @@ export class Model4D {
 		return new Float32Array(this.vertexes.flat());
 	}
 
-	// toTrianglesIndex(): Uint32Array {
-	// 	const trianglesVertexesArray: number[] = [];
-
-	// 	for (let i = 0; i < this.indexes.length; i++) {
-	// 		trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
-	// 	}
-
-	// 	return new Uint32Array(trianglesVertexesArray);
-	// }
-
 	setColorMesh() {
 		this.geometry.clearGroups();
 		let colorToIndex = 0;
@@ -182,11 +286,6 @@ export class Model4D {
 					flatShading: true,
 				}),
 			);
-
-			// for (let triangleIndex = 0; triangleIndex < this.indexes[i].length - 2; triangleIndex++) {
-			// 	this.geometry.addGroup(colorToIndex, 3, i);
-			// 	colorToIndex += 3;
-			// }
 		}
 
 		for (let i = 0; i < this.colorIndexes.length; i++) {
@@ -198,19 +297,4 @@ export class Model4D {
 			colorToIndex += 3;
 		}
 	}
-
-	// private onePolygonToTrianglesIndexes(index: number): number[] {
-	// 	const onePolygonIndexes: number[] = [...this.indexes[index]];
-	// 	const ret: number[] = [];
-
-	// 	for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
-	// 		if (i % 2 === 0) {
-	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
-	// 		} else {
-	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
-	// 		}
-	// 	}
-
-	// 	return ret;
-	// }
 }

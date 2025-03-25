@@ -115,80 +115,17 @@ const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const myGeometry = new THREE.BufferGeometry();
 
 const fourDimensionVertexes: number[][] = [
-	[50, 50, 50, 50], // 0
-	[50, -50, 50, 50],
-	[-50, 50, 50, 50],
-	[-50, -50, 50, 50],
-	[50, 50, -50, 50], // 4
-	[50, -50, -50, 50],
-	[-50, 50, -50, 50],
-	[-50, -50, -50, 50],
-	[50, 50, 50, -50], // 8
-	[50, -50, 50, -50],
-	[-50, 50, 50, -50],
-	[-50, -50, 50, -50],
-	[50, 50, -50, -50], // 12
-	[50, -50, -50, -50],
-	[-50, 50, -50, -50],
-	[-50, -50, -50, -50],
+	[50, 0, 50, 0], // 0
+	[-50, 0, 50, 0],
+	[50, 0, -50, 0],
+	[-50, 0, -50, 0],
 ]
 
 const fourDimensionParts: number[][] = [
-	// big	
-	[0, 1, 2, 3], // front
-	[4, 5, 6, 7], // back
-	[0, 2, 4, 6], // top
-	[1, 3, 5, 7], // bottom
-	[0, 1, 4, 5], // right
-	[2, 3, 6, 7], // left
-	// small (+8)
-	[8, 9, 10, 11],
-	[12, 13, 14, 15],
-	[8, 10, 12, 14],
-	[9, 11, 13, 15],
-	[8, 9, 12, 13],
-	[10, 11, 14, 15],
-	// x rotate direction
-	[0, 2, 8, 10],
-	[1, 3, 9, 11],
-	[4, 6, 12, 14],
-	[5, 7, 13, 15],
-	// y rotate direction
-	[0, 1, 8, 9],
-	[2, 3, 10, 11],
-	[4, 5, 12, 13],
-	[6, 7, 14, 15],
-	// z rotate direction
-	[0, 4, 8, 12],
-	[1, 5, 9, 13],
-	[2, 6, 10, 14],
-	[3, 7, 11, 15],
+	[0, 1, 2, 3,] // front
 ];
 
 const fourDimensionColors: ArrayOfColorRGBA[] = [
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
 	[0, 255, 0, 0.0],
 ]
 
@@ -255,9 +192,9 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	transformedModel.geometry.computeVertexNormals();
 	if (transformedModel.indexes.length) {
 		frame.geometry = transformedModel.getFrameGeometry(4);
-	face.geometry = transformedModel.geometry;
+		face.geometry = transformedModel.geometry;
 	}
-	
+
 
 	scene.updateMatrix();
 	renderer.clearDepth();
@@ -310,7 +247,11 @@ onMounted(() => {
 			<Controller4dTabContainer>
 				<template v-slot:object>
 					<div class="tab-slot-container">
-						<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+						<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ"
+							v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW"
+							v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ"
+							v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY"
+							v-model:size-z="sizeZ" v-model:size-w="sizeW" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.orderList" />
 						</div>
@@ -319,14 +260,23 @@ onMounted(() => {
 				</template>
 				<template v-slot:camera-4d>
 					<div class="tab-slot-container">
-						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY" v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW" v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW" v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY" v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ" v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ" v-model:size-w="camera4dSizeW" />
+						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY"
+							v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW"
+							v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW"
+							v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY"
+							v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ"
+							v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ"
+							v-model:size-w="camera4dSizeW" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.cameraOrderList" />
 						</div>
 					</div>
 				</template>
 				<template v-slot:camera-3d>
-					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY" v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" />
+					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY"
+						v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY"
+						v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY"
+						v-model:size-z="cameraSizeZ" />
 				</template>
 			</Controller4dTabContainer>
 		</div>

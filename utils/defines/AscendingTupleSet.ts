@@ -1,7 +1,7 @@
 import * as TupleUtilities from "@/utils/tupleUtilities";
 
 export class AscendingTupleSet<T = number> {
-	private data: [T, T][] = [];
+	data: [T, T][] = [];
 	size = 0;
 
 	*[Symbol.iterator]() {
@@ -53,6 +53,7 @@ export class AscendingTupleSet<T = number> {
 		return this.indexOf(tuple) !== -1;
 	}
 
+	// AscendingTupleMap の実装に必要
 	indexOf(searchTuple: [T, T]): number {
 		const ascendingTuple = TupleUtilities.checkAscending(searchTuple);
 		return this.data.findIndex((datum) => (ascendingTuple[0] === datum[0] && ascendingTuple[1] === datum[1]));
