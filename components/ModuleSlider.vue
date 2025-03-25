@@ -9,7 +9,7 @@ interface Props {
 	min?: string | number;
 	max?: string | number;
 	step?: string | number;
-	isRolling?: boolean
+	isRolling?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 	max: 100,
 	step: 1,
 	isRolling: false,
-}); 
+});
 
 const onPushLeftButton = async () => {
 	if (!props.isRolling && Number(modelValue.value) <= Number(props.min)) {
@@ -36,9 +36,9 @@ const onPushLeftButton = async () => {
 
 const onPushRightButton = async () => {
 	if (!props.isRolling && Number(modelValue.value) >= Number(props.max)) {
-		return;	
+		return;
 	}
-	
+
 	modelValue.value = Number(modelValue.value) + Number(props.step);
 
 	await nextTick();
@@ -52,11 +52,11 @@ const onPushRightButton = async () => {
 
 <template>
 	<div class="module-wrapper">
-		<p>{{ text }}: {{modelValue}}</p>
+		<p>{{ text }}: {{ modelValue }}</p>
 		<div class="slider-container">
-			<button @click="onPushLeftButton"><</button>
-			<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
-			<button @click="onPushRightButton">></button>
+			<button @mousedown.left="onPushLeftButton">&lt;</button>
+					<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
+					<button @mousedown.left="onPushRightButton">&gt;</button>
 		</div>
 	</div>
 </template>
