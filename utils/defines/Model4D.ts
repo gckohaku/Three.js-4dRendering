@@ -221,14 +221,6 @@ export class Model4D {
 			// 有効なポリゴンの形式に変換
 			const newIndexes: PolygonPart = PolygonUtilities.MacroAroundIndexesToTriangle(PolygonUtilities.toMacroAroundIndexes(polygon));
 			indexesClone[partsIndex] = newIndexes;
-			if (logTimeManager.isPushLog()) {
-				console.log(newIndexes);
-			}
-		}
-
-		if (logTimeManager.isPushLog()) {
-			console.log(vertexesView);
-			console.log(indexesClone);
 		}
 
 		const model3d = new Model3D();

@@ -37,26 +37,23 @@ export function getCumulativeIndexCounts(indexes: PolygonIndexes): number[] {
 	return cumulativeIndexCounts;
 }
 
-export function getMacroIndexesMap(indexes: PolygonIndexes): Map<number, number> {
-	// macroIndex -> truthIndex
-	const returnedMap = new Map<number, number>();
-	let macroIndexCount = 0;
-	let truthIndexCount = 0;
-
-	for (let i = 0; i < indexes.length; i++) {
-		for (let j = 0; j < indexes[i].length; j++) {
-			if (j === indexes[i].length - 1) {
-				for (let times = 0; times < 3; times++) {
-					returnedMap.set(macroIndexCount++, truthIndexCount++);
-				}
-				continue;
-			}
-			returnedMap.set(macroIndexCount++, truthIndexCount);
-			truthIndexCount += 3;
-		}
+export function toMacroIndexes(indexes: PolygonPart): number[] {
+	const cloneIndexes = structuredClone(indexes);
+	for (let i = 1; i < cloneIndexes.length; i += 2) {
+		[cloneIndexes[i][1], cloneIndexes[i][2]] = [cloneIndexes[i][2], cloneIndexes[i][1]];
 	}
 
-	return returnedMap;
+	const retArray: number[] = []
+
+	for (let i = 0; i < cloneIndexes.length; i++) {
+		if (i === cloneIndexes.length - 1) {
+			retArray.push(...cloneIndexes[i]);
+			continue;
+		}
+		retArray.push(cloneIndexes[i][0]);
+	}
+
+	return retArray;
 }
 
 export function toMacroAroundIndexes(indexes: PolygonPart): number[] {
@@ -65,10 +62,6 @@ export function toMacroAroundIndexes(indexes: PolygonPart): number[] {
 	}
 
 	const logTimeManager = logTimeManagerStore();
-
-	if (logTimeManager.isPushLog()) {
-		console.log(indexes);
-	}
 
 	const cloneIndexes = structuredClone(indexes);
 
@@ -184,14 +177,12 @@ export function toMacroAroundIndexes(indexes: PolygonPart): number[] {
 
 	logTextOfTraceAround += "\nloop end\n";
 
-	if (logTimeManager.isPushLog()) {
-		console.log(retArray);
-	}
-
 	return retArray;
 }
 
 export function MacroAroundIndexesToTriangle(macroAroundIndexes: number[]): number[][] {
+	const logTimeManager = logTimeManagerStore();
+	
 	const retArray: number[][] = [];
 
 	const cloneMacroIndexes: number[] = structuredClone(macroAroundIndexes);
@@ -202,7 +193,7 @@ export function MacroAroundIndexesToTriangle(macroAroundIndexes: number[]): numb
 	while (cloneMacroIndexes.length > 0) {
 		intermediateArray.push(cloneMacroIndexes.shift() ?? -1);
 
-		if (cloneMacroIndexes.length > 0) {
+		if (cloneMacroIndexes.length <= 0) {
 			break;
 		}
 
@@ -217,8 +208,6 @@ export function MacroAroundIndexesToTriangle(macroAroundIndexes: number[]): numb
 			retArray.push([intermediateArray[i], intermediateArray[i + 2], intermediateArray[i + 1]]);
 		}
 	}
-
-	// 多分 retArray が空配列になっている
 
 	return retArray;
 }
