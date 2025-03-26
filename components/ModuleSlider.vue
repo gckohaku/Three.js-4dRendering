@@ -52,6 +52,22 @@ const onReleaseSliderButton = () => {
 }
 
 const increaseValue = () => {
+	if (!props.isRolling && Number(modelValue.value) >= Number(props.max)) {
+		return;
+	}
+
+	const nextValue = Number(modelValue.value) + Number(props.step);
+
+	if (nextValue && props.isRolling && nextValue > Number(props.max)) {
+		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
+		modelValue.value = afterRollingValue;
+		return;
+	}
+
+	modelValue.value = nextValue;
+}
+
+const decreaseValue = () => {
 	if (!props.isRolling && Number(modelValue.value) <= Number(props.min)) {
 		return;
 	}
@@ -67,21 +83,7 @@ const increaseValue = () => {
 	modelValue.value = nextValue;
 }
 
-const decreaseValue = () => {
-	if (!props.isRolling && Number(modelValue.value) >= Number(props.max)) {
-		return;
-	}
 
-	const nextValue = Number(modelValue.value) + Number(props.step);
-
-	if (nextValue && props.isRolling && nextValue > Number(props.max)) {
-		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
-		modelValue.value = afterRollingValue;
-		return;
-	}
-
-	modelValue.value = nextValue;
-}
 </script>
 
 <template>
