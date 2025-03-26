@@ -19,34 +19,68 @@ const props = withDefaults(defineProps<Props>(), {
 	isRolling: false,
 });
 
-const onPushLeftButton = async () => {
+const marginStartHoldTime = ref(200);
+const changingValueIntervalTime = ref(50);
+const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
+
+const onPushSliderButton = (buttonSide: "right" | "left") => {
+	switch (buttonSide) {
+		case "right":
+			increaseValue();
+			break;
+
+		case "left":
+			decreaseValue();
+			break;
+
+		default:
+			throw new Error(`invalid 'buttonSide' value: expected '"right" | "left"' but got value is ${buttonSide}`);
+	}
+
+	holdEventId.value = setTimeout(() => {
+		if (buttonSide === "right") {
+			holdEventId.value = setInterval(increaseValue, changingValueIntervalTime.value);
+		}
+		else {
+			holdEventId.value = setInterval(decreaseValue, changingValueIntervalTime.value);
+		}
+	}, marginStartHoldTime.value);
+};
+
+const onReleaseSliderButton = () => {
+	clearTimeout(Number(holdEventId.value));
+}
+
+const increaseValue = () => {
 	if (!props.isRolling && Number(modelValue.value) <= Number(props.min)) {
 		return;
 	}
 
-	modelValue.value = Number(modelValue.value) - Number(props.step);
+	const nextValue = Number(modelValue.value) - Number(props.step);
 
-	await nextTick();
-
-	if (modelValue.value && props.isRolling && Number(modelValue.value) < Number(props.min)) {
-		const afterRollingValue: number = Number(modelValue.value) + (Number(props.max) - Number(props.min));
+	if (nextValue && props.isRolling && nextValue < Number(props.min)) {
+		const afterRollingValue: number = nextValue + (Number(props.max) - Number(props.min));
 		modelValue.value = afterRollingValue;
+		return;
 	}
+
+	modelValue.value = nextValue;
 }
 
-const onPushRightButton = async () => {
+const decreaseValue = () => {
 	if (!props.isRolling && Number(modelValue.value) >= Number(props.max)) {
 		return;
 	}
 
-	modelValue.value = Number(modelValue.value) + Number(props.step);
+	const nextValue = Number(modelValue.value) + Number(props.step);
 
-	await nextTick();
-
-	if (modelValue.value && props.isRolling && Number(modelValue.value) > Number(props.max)) {
-		const afterRollingValue: number = Number(modelValue.value) - (Number(props.max) - Number(props.min));
+	if (nextValue && props.isRolling && nextValue > Number(props.max)) {
+		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
 		modelValue.value = afterRollingValue;
+		return;
 	}
+
+	modelValue.value = nextValue;
 }
 </script>
 
@@ -54,9 +88,9 @@ const onPushRightButton = async () => {
 	<div class="module-wrapper">
 		<p>{{ text }}: {{ modelValue }}</p>
 		<div class="slider-container">
-			<button @mousedown.left="onPushLeftButton">&lt;</button>
-					<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
-					<button @mousedown.left="onPushRightButton">&gt;</button>
+			<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton" @mouseleave="onReleaseSliderButton">&lt;</button>
+			<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
+			<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton" @mouseleave="onReleaseSliderButton">&gt;</button>
 		</div>
 	</div>
 </template>
