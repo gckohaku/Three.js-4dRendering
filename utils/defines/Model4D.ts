@@ -99,7 +99,7 @@ export class Model4D {
 			[0, 0, 1, 0, 0],
 			[0, 0, 0, 1, -500],
 		],
-		near = -400,
+		near = -1,
 	): Model3D {
 		const logTimeManager = logTimeManagerStore();
 
@@ -238,6 +238,11 @@ export class Model4D {
 		model3d.colorIndexes = [...this.colorIndexes];
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
+		model3d.frameWidthMultiplies = vertexesView.map((vertex) => Math.min(Math.max((vertex[3] / 250) + 3, 0.1), 2));
+
+		if (logTimeManager.isPushLog()) {
+			console.log(model3d.frameWidthMultiplies);
+		}
 
 		/*
 			デバッグ用
