@@ -17,6 +17,7 @@ export class Model3D {
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 	lineGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
+	frameWidthMultiplies: number[] = []
 
 	constructor();
 	constructor(m: Model3D);
@@ -153,7 +154,7 @@ export class Model3D {
 		return mesh;
 	}
 
-	getFrameGeometry(radius = 6): THREE.BufferGeometry {
+	getFrameGeometry(radius = 6, isChangeableFrameWidth = false): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();
 
 		const framePositionIndexes: [number, number][] = [];
@@ -168,13 +169,13 @@ export class Model3D {
 				// 	console.log(indexesUnit, macroIndexesUnit);
 				// }
 
-				this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes);
+				this.frameIndexesPushProcess(macroIndexesUnit, 0, 1, framePositionIndexes, isChangeableFrameWidth);
 				for (let i = 1; i < macroIndexesUnit.length - 2; i += 2) {
-					this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes);
+					this.frameIndexesPushProcess(macroIndexesUnit, i, i + 2, framePositionIndexes, isChangeableFrameWidth);
 				}
-				this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes);
+				this.frameIndexesPushProcess(macroIndexesUnit, macroIndexesUnit.length - 1, macroIndexesUnit.length - 2, framePositionIndexes, isChangeableFrameWidth);
 				for (let i = macroIndexesUnit.length - 1 - ((macroIndexesUnit.length + 1) % 2); i > 0; i -= 2) {
-					this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes);
+					this.frameIndexesPushProcess(macroIndexesUnit, i, i - 2, framePositionIndexes, isChangeableFrameWidth);
 				}
 			}
 		}
@@ -199,7 +200,7 @@ export class Model3D {
 	// 	return [tuple[1], tuple[0]];
 	// }
 
-	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][]) {
+	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][], isChangeableFrameWidth = false) {
 		const logTimeManager = logTimeManagerStore();
 
 		const currentIndexes = TupleUtilities.checkAscending([indexes[fromOffset], indexes[toOffset]]);
@@ -215,25 +216,11 @@ export class Model3D {
 		}
 	}
 
-	// private onePolygonToTrianglesIndexes(index: number): number[] {
-	// 	const onePolygonIndexes: number[] = [...this.indexes[index]];
-	// 	const ret: number[] = [];
-
-	// 	for (let i = 0; i < onePolygonIndexes.length - 2; i++) {
-	// 		if (i % 2 === 0) {
-	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 1], onePolygonIndexes[i + 2]);
-	// 		} else {
-	// 			ret.push(onePolygonIndexes[i], onePolygonIndexes[i + 2], onePolygonIndexes[i + 1]);
-	// 		}
-	// 	}
-
-	// 	return ret;
-	// }
-
-	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12): THREE.BufferGeometry {
+	private generateLineTubeGeometry(indexPair: [number, number], radius: number, segment = 12, isChangeableFrameWidth = false): THREE.BufferGeometry {
 		const logTimeManager = logTimeManagerStore();
 
 		const positions = [this.vertexes[indexPair[0]].slice(0, 3), this.vertexes[indexPair[1]].slice(0, 3)];
+		const frameWidthMultiplies = [this.frameWidthMultiplies[indexPair[0]], this.frameWidthMultiplies[indexPair[1]]];
 
 		const lineVector = subtract(positions[1], positions[0]);
 		const normalizeLineVector = divide(lineVector, norm(lineVector)) as number[];
@@ -251,7 +238,7 @@ export class Model3D {
 			const tubeVector = multiply(rotateMatrix, originTubeVector) as number[];
 
 			tubeVectors.push(tubeVector);
-			vertexes.push(add(positions[0], tubeVector), add(positions[1], tubeVector));
+			vertexes.push(add(positions[0], multiply(frameWidthMultiplies[0] ?? 1, tubeVector) as number[]), add(positions[1], multiply(frameWidthMultiplies[1] ?? 1, tubeVector) as number[]));
 
 			/*
 				デバッグ用
@@ -262,8 +249,8 @@ export class Model3D {
 			// }
 		}
 
-		const fromStickOutPosition = subtract(positions[0], multiply(normalizeLineVector, radius)) as number[];
-		const toStickOutPosition = add(positions[1], multiply(normalizeLineVector, radius)) as number[];
+		const fromStickOutPosition = subtract(positions[0], multiply(normalizeLineVector, multiply(frameWidthMultiplies[0] ?? 1, radius))) as number[];
+		const toStickOutPosition = add(positions[1], multiply(normalizeLineVector, multiply(frameWidthMultiplies[1] ?? 1, radius))) as number[];
 
 		vertexes.push(fromStickOutPosition, toStickOutPosition);
 
