@@ -222,7 +222,7 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
-	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
+	const frame = downDimensionModel4D.getFrameMesh(0x00ffff, 4, true);
 	const group = new THREE.Group();
 	group.add(frame);
 	// group.add(face);

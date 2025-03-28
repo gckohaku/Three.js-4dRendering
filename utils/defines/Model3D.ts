@@ -147,8 +147,8 @@ export class Model3D {
 		return retGroup;
 	}
 
-	getFrameMesh(frameColor: number): THREE.Mesh {
-		const frameGeometry = this.getFrameGeometry();
+	getFrameMesh(frameColor: number, radius = 6, isChangeableFrameWidth = false): THREE.Mesh {
+		const frameGeometry = this.getFrameGeometry(radius, isChangeableFrameWidth);
 		const mesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor, depthTest: true, depthWrite: true }));
 
 		return mesh;
@@ -185,7 +185,7 @@ export class Model3D {
 		}
 
 		for (const indexPair of framePositionIndexes) {
-			frameGeometries.push(this.generateLineTubeGeometry(indexPair, 6));
+			frameGeometries.push(this.generateLineTubeGeometry(indexPair, radius));
 		}
 
 		const mergedGeometry = BufferGeometryUtils.mergeGeometries(frameGeometries);
