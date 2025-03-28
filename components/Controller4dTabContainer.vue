@@ -14,6 +14,7 @@ const onButtonClick = (index: number) => {
 				<button role="tab" :aria-selected="isOpenPanel[0]" aria-controls="object-controller" id="tab-object" tabindex="0" @click="onButtonClick(0)">Object</button>
 				<button role="tab" :aria-selected="isOpenPanel[1]" aria-controls="camera-4d-controller" id="tab-4d-camera" tabindex="0" @click="onButtonClick(1)">Camera4D</button>
 				<button role="tab" :aria-selected="isOpenPanel[2]" aria-controls="camera-3d-controller" id="tab-3d-camera" tabindex="0" @click="onButtonClick(2)">Camera3D</button>
+				<button role="tab" :aria-selected="isOpenPanel[3]" area-controls="options-controller" id="tab-options" tabindex="0" @click="onButtonClick(3)">Options</button>
 			</div>
 		</div>
 
@@ -26,6 +27,9 @@ const onButtonClick = (index: number) => {
 			</div>
 			<div id="camera-3d-controller" role="tabpanel" tabindex="0" aria-labelledby="tab-3d-camera" :hidden="!isOpenPanel[2]">
 				<slot name="camera-3d"></slot>
+			</div>
+			<div id="options-controller" role="tabpanel" tabindex="0" aria-labelledby="tab-options" :hidden="!isOpenPanel[3]">
+				<slot name="options"></slot>
 			</div>
 		</div>
 	</div>

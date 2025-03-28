@@ -328,6 +328,9 @@ onMounted(() => {
 				<template v-slot:camera-3d>
 					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY" v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" />
 				</template>
+				<template v-slot:options>
+					test
+				</template>
 			</Controller4dTabContainer>
 		</div>
 
