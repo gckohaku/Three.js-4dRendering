@@ -263,9 +263,6 @@ export class Model3D {
 		geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(vertexes.flat()), 3));
 		geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexes), 1));
 
-		if (logTimeManager.isPushLog()) {
-		}
-
 		return geometry;
 	}
 }

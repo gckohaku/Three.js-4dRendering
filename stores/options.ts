@@ -4,9 +4,9 @@ export const optionsStore = defineStore("optionsStore", () => {
 
 	// フレームの太さ関連
 	const frameThresholdWMin = ref(-500);
-	const frameThresholdWMax = ref(500);
+	const frameThresholdWMax = ref(-250);
 	const frameRadiusMin = ref(0.1);
 	const frameRadiusMax = ref(2);
 
-	return {  };
+	return { camera4dNear, frameThresholdWMin, frameThresholdWMax, frameRadiusMin, frameRadiusMax };
 });
