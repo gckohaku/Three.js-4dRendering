@@ -13,6 +13,16 @@ const sizeX = defineModel<number | string>("sizeX", { required: true });
 const sizeY = defineModel<number | string>("sizeY", { required: true });
 const sizeZ = defineModel<number | string>("sizeZ", { required: true });
 const sizeW = defineModel<number | string>("sizeW", { required: true });
+
+interface props {
+	x: {
+		value: number;
+		max: number;
+		min: number;
+		step: number;
+	}
+	// ↑これの型を作成/HtmlElementから持ってきたい
+} 
 </script>
 
 <template>
