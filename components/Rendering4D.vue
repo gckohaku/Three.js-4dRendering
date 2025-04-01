@@ -7,6 +7,7 @@ import { Model4D } from "~/utils/defines/Model4D";
 
 const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
+const options = optionsStore();
 
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
@@ -250,7 +251,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	light.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
 	light.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
-	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value);
+	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value, options.camera4dNear);
 
 	transformedModel.geometry.computeVertexNormals();
 	if (transformedModel.indexes.length) {
@@ -328,6 +329,27 @@ onMounted(() => {
 				<template v-slot:camera-3d>
 					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY" v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" />
 				</template>
+				<template v-slot:options>
+					<div class="options-container">
+						<h2>Camera 4d オプション</h2>
+						<section>
+							<ModuleSlider v-model="options.camera4dNear" text="camera 4d near" :min="'-500'" :max="'0'" />
+						</section>
+						<h2>フレームの太さ関連</h2>
+						<section>
+							<h3>Threshold W Position</h3>
+							<section>
+								<ModuleSlider v-model="options.frameThresholdWMax" text="max" :min="'-500'" :max="'0'" />
+								<ModuleSlider v-model="options.frameThresholdWMin" text="min" :min="'-500'" :max="'0'" />
+							</section>
+							<h3>Frame Radius Multiply</h3>
+							<section>
+								<ModuleSlider v-model="options.frameRadiusMax" text="max" :min="'0.1'" :max="'3'" :step="'0.1'" />
+								<ModuleSlider v-model="options.frameRadiusMin" text="min" :min="'0.1'" :max="'3'" :step="'0.1'" />
+							</section>
+						</section>
+					</div>
+				</template>
 			</Controller4dTabContainer>
 		</div>
 
@@ -345,6 +367,12 @@ onMounted(() => {
 		display: flex;
 		flex-direction: row;
 		gap: .5rem;
+	}
+
+	.options-container {
+		h2:not(:first-child), h3 {
+			margin-block-start: .5rem;
+		}
 	}
 }
 </style>

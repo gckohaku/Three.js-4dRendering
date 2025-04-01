@@ -102,6 +102,7 @@ export class Model4D {
 		near = -1,
 	): Model3D {
 		const logTimeManager = logTimeManagerStore();
+		const options = optionsStore();
 
 		const vertexesView: number[][] = [];
 		const ignoreVertexIndexes: number[] = [];
@@ -238,7 +239,13 @@ export class Model4D {
 		model3d.colorIndexes = [...this.colorIndexes];
 		model3d.alphas = [...this.alphas];
 		model3d.setColorMesh();
-		model3d.frameWidthMultiplies = vertexesView.map((vertex) => Math.min(Math.max((vertex[3] / 250) + 3, 0.1), 2));
+		const thresholdWDistance = options.frameThresholdWMax - options.frameThresholdWMin;
+		const frameRadiusDistance = options.frameRadiusMax - options.frameRadiusMin;
+		const frameWidthGraphA = thresholdWDistance !== 0 ? frameRadiusDistance / thresholdWDistance : 0;
+		const frameWidthGraphB = thresholdWDistance !== 0 ? options.frameRadiusMax - options.frameThresholdWMax * frameWidthGraphA : 1;
+		model3d.frameWidthMultiplies = vertexesView.map((vertex) =>
+			Math.min(Math.max(frameWidthGraphA * vertex[3] + frameWidthGraphB, options.frameRadiusMin), options.frameRadiusMax),
+		);
 
 		if (logTimeManager.isPushLog()) {
 			console.log(model3d.frameWidthMultiplies);
