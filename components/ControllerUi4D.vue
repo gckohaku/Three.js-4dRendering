@@ -14,15 +14,41 @@ const sizeY = defineModel<number | string>("sizeY", { required: true });
 const sizeZ = defineModel<number | string>("sizeZ", { required: true });
 const sizeW = defineModel<number | string>("sizeW", { required: true });
 
-interface props {
-	x: {
-		value: number;
-		max: number;
-		min: number;
-		step: number;
-	}
-	// ↑これの型を作成/HtmlElementから持ってきたい
-} 
+type ControllerProps = Pick<HTMLInputElement, "max" | "min" | "step">;
+
+interface Props {
+	x?: ControllerProps;
+	y?: ControllerProps;
+	z?: ControllerProps;
+	w?: ControllerProps;
+	rotateXW?: ControllerProps;
+	rotateYW?: ControllerProps;
+	rotateZW?: ControllerProps;
+	rotateXY?: ControllerProps;
+	rotateYZ?: ControllerProps;
+	rotateXZ?: ControllerProps;
+	sizeX?: ControllerProps;
+	sizeY?: ControllerProps;
+	sizeZ?: ControllerProps;
+	sizeW?: ControllerProps;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+	x: () => ({max: "500", min: "-500", step: "1"}),
+	y: () => ({max: "500", min: "-500", step: "1"}),
+	z: () => ({max: "500", min: "-500", step: "1"}),
+	w: () => ({max: "500", min: "-500", step: "1"}),
+	rotateXW: () => ({max: "360", min: "-360", step: "1"}),
+	rotateYW: () => ({max: "360", min: "-360", step: "1"}),
+	rotateZW: () => ({max: "360", min: "-360", step: "1"}),
+	rotateXY: () => ({max: "360", min: "-360", step: "1"}),
+	rotateYZ: () => ({max: "360", min: "-360", step: "1"}),
+	rotateXZ: () => ({max: "360", min: "-360", step: "1"}),
+	sizeX: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	sizeY: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	sizeZ: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	sizeW: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+});
 </script>
 
 <template>
