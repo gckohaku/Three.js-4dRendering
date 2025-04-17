@@ -17,37 +17,37 @@ const sizeW = defineModel<number | string>("sizeW", { required: true });
 type ControllerProps = Pick<HTMLInputElement, "max" | "min" | "step">;
 
 interface Props {
-	x?: ControllerProps;
-	y?: ControllerProps;
-	z?: ControllerProps;
-	w?: ControllerProps;
-	rotateXW?: ControllerProps;
-	rotateYW?: ControllerProps;
-	rotateZW?: ControllerProps;
-	rotateXY?: ControllerProps;
-	rotateYZ?: ControllerProps;
-	rotateXZ?: ControllerProps;
-	sizeX?: ControllerProps;
-	sizeY?: ControllerProps;
-	sizeZ?: ControllerProps;
-	sizeW?: ControllerProps;
+	domParamX?: ControllerProps;
+	domParamY?: ControllerProps;
+	domParamZ?: ControllerProps;
+	domParamW?: ControllerProps;
+	domParamRotateXW?: ControllerProps;
+	domParamRotateYW?: ControllerProps;
+	domParamRotateZW?: ControllerProps;
+	domParamRotateXY?: ControllerProps;
+	domParamRotateYZ?: ControllerProps;
+	domParamRotateXZ?: ControllerProps;
+	domParamSizeX?: ControllerProps;
+	domParamSizeY?: ControllerProps;
+	domParamSizeZ?: ControllerProps;
+	domParamSizeW?: ControllerProps;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	x: () => ({max: "500", min: "-500", step: "1"}),
-	y: () => ({max: "500", min: "-500", step: "1"}),
-	z: () => ({max: "500", min: "-500", step: "1"}),
-	w: () => ({max: "500", min: "-500", step: "1"}),
-	rotateXW: () => ({max: "360", min: "-360", step: "1"}),
-	rotateYW: () => ({max: "360", min: "-360", step: "1"}),
-	rotateZW: () => ({max: "360", min: "-360", step: "1"}),
-	rotateXY: () => ({max: "360", min: "-360", step: "1"}),
-	rotateYZ: () => ({max: "360", min: "-360", step: "1"}),
-	rotateXZ: () => ({max: "360", min: "-360", step: "1"}),
-	sizeX: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-	sizeY: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-	sizeZ: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-	sizeW: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	domParamX: () => ({max: "500", min: "-500", step: "1"}),
+	domParamY: () => ({max: "500", min: "-500", step: "1"}),
+	domParamZ: () => ({max: "500", min: "-500", step: "1"}),
+	domParamW: () => ({max: "500", min: "-500", step: "1"}),
+	domParamRotateXW: () => ({max: "360", min: "-360", step: "1"}),
+	domParamRotateYW: () => ({max: "360", min: "-360", step: "1"}),
+	domParamRotateZW: () => ({max: "360", min: "-360", step: "1"}),
+	domParamRotateXY: () => ({max: "360", min: "-360", step: "1"}),
+	domParamRotateYZ: () => ({max: "360", min: "-360", step: "1"}),
+	domParamRotateXZ: () => ({max: "360", min: "-360", step: "1"}),
+	domParamSizeX: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	domParamSizeY: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	domParamSizeZ: () => ({max: "2.0", min: "0.1", step: "0.1"}),
+	domParamSizeW: () => ({max: "2.0", min: "0.1", step: "0.1"}),
 });
 </script>
 
