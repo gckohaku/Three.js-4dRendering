@@ -246,7 +246,7 @@ const initialize = () => {
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, light: THREE.Light, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
 	camera.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
-	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
+	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(-Number(cameraRotateX.value), -Number(cameraRotateY.value), -Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
 	light.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
 	light.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
@@ -320,7 +320,7 @@ onMounted(() => {
 				</template>
 				<template v-slot:camera-4d>
 					<div class="tab-slot-container">
-						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY" v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW" v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW" v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY" v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ" v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ" v-model:size-w="camera4dSizeW" />
+						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY" v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW" v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW" v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY" v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ" v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ" v-model:size-w="camera4dSizeW" :dom-param-w-max="'1000'" :dom-param-w-min="'0'" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.cameraOrderList" />
 						</div>
