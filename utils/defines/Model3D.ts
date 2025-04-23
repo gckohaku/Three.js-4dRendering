@@ -135,10 +135,15 @@ export class Model3D {
 	}
 
 	getMeshWithFrame(frameColor: number, radius = 6): THREE.Group {
+		const logTimeManager = logTimeManagerStore();
+
 		const frameGeometry = this.getFrameGeometry(radius);
 
+		console.log("create face mesh");
 		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
+		console.log("create frame mesh");
 		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
+		console.log("end of create mesh");
 
 		const retGroup = new THREE.Group();
 		retGroup.add(faceMesh);
