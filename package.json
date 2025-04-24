@@ -10,8 +10,8 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "mathjs": "^14.2.1",
-    "nuxi": "^3.21.1",
+    "mathjs": "^14.4.0",
+    "nuxi": "^3.25.0",
     "nuxt": "^3.16.2",
     "three": "^0.172.0",
     "vue": "latest",

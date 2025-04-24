@@ -126,7 +126,7 @@ const props = withDefaults(defineProps<Props>(), {
 	<div class="controller-container">
 		<ModuleSlider text="x" :max="domParamXMax" :min="domParamXMin" :step="domParamXStep" v-model="moveX" />
 		<ModuleSlider text="y" :max="domParamYMax" :min="domParamYMin" :step="domParamYStep" v-model="moveY" />
-		<ModuleSlider text="z" :max="domParamZMax" :min="domParamZMin" :step="domParamZStep" v-model="moveY" />
+		<ModuleSlider text="z" :max="domParamZMax" :min="domParamZMin" :step="domParamZStep" v-model="moveZ" />
 		<ModuleSlider text="w" :max="domParamWMax" :min="domParamWMin" :step="domParamWStep" v-model="moveW" />
 		<ModuleSlider text="rotateXW" :max="domParamRotateXWMax" :min="domParamRotateXWMin" :step="domParamRotateXWStep" v-model="rotateXW" :isRolling="true" />
 		<ModuleSlider text="rotateYW" :max="domParamRotateYWMax" :min="domParamRotateYWMin" :step="domParamRotateYWStep" v-model="rotateYW" :isRolling="true" />

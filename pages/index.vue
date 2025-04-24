@@ -1,10 +1,12 @@
 <template>
 	<div>
-		<Rendering4D />
+		<Test4D />
 	</div>
 </template>
 
 <script lang="ts" setup>
+import HelloThreeJs from '~/components/HelloThreeJs.vue';
+
 
 </script>
 
