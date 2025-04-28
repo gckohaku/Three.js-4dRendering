@@ -12,8 +12,8 @@
   "dependencies": {
     "mathjs": "^14.4.0",
     "nuxi": "^3.25.0",
-    "nuxt": "^3.16.2",
-    "three": "^0.172.0",
+    "nuxt": "^3.17.0",
+    "three": "^0.176.0",
     "vue": "latest",
     "vue-router": "latest"
   },

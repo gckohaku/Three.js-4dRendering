@@ -41,7 +41,6 @@ export class Model3D {
 
 		this.geometry.deleteAttribute("position");
 		this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
-		this.geometry.computeVertexNormals();
 	}
 
 	addVertexes(vs: number[][]) {
@@ -50,7 +49,6 @@ export class Model3D {
 
 			this.geometry.deleteAttribute("position");
 			this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
-			this.geometry.computeVertexNormals();
 		}
 	}
 

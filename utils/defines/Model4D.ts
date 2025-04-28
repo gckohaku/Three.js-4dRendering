@@ -118,10 +118,9 @@ export class Model4D {
 
 			vertexesView.push(viewPosition);
 
-			// ここの if はいらない可能性がある (ignoreVertexIndexes 自体がいらないかも)
 			if (viewPosition[3] > near) {
 				if (logTimeManager.isPushLog()) {
-					// console.log("over: ", i);
+					console.log("over: ", i);
 				}
 
 				ignoreVertexIndexes.push(i);

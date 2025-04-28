@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { chain, concat, cot, multiply, pi, unaryMinus, type MathType } from "mathjs";
 import * as THREE from "three";
+import { VertexNormalsHelper } from "three/examples/jsm/Addons.js";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import type { ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
@@ -168,11 +169,16 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
+	face.geometry.computeVertexNormals();
 	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(face);
 	group.add(frame);
 	scene.add(group);
+
+	const normal = new VertexNormalsHelper(face, 10, 0x00ff00);
+
+	// scene.add(normal);
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -198,21 +204,20 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value);
 
-	transformedModel.geometry.computeVertexNormals();
 	transformedModel.setColorMesh();
 	if (transformedModel.indexes.length) {
 		face.geometry = transformedModel.geometry;
 		face.material = transformedModel.materialColors;
 		frame.geometry = transformedModel.getFrameGeometry(4);
+
+		if (logTimeManager.isPushLog()) {
+			console.log(face.geometry);
+		}
 	}
 
 	scene.updateMatrix();
 	renderer.clearDepth();
 	renderer.render(scene, camera);
-
-	if (logTimeManager.isPushLog()) {
-		console.log(face.geometry.attributes.position.array);
-	}
 
 	if (isLogPush.value) {
 		isLogPush.value = false;

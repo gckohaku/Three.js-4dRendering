@@ -260,7 +260,6 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 		face.material = transformedModel.materialColors;
 	}
 
-
 	scene.updateMatrix();
 	renderer.clearDepth();
 	renderer.render(scene, camera);
