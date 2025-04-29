@@ -169,16 +169,13 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
-	face.geometry.computeVertexNormals();
+	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(downDimensionModel4D.indexes.flat(2)), 1));
+	// face.geometry.computeVertexNormals();
 	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(face);
 	group.add(frame);
 	scene.add(group);
-
-	const normal = new VertexNormalsHelper(face, 10, 0x00ff00);
-
-	// scene.add(normal);
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -206,7 +203,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 
 	transformedModel.setColorMesh();
 	if (transformedModel.indexes.length) {
-		face.geometry = transformedModel.geometry;
+		face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
 		face.material = transformedModel.materialColors;
 		frame.geometry = transformedModel.getFrameGeometry(4);
 

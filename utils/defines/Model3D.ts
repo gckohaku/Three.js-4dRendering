@@ -123,10 +123,6 @@ export class Model3D {
 				this.geometry.addGroup(colorToIndex, 3, this.colorIndexes[i]);
 				colorToIndex += 3;
 			}
-
-			if (logTimeManager.isPushLog()) {
-				console.log(this.indexes[i]);
-			}
 		}
 
 		if (logTimeManager.isPushLog()) {

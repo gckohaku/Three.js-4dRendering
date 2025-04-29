@@ -223,6 +223,7 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
+	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(downDimensionModel4D.indexes.flat(2)), 1));
 	const frame = downDimensionModel4D.getFrameMesh(0x00ffff, 4, true);
 	const group = new THREE.Group();
 	group.add(frame);
@@ -256,7 +257,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	transformedModel.geometry.computeVertexNormals();
 	if (transformedModel.indexes.length) {
 		frame.geometry = transformedModel.getFrameGeometry(4);
-		face.geometry = transformedModel.geometry;
+		face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
 		face.material = transformedModel.materialColors;
 	}
 
