@@ -5,7 +5,7 @@ import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js"
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
 import type { PolygonIndexes, PolygonPart } from "./polygonTypes";
-import * as TupleUtilities from "@/utils/tupleUtilities"
+import * as TupleUtilities from "@/utils/tupleUtilities";
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -17,7 +17,7 @@ export class Model3D {
 	alphas: number[] = [];
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 	lineGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
-	frameWidthMultiplies: number[] = []
+	frameWidthMultiplies: number[] = [];
 
 	constructor();
 	constructor(m: Model3D);
@@ -41,7 +41,6 @@ export class Model3D {
 
 		this.geometry.deleteAttribute("position");
 		this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
-		this.geometry.computeVertexNormals();
 	}
 
 	addVertexes(vs: number[][]) {
@@ -50,7 +49,6 @@ export class Model3D {
 
 			this.geometry.deleteAttribute("position");
 			this.geometry.setAttribute("position", new THREE.BufferAttribute(this.toThreeVertexes(), 3));
-			this.geometry.computeVertexNormals();
 		}
 	}
 
@@ -95,19 +93,11 @@ export class Model3D {
 		return new Float32Array(this.vertexes.flat());
 	}
 
-	// toTrianglesIndex(): Uint32Array {
-	// 	const trianglesVertexesArray: number[] = [];
-
-	// 	for (let i = 0; i < this.indexes.length; i++) {
-	// 		trianglesVertexesArray.push(...this.onePolygonToTrianglesIndexes(i));
-	// 	}
-
-	// 	return new Uint32Array(trianglesVertexesArray);
-	// }
-
 	setColorMesh() {
+		const logTimeManager = logTimeManagerStore();
 		this.geometry.clearGroups();
 		let colorToIndex = 0;
+		this.materialColors.length = 0;
 
 		for (let i = 0; i < this.colors.length; i++) {
 			this.materialColors.push(
@@ -115,7 +105,7 @@ export class Model3D {
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
 					opacity: this.alphas[i],
 					transparent: true,
-					depthTest: false,
+					depthTest: true,
 					depthWrite: true,
 					side: THREE.DoubleSide,
 					wireframe: false,
@@ -129,16 +119,27 @@ export class Model3D {
 				throw new Error(`undefined: ${this.colorIndexes[i]}`);
 			}
 
-			this.geometry.addGroup(colorToIndex, 3, this.colorIndexes[i]);
-			colorToIndex += 3;
+			for (const index of this.indexes[i]) {
+				this.geometry.addGroup(colorToIndex, 3, this.colorIndexes[i]);
+				colorToIndex += 3;
+			}
+		}
+
+		if (logTimeManager.isPushLog()) {
+			console.log(this.geometry.groups, this.materialColors, this.alphas, this.colorIndexes.length);
 		}
 	}
 
 	getMeshWithFrame(frameColor: number, radius = 6): THREE.Group {
+		const logTimeManager = logTimeManagerStore();
+
 		const frameGeometry = this.getFrameGeometry(radius);
 
+		console.log("create face mesh");
 		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
+		console.log("create frame mesh");
 		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
+		console.log("end of create mesh");
 
 		const retGroup = new THREE.Group();
 		retGroup.add(faceMesh);
@@ -159,7 +160,6 @@ export class Model3D {
 
 		const framePositionIndexes: [number, number][] = [];
 		const frameGeometries: THREE.BufferGeometry[] = [];
-
 
 		for (const indexesUnit of this.indexes) {
 			if (indexesUnit.length) {
@@ -200,7 +200,13 @@ export class Model3D {
 	// 	return [tuple[1], tuple[0]];
 	// }
 
-	private frameIndexesPushProcess(indexes: number[], fromOffset: number, toOffset: number, framePositionIndexes: [number, number][], isChangeableFrameWidth = false) {
+	private frameIndexesPushProcess(
+		indexes: number[],
+		fromOffset: number,
+		toOffset: number,
+		framePositionIndexes: [number, number][],
+		isChangeableFrameWidth = false,
+	) {
 		const logTimeManager = logTimeManagerStore();
 
 		const currentIndexes = TupleUtilities.checkAscending([indexes[fromOffset], indexes[toOffset]]);
@@ -238,7 +244,10 @@ export class Model3D {
 			const tubeVector = multiply(rotateMatrix, originTubeVector) as number[];
 
 			tubeVectors.push(tubeVector);
-			vertexes.push(add(positions[0], multiply(frameWidthMultiplies[0] ?? 1, tubeVector) as number[]), add(positions[1], multiply(frameWidthMultiplies[1] ?? 1, tubeVector) as number[]));
+			vertexes.push(
+				add(positions[0], multiply(frameWidthMultiplies[0] ?? 1, tubeVector) as number[]),
+				add(positions[1], multiply(frameWidthMultiplies[1] ?? 1, tubeVector) as number[]),
+			);
 
 			/*
 				デバッグ用

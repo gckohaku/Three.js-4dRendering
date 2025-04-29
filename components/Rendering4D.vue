@@ -167,30 +167,30 @@ const fourDimensionParts: number[][] = [
 ];
 
 const fourDimensionColors: ArrayOfColorRGBA[] = [
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.5],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
-	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
 ]
 
 const model4D = new Model4D();
@@ -223,10 +223,11 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
+	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(downDimensionModel4D.indexes.flat(2)), 1));
 	const frame = downDimensionModel4D.getFrameMesh(0x00ffff, 4, true);
 	const group = new THREE.Group();
 	group.add(frame);
-	// group.add(face);
+	group.add(face);
 	scene.add(group);
 
 	if (!threeCanvas.value) {
@@ -256,9 +257,9 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	transformedModel.geometry.computeVertexNormals();
 	if (transformedModel.indexes.length) {
 		frame.geometry = transformedModel.getFrameGeometry(4);
-	face.geometry = transformedModel.geometry;
+		face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
+		face.material = transformedModel.materialColors;
 	}
-	
 
 	scene.updateMatrix();
 	renderer.clearDepth();
@@ -311,7 +312,11 @@ onMounted(() => {
 			<Controller4dTabContainer>
 				<template v-slot:object>
 					<div class="tab-slot-container">
-						<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ" v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW" v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ" v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY" v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+						<ControllerUi4D v-model:move-x="moveX" v-model:move-y="moveY" v-model:move-z="moveZ"
+							v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW"
+							v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ"
+							v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY"
+							v-model:size-z="sizeZ" v-model:size-w="sizeW" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.orderList" />
 						</div>
@@ -320,32 +325,46 @@ onMounted(() => {
 				</template>
 				<template v-slot:camera-4d>
 					<div class="tab-slot-container">
-						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY" v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW" v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW" v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY" v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ" v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ" v-model:size-w="camera4dSizeW" :dom-param-w-max="'1000'" :dom-param-w-min="'0'" />
+						<ControllerUi4D v-model:move-x="camera4dMoveX" v-model:move-y="camera4dMoveY"
+							v-model:move-z="camera4dMoveZ" v-model:move-w="camera4dMoveW"
+							v-model:rotate-x-w="camera4dRotateXW" v-model:rotate-y-w="camera4dRotateYW"
+							v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY"
+							v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ"
+							v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ"
+							v-model:size-w="camera4dSizeW" :dom-param-w-max="'1000'" :dom-param-w-min="'0'" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.cameraOrderList" />
 						</div>
 					</div>
 				</template>
 				<template v-slot:camera-3d>
-					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY" v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY" v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ" />
+					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY"
+						v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY"
+						v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY"
+						v-model:size-z="cameraSizeZ" />
 				</template>
 				<template v-slot:options>
 					<div class="options-container">
 						<h2>Camera 4d オプション</h2>
 						<section>
-							<ModuleSlider v-model="options.camera4dNear" text="camera 4d near" :min="'-500'" :max="'0'" />
+							<ModuleSlider v-model="options.camera4dNear" text="camera 4d near" :min="'-500'"
+								:max="'0'" />
 						</section>
 						<h2>フレームの太さ関連</h2>
 						<section>
 							<h3>Threshold W Position</h3>
 							<section>
-								<ModuleSlider v-model="options.frameThresholdWMax" text="max" :min="'-500'" :max="'0'" />
-								<ModuleSlider v-model="options.frameThresholdWMin" text="min" :min="'-500'" :max="'0'" />
+								<ModuleSlider v-model="options.frameThresholdWMax" text="max" :min="'-500'"
+									:max="'0'" />
+								<ModuleSlider v-model="options.frameThresholdWMin" text="min" :min="'-500'"
+									:max="'0'" />
 							</section>
 							<h3>Frame Radius Multiply</h3>
 							<section>
-								<ModuleSlider v-model="options.frameRadiusMax" text="max" :min="'0.1'" :max="'3'" :step="'0.1'" />
-								<ModuleSlider v-model="options.frameRadiusMin" text="min" :min="'0.1'" :max="'3'" :step="'0.1'" />
+								<ModuleSlider v-model="options.frameRadiusMax" text="max" :min="'0.1'" :max="'3'"
+									:step="'0.1'" />
+								<ModuleSlider v-model="options.frameRadiusMin" text="min" :min="'0.1'" :max="'3'"
+									:step="'0.1'" />
 							</section>
 						</section>
 					</div>
@@ -370,7 +389,9 @@ onMounted(() => {
 	}
 
 	.options-container {
-		h2:not(:first-child), h3 {
+
+		h2:not(:first-child),
+		h3 {
 			margin-block-start: .5rem;
 		}
 	}

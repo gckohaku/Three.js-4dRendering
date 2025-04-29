@@ -163,6 +163,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	const flatTransformMatrix = transformMatrix.value.flat();
 	const transformedModel = model.affine(transformMatrix.value);
 	transformedModel.geometry.computeVertexNormals();
+	transformedModel.setColorMesh();
 	frame.geometry = transformedModel.getFrameGeometry();
 	face.geometry = transformedModel.geometry;
 

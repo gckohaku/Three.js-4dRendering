@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { chain, concat, cot, multiply, pi, unaryMinus, type MathType } from "mathjs";
 import * as THREE from "three";
+import { VertexNormalsHelper } from "three/examples/jsm/Addons.js";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import type { ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
@@ -115,18 +116,27 @@ const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const myGeometry = new THREE.BufferGeometry();
 
 const fourDimensionVertexes: number[][] = [
-	[50, 0, 50, 0], // 0
-	[-50, 0, 50, 0],
-	[50, 0, -50, 0],
-	[-50, 0, -50, 0],
+	[50, -50, 50, 0], // 0
+	[-50, -50, 50, 0],
+	[50, -50, -50, 0],
+	[-50, -50, -50, 0],
+
+	[50, 50, -50, 0], // 4
+	[-50, 50, -50, 0],
+
+	[50, 50, 50, 0],
 ]
 
 const fourDimensionParts: number[][] = [
-	[0, 1, 2, 3,] // front
+	[0, 1, 2, 3], // horizon to x and z
+	[2, 3, 4, 5], // horizon to x and y
+	[0, 2, 6 ,4], // horizon to y and z
 ];
 
 const fourDimensionColors: ArrayOfColorRGBA[] = [
-	[0, 255, 0, 0.0],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
 ]
 
 const model4D = new Model4D();
@@ -159,10 +169,12 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
+	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(downDimensionModel4D.indexes.flat(2)), 1));
+	// face.geometry.computeVertexNormals();
 	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
+	group.add(face);
 	group.add(frame);
-	// group.add(face);
 	scene.add(group);
 
 	if (!threeCanvas.value) {
@@ -189,12 +201,16 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 
 	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value);
 
-	transformedModel.geometry.computeVertexNormals();
+	transformedModel.setColorMesh();
 	if (transformedModel.indexes.length) {
+		face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
+		face.material = transformedModel.materialColors;
 		frame.geometry = transformedModel.getFrameGeometry(4);
-		face.geometry = transformedModel.geometry;
-	}
 
+		if (logTimeManager.isPushLog()) {
+			console.log(face.geometry);
+		}
+	}
 
 	scene.updateMatrix();
 	renderer.clearDepth();

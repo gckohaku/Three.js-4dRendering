@@ -118,10 +118,9 @@ export class Model4D {
 
 			vertexesView.push(viewPosition);
 
-			// ここの if はいらない可能性がある (ignoreVertexIndexes 自体がいらないかも)
 			if (viewPosition[3] > near) {
 				if (logTimeManager.isPushLog()) {
-					// console.log("over: ", i);
+					console.log("over: ", i);
 				}
 
 				ignoreVertexIndexes.push(i);
@@ -229,7 +228,7 @@ export class Model4D {
 
 		// 三次元座標への変換
 		for (let i = 0; i < vertexesView.length; i++) {
-			vertexes3d.push(chain(cameraInternalMatrix).multiply(vertexesView[i]).divide(-vertexesView[i][3]).done() as number[]);
+			vertexes3d.push((chain(cameraInternalMatrix).multiply(vertexesView[i]).divide(-vertexesView[i][3]).done() as number[]).slice(0, 3));
 		}
 
 		model3d.setVertexes(vertexes3d);
@@ -246,10 +245,6 @@ export class Model4D {
 		model3d.frameWidthMultiplies = vertexesView.map((vertex) =>
 			Math.min(Math.max(frameWidthGraphA * vertex[3] + frameWidthGraphB, options.frameRadiusMin), options.frameRadiusMax),
 		);
-
-		if (logTimeManager.isPushLog()) {
-			console.log(model3d.frameWidthMultiplies);
-		}
 
 		/*
 			デバッグ用
@@ -284,6 +279,7 @@ export class Model4D {
 	setColorMesh() {
 		this.geometry.clearGroups();
 		let colorToIndex = 0;
+		this.materialColors = [];
 
 		for (let i = 0; i < this.colors.length; i++) {
 			this.materialColors.push(

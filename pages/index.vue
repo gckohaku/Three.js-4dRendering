@@ -5,6 +5,8 @@
 </template>
 
 <script lang="ts" setup>
+import HelloThreeJs from '~/components/HelloThreeJs.vue';
+
 
 </script>
 
