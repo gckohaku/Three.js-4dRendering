@@ -1,11 +1,15 @@
 import * as PolygonUtilities from "@/utils/polygonUtilities";
-import { add, concat, cross, divide, multiply, norm, pi, subtract } from "mathjs";
+import * as TupleUtilities from "@/utils/tupleUtilities";
+import { type MathType, abs, add, concat, cross, divide, dot, dotDivide, dotMultiply, dotPow, map, mean, multiply, norm, pi, pow, subtract, sum, unaryMinus } from "mathjs";
 import * as THREE from "three";
 import * as BufferGeometryUtils from "three/addons/utils/BufferGeometryUtils.js";
 import { makeRodriguesRotationMatrix } from "../matrixUtilities";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "../typeUtilities";
+import type { BinaryTree } from "./BinaryTree";
+import { PolygonStrip3D } from "./PolygonStrip3D";
 import type { PolygonIndexes, PolygonPart } from "./polygonTypes";
-import * as TupleUtilities from "@/utils/tupleUtilities";
+
+type BSPTreeNode = { index: number; subIndex: number }[];
 
 export class Model3D {
 	vertexes: number[][] = [];
@@ -18,6 +22,7 @@ export class Model3D {
 	geometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 	lineGeometry: THREE.BufferGeometry = new THREE.BufferGeometry();
 	frameWidthMultiplies: number[] = [];
+	bspTree: BinaryTree<BSPTreeNode> | null = null;
 
 	constructor();
 	constructor(m: Model3D);
@@ -33,6 +38,8 @@ export class Model3D {
 			this.alphas = [...m.alphas];
 			this.geometry = m.geometry.clone();
 			this.setColorMesh();
+
+			this.bspTree = m.bspTree;
 		}
 	}
 
@@ -193,13 +200,6 @@ export class Model3D {
 		return mergedGeometry;
 	}
 
-	// private checkAscending(tuple: [number, number]): [number, number] {
-	// 	if (tuple[0] <= tuple[1]) {
-	// 		return tuple;
-	// 	}
-	// 	return [tuple[1], tuple[0]];
-	// }
-
 	private frameIndexesPushProcess(
 		indexes: number[],
 		fromOffset: number,
@@ -274,4 +274,11 @@ export class Model3D {
 
 		return geometry;
 	}
+
+	// 以下は、BSPTree のためのメソッド群
+	makeBSPTree(rootPolygonIndex: number, rootPolygonSubIndex = 0) {
+		
+	}
+
+	
 }
