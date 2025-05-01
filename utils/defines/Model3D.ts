@@ -112,7 +112,7 @@ export class Model3D {
 					color: new THREE.Color().setRGB(...(this.colors[i].map((v) => v / 255) as ArrayOfColorRGB)),
 					opacity: this.alphas[i],
 					transparent: true,
-					depthTest: true,
+					depthTest: false,
 					depthWrite: true,
 					side: THREE.DoubleSide,
 					wireframe: false,
