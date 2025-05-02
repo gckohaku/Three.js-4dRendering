@@ -99,13 +99,13 @@ const nextParts: number[][] = [
 	[2, 1, 4],
 ];
 
-const nextColors: ArrayOfColorRGB[] = [
-	[255, 0, 0],
-	[0, 255, 0],
-	[0, 0, 255],
-	[255, 128, 0],
-	[192, 0, 192],
-	[0, 192, 192],
+const nextColors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [
+	[255, 0, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 0, 255, 0.3],
+	[255, 128, 0, 0.3],
+	[192, 0, 192, 0.3],
+	[0, 192, 192, 0.3],
 ];
 
 const model = new Model3D();
@@ -135,13 +135,12 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(model.geometry, model.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(model.geometry, model.materialColors);
+	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(model.indexes.flat(2)), 1));
 	const frame = model.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(frame);
 	group.add(face);
 	scene.add(group);
-	console.log(frame.geometry);
-
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -165,7 +164,8 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	transformedModel.geometry.computeVertexNormals();
 	transformedModel.setColorMesh();
 	frame.geometry = transformedModel.getFrameGeometry();
-	face.geometry = transformedModel.geometry;
+	face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
+	face.geometry.computeVertexNormals();
 
 	scene.updateMatrix();
 	renderer.render(scene, camera);
@@ -176,7 +176,7 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	}
 
 	if (logTimeManager.isPushLog()) {
-
+		console.log(face.geometry);
 
 		logTimeManager.updateLogDate();
 	}

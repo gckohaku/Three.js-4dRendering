@@ -211,3 +211,11 @@ export function MacroAroundIndexesToTriangle(macroAroundIndexes: number[]): numb
 
 	return retArray;
 }
+
+export function calcViewZIndex(viewVertexes: number[][], ): number[] {
+	const zIndexArray: number[] = Array(viewVertexes.length).fill(0);
+
+	
+
+	return zIndexArray;
+}
