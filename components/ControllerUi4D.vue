@@ -14,8 +14,6 @@ const sizeY = defineModel<number | string>("sizeY", { required: true });
 const sizeZ = defineModel<number | string>("sizeZ", { required: true });
 const sizeW = defineModel<number | string>("sizeW", { required: true });
 
-type ControllerProps = Partial<Pick<HTMLInputElement, "max" | "min" | "step">>;
-
 interface Props {
 	domParamXMax?: string;
 	domParamXMin?: string;
@@ -62,21 +60,6 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-	domParamX: () => ({max: "500", min: "-500", step: "1"}),
-	domParamY: () => ({max: "500", min: "-500", step: "1"}),
-	domParamZ: () => ({max: "500", min: "-500", step: "1"}),
-	domParamW: () => ({max: "500", min: "-500", step: "1"}),
-	domParamRotateXW: () => ({max: "360", min: "-360", step: "1"}),
-	domParamRotateYW: () => ({max: "360", min: "-360", step: "1"}),
-	domParamRotateZW: () => ({max: "360", min: "-360", step: "1"}),
-	domParamRotateXY: () => ({max: "360", min: "-360", step: "1"}),
-	domParamRotateYZ: () => ({max: "360", min: "-360", step: "1"}),
-	domParamRotateXZ: () => ({max: "360", min: "-360", step: "1"}),
-	domParamSizeX: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-	domParamSizeY: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-	domParamSizeZ: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-	domParamSizeW: () => ({max: "2.0", min: "0.1", step: "0.1"}),
-
 	domParamXMax: "500",
 	domParamXMin: "-500",
 	domParamXStep: "1",

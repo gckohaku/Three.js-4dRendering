@@ -8,6 +8,7 @@ import { Model4D } from "~/utils/defines/Model4D";
 const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
 const options = optionsStore();
+const autoPlaySettings = autoPlaySettingsStore();
 
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
@@ -167,30 +168,30 @@ const fourDimensionParts: number[][] = [
 ];
 
 const fourDimensionColors: ArrayOfColorRGBA[] = [
-	[255, 255, 255, 0], // big
-	[255, 255, 255, 0], 
-	[255, 255, 255, 0], 
-	[255, 255, 255, 0], 
-	[255, 255, 255, 0], 
-	[255, 255, 255, 0], 
-	[255, 255, 255, 0.3], // small (+8)
-	[255, 255, 255, 0.3],
-	[255, 255, 255, 0.3],
-	[255, 255, 255, 0.3],
-	[255, 255, 255, 0.3],
-	[255, 255, 255, 0.3],
-	[255, 255, 255, 0], // x rotate direction
-	[255, 255, 255, 0],
-	[255, 255, 255, 0],
-	[255, 255, 255, 0],
-	[255, 255, 255, 0], // y rotate direction
-	[255, 255, 255, 0],
-	[255, 255, 255, 0],
-	[255, 255, 255, 0],
-	[255, 255, 255, 0], // z rotate direction
-	[255, 255, 255, 0],
-	[255, 255, 255, 0],
-	[255, 255, 255, 0],
+	[255, 255, 255, 0.1], // big
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1], // small (+8)
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1], // x rotate direction
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1], // y rotate direction
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1], // z rotate direction
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
+	[255, 255, 255, 0.1],
 ]
 
 const model4D = new Model4D();
@@ -316,10 +317,11 @@ onMounted(() => {
 							v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW"
 							v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ"
 							v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY"
-							v-model:size-z="sizeZ" v-model:size-w="sizeW" />
+							v-model:size-z="sizeZ" v-model:size-w="sizeW" class="controller-container" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.orderList" />
 						</div>
+						<AutoPlayButtons class="auto-play-button-container" />
 					</div>
 
 				</template>
@@ -371,9 +373,8 @@ onMounted(() => {
 				</template>
 			</Controller4dTabContainer>
 		</div>
-
 	</div>
-	<button id="push-log" @click="isLogPush = true">push log</button>
+	<!-- <button id="push-log" @click="isLogPush = true">push log</button> -->
 </template>
 
 <style scoped>
@@ -383,9 +384,26 @@ onMounted(() => {
 	flex-wrap: nowrap;
 
 	.tab-slot-container {
-		display: flex;
-		flex-direction: row;
+		display: grid;
+		grid-template-areas:
+			"controller rotation-order"
+			"controller auto-play-button";
+		grid-template-rows: max-content 1fr;
 		gap: .5rem;
+		align-items: start;
+
+		.controller-container {
+			grid-area: controller;
+		}
+
+		.rotation-order-container {
+			grid-area: rotation-order;
+			height: fit-content;
+		}
+
+		.auto-play-button-container {
+			grid-area: auto-play-button;
+		}
 	}
 
 	.options-container {

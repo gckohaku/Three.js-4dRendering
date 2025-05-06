@@ -53,6 +53,7 @@ function onClickDownButton() {
 	display: flex;
 	align-items: end;
 	gap: .25rem;
+	height: fit-content;
 
 	.list-container {
 		width: 5rem;
