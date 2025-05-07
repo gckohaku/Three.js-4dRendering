@@ -111,7 +111,8 @@ const onInputInitValue = (e: Event) => {
 			<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
 			<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
 				@mouseleave="onReleaseSliderButton">&gt;</button>
-			<button @click="onReleaseSliderButton">⇔</button>
+			<button @click="onReleaseSliderButton" class="noto-emoji-icon"><span
+					class="material-symbols-outlined">swap_horiz</span></button>
 
 			<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlay">
 				<label>init</label>:
@@ -141,6 +142,26 @@ const onInputInitValue = (e: Event) => {
 
 	.slider-container {
 		display: flex;
+
+		button {
+			height: 1.5rem;
+			width: 1.5rem;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
 	}
+
+
+}
+
+.material-symbols-outlined {
+	font-variation-settings:
+		'FILL' 0,
+		'wght' 400,
+		'GRAD' 0,
+		'opsz' 24;
+	font-size: 1rem;
+	line-height: 1rem;
 }
 </style>
