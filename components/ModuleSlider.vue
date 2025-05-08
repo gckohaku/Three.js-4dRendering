@@ -98,6 +98,11 @@ const onInputInitValue = (e: Event) => {
 		}
 	}
 }
+
+// material icons 関連の変数
+const iconToggle = `<span class="material-symbols-outlined">swap_horiz</span>`;
+const iconLeft = `<span class="material-symbols-outlined">arrow_back</span>`;
+const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`;
 </script>
 
 <template>
@@ -107,27 +112,25 @@ const onInputInitValue = (e: Event) => {
 		</div>
 		<div class="slider-container">
 			<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton"
-				@mouseleave="onReleaseSliderButton">&lt;</button>
+				@mouseleave="onReleaseSliderButton" v-html="iconLeft"></button>
 			<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
 			<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
-				@mouseleave="onReleaseSliderButton">&gt;</button>
-			<button @click="onReleaseSliderButton" class="noto-emoji-icon"><span
-					class="material-symbols-outlined">swap_horiz</span></button>
+				@mouseleave="onReleaseSliderButton" v-html="iconRight"></button>
+			<button @click="onReleaseSliderButton" v-html="iconToggle"></button>
 
-			<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlay">
+			<!-- <div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlay">
 				<label>init</label>:
 				<input type="number" :min="min" :max="max" :step="step" @input="(e) => onInputInitValue(e)"
 					v-model="modelValue">
 				<label>delta</label>:
-				<input type="number" value="0" F>
-			</div>
+				<input type="number" value="0">
+			</div> -->
 		</div>
 	</div>
 </template>
 
 <style scoped>
 .module-wrapper {
-
 	.heading-container,
 	.auto-play-setting-area {
 		display: flex;
@@ -153,15 +156,5 @@ const onInputInitValue = (e: Event) => {
 	}
 
 
-}
-
-.material-symbols-outlined {
-	font-variation-settings:
-		'FILL' 0,
-		'wght' 400,
-		'GRAD' 0,
-		'opsz' 24;
-	font-size: 1rem;
-	line-height: 1rem;
 }
 </style>

@@ -14,7 +14,7 @@ const togglePlaying = () => {
 
 <template>
 	<div class="buttons-container">
-		<button @click="toggleAutoPlay">auto<br>play<br>mode</button>
+		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlay ? 'active' : ''" @click="toggleAutoPlay">auto<br>play<br>mode</button>
 		<button class="start-button" :disabled="!autoPlaySettings.isAutoPlay">▶</button>
 		<button class="pause-button" :disabled="!autoPlaySettings.isAutoPlay">⏸</button>
 		<button class="stop-button" :disabled="!autoPlaySettings.isAutoPlay">⏹</button>
@@ -35,6 +35,13 @@ const togglePlaying = () => {
 		width: 4rem;
 		height: 4rem;
 		box-sizing: border-box;
+
+		&.auto-play-button {
+			&.active {
+				background-color: #ccc;
+				border-style: inset;
+			}
+		}
 	}
 }
 </style>
