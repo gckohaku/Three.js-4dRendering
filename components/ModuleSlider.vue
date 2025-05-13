@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { step } from 'three/tsl';
 import { autoPlaySettingsStore } from '~/stores/autoPlaySettings';
 
 const modelValue = defineModel<string | number>();
@@ -26,6 +25,7 @@ const autoPlaySettings = autoPlaySettingsStore();
 const marginStartHoldTime = ref(200);
 const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
+const isSliderInput = ref(true);
 
 const onPushSliderButton = (buttonSide: "right" | "left") => {
 	switch (buttonSide) {
@@ -99,6 +99,10 @@ const onInputInitValue = (e: Event) => {
 	}
 }
 
+const onClickToggleButton = () => {
+	isSliderInput.value = !isSliderInput.value;
+}
+
 // material icons 関連の変数
 const iconToggle = `<span class="material-symbols-outlined">swap_horiz</span>`;
 const iconLeft = `<span class="material-symbols-outlined">arrow_back</span>`;
@@ -111,26 +115,38 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			<p>{{ text }}: {{ modelValue }}</p>
 		</div>
 		<div class="slider-container">
-			<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton"
-				@mouseleave="onReleaseSliderButton" v-html="iconLeft"></button>
-			<input type="range" :name="name" :id="id" :min="min" :max="max" :step="step" v-model="modelValue">
-			<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
-				@mouseleave="onReleaseSliderButton" v-html="iconRight"></button>
-			<button @click="onReleaseSliderButton" v-html="iconToggle"></button>
+			<div class="slider-area" v-if="!autoPlaySettings.isAutoPlayMode || isSliderInput">
+				<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton"
+					@mouseleave="onReleaseSliderButton" v-html="iconLeft"></button>
+				<input type="range" :name="props.name" :id="props.id" :min="props.min" :max="props.max"
+					:step="props.step" v-model="modelValue">
+				<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
+					@mouseleave="onReleaseSliderButton" v-html="iconRight"></button>
 
-			<!-- <div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlay">
-				<label>init</label>:
-				<input type="number" :min="min" :max="max" :step="step" @input="(e) => onInputInitValue(e)"
-					v-model="modelValue">
-				<label>delta</label>:
-				<input type="number" value="0">
-			</div> -->
+			</div>
+
+			<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && !isSliderInput">
+				<!-- TODO: アクセシビリティをちゃんとする -->
+				<div class="number-input-area flex-row">
+					<label>init:&nbsp;</label>
+					<input type="number" :min="min" :max="max" :step="step" @input="(e) => onInputInitValue(e)"
+						v-model="modelValue">
+				</div>
+				<div class="delta-input-area flex-row">
+					<label>delta:&nbsp;</label>
+					<input type="number" value="0">
+				</div>
+			</div>
+
+			<button @click="onClickToggleButton" :disabled="!autoPlaySettings.isAutoPlayMode"
+				v-html="iconToggle"></button>
 		</div>
 	</div>
 </template>
 
 <style scoped>
 .module-wrapper {
+
 	.heading-container,
 	.auto-play-setting-area {
 		display: flex;
@@ -145,6 +161,21 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 	.slider-container {
 		display: flex;
+		justify-content: space-between;
+
+		.slider-area {
+			display: flex;
+		}
+
+		.auto-play-setting-area {
+			display: flex;
+			gap: .25rem;
+
+			.flex-row {
+				display: flex;
+				flex-direction: row;
+			}
+		}
 
 		button {
 			height: 1.5rem;
@@ -154,7 +185,5 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			align-items: center;
 		}
 	}
-
-
 }
 </style>

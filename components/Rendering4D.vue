@@ -42,7 +42,7 @@ const camera4dSizeW: Ref<string> = ref("1.0");
 
 const cameraMoveX: Ref<string> = ref("0");
 const cameraMoveY: Ref<string> = ref("0");
-const cameraMoveZ: Ref<string> = ref("500");
+const cameraMoveZ: Ref<string> = ref("750");
 const cameraRotateX: Ref<string> = ref("0");
 const cameraRotateY: Ref<string> = ref("0");
 const cameraRotateZ: Ref<string> = ref("0");
@@ -80,7 +80,7 @@ const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return chain(parallelMatrix4D.value).multiply(rotateMatrix4D.value).multiply(sizeMatrix4D.value).done();
 });
 
-const focalLength = 300 * cot(23 * pi / 180);
+const focalLength = 300 * cot(30 * pi / 180);
 
 const cameraRMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return makeRotate4DMatrix(-Number(camera4dRotateXW.value), -Number(camera4dRotateYW.value), -Number(camera4dRotateZW.value), -Number(camera4dRotateXY.value), -Number(camera4dRotateYZ.value), -Number(camera4dRotateXZ.value));
@@ -117,22 +117,22 @@ const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const myGeometry = new THREE.BufferGeometry();
 
 const fourDimensionVertexes: number[][] = [
-	[50, 50, 50, 50], // 0
-	[50, -50, 50, 50],
-	[-50, 50, 50, 50],
-	[-50, -50, 50, 50],
-	[50, 50, -50, 50], // 4
-	[50, -50, -50, 50],
-	[-50, 50, -50, 50],
-	[-50, -50, -50, 50],
-	[50, 50, 50, -50], // 8
-	[50, -50, 50, -50],
-	[-50, 50, 50, -50],
-	[-50, -50, 50, -50],
-	[50, 50, -50, -50], // 12
-	[50, -50, -50, -50],
-	[-50, 50, -50, -50],
-	[-50, -50, -50, -50],
+	[100, 100, 100, 100], // 0
+	[100, -100, 100, 100],
+	[-100, 100, 100, 100],
+	[-100, -100, 100, 100],
+	[100, 100, -100, 100], // 4
+	[100, -100, -100, 100],
+	[-100, 100, -100, 100],
+	[-100, -100, -100, 100],
+	[100, 100, 100, -100], // 8
+	[100, -100, 100, -100],
+	[-100, 100, 100, -100],
+	[-100, -100, 100, -100],
+	[100, 100, -100, -100], // 12
+	[100, -100, -100, -100],
+	[-100, 100, -100, -100],
+	[-100, -100, -100, -100],
 ]
 
 const fourDimensionParts: number[][] = [
@@ -343,7 +343,7 @@ onMounted(() => {
 					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY"
 						v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY"
 						v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY"
-						v-model:size-z="cameraSizeZ" />
+						v-model:size-z="cameraSizeZ" dom-param-z-max="1000" />
 				</template>
 				<template v-slot:options>
 					<div class="options-container">

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 const modelValue = defineModel<string[]>({required: true});
 
-// const contentsList = ref(modelValue.value.map(content => content));
 const isSelectedContentOfList = ref([...Array(modelValue.value.length)].map(() => false));
+isSelectedContentOfList.value[0] = true;
 
 function onClickContent(index: number) {
 	isSelectedContentOfList.value.fill(false);

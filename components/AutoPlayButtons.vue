@@ -3,7 +3,8 @@
 const autoPlaySettings = autoPlaySettingsStore();
 
 const toggleAutoPlay = () => {
-	autoPlaySettings.isAutoPlay = !autoPlaySettings.isAutoPlay;
+	autoPlaySettings.isAutoPlayMode = !autoPlaySettings.isAutoPlayMode;
+	autoPlaySettings.isPlaying = false;
 };
 
 const togglePlaying = () => {
@@ -14,10 +15,12 @@ const togglePlaying = () => {
 
 <template>
 	<div class="buttons-container">
-		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlay ? 'active' : ''" @click="toggleAutoPlay">auto<br>play<br>mode</button>
-		<button class="start-button" :disabled="!autoPlaySettings.isAutoPlay">▶</button>
-		<button class="pause-button" :disabled="!autoPlaySettings.isAutoPlay">⏸</button>
-		<button class="stop-button" :disabled="!autoPlaySettings.isAutoPlay">⏹</button>
+		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlayMode ? 'active-auto-play' : ''"
+			@click="toggleAutoPlay">auto<br>play<br>mode</button>
+		<button class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
+			:disabled="!autoPlaySettings.isAutoPlayMode" @click="togglePlaying">▶</button>
+		<button class="pause-button" :disabled="!autoPlaySettings.isPlaying">⏸</button>
+		<button class="stop-button" :disabled="!autoPlaySettings.isPlaying">⏹</button>
 	</div>
 </template>
 
@@ -36,11 +39,17 @@ const togglePlaying = () => {
 		height: 4rem;
 		box-sizing: border-box;
 
-		&.auto-play-button {
-			&.active {
-				background-color: #ccc;
-				border-style: inset;
-			}
+		&:not([disabled]):is(.active-auto-play, .playing) {
+			background-color: #bdd;
+			border-style: inset;
+		}
+
+		&:hover {
+			background-color: #ccc;
+		}
+
+		&:active {
+			background-color: #aaa;
 		}
 	}
 }
