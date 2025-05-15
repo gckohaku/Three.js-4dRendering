@@ -27,6 +27,12 @@ const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
 const isSliderInput = ref(true);
 
+const firstInitValue = ref(modelValue.value);
+const initValue = ref(modelValue.value);
+const deltaValue = ref(0);
+const requestAnimationFrameId = ref(0);
+const startAutoPlayTime = ref(-1);
+
 const onPushSliderButton = (buttonSide: "right" | "left") => {
 	switch (buttonSide) {
 		case "right":
@@ -63,7 +69,6 @@ const increaseValue = () => {
 	const numberOfStep = Number(props.step === "" ? 1 : props.step);
 	const nextValue = Number(modelValue.value) + numberOfStep;
 
-
 	if (nextValue && props.isRolling && nextValue > Number(props.max)) {
 		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
 		modelValue.value = numberOfStep % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfStep) * numberOfStep).toFixed(props.step.split(".")[1].length);
@@ -95,6 +100,19 @@ const onInputInitValue = (e: Event) => {
 		const target = e.target;
 		if (target instanceof HTMLInputElement) {
 			modelValue.value = target.value;
+
+			if (!autoPlaySettings.isPlaying) {
+				initValue.value = modelValue.value;
+			}
+		}
+	}
+}
+
+const onInputDeltaValue = (e: Event) => {
+	if (e instanceof InputEvent) {
+		const target = e.target;
+		if (target instanceof HTMLInputElement) {
+			deltaValue.value = Number(target.value);
 		}
 	}
 }
@@ -102,6 +120,46 @@ const onInputInitValue = (e: Event) => {
 const onClickToggleButton = () => {
 	isSliderInput.value = !isSliderInput.value;
 }
+
+const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
+	if (!autoPlaySettings.isPlaying) {
+		if (startAutoPlayTime.value !== -1) {
+			startAutoPlayTime.value = -1;
+			modelValue.value = initValue.value = firstInitValue.value;
+		}
+		requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
+		return;
+	}
+
+	if (startAutoPlayTime.value === -1) {
+		startAutoPlayTime.value = timeStamp;
+		firstInitValue.value = initValue.value;
+	}
+
+	const animationTime = (timeStamp - startAutoPlayTime.value) / 1000;
+	const numberOfInit = Number(initValue.value);
+	const numberOfDelta = Number(deltaValue.value);
+	const nextValue = Math.floor(numberOfInit + (numberOfDelta * animationTime));
+
+	if (nextValue > Number(props.max)) {
+		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
+		modelValue.value = numberOfDelta % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
+		return;
+	}
+	if (nextValue < Number(props.min)) {
+		const afterRollingValue: number = nextValue + (Number(props.max) - Number(props.min));
+		modelValue.value = numberOfDelta % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
+		return;
+	}
+
+	modelValue.value = numberOfDelta % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
+
+	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
+}
+
+onMounted(() => {
+	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
+});
 
 // material icons 関連の変数
 const iconToggle = `<span class="material-symbols-outlined">swap_horiz</span>`;
@@ -126,15 +184,15 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			</div>
 
 			<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && !isSliderInput">
-				<!-- TODO: アクセシビリティをちゃんとする -->
-				<div class="number-input-area flex-row">
-					<label>init:&nbsp;</label>
-					<input type="number" :min="min" :max="max" :step="step" @input="(e) => onInputInitValue(e)"
-						v-model="modelValue">
+				<div class="number-input-area flex-row" title="再生時の初期値">
+					<label for="init-value">init:&nbsp;</label>
+					<input type="number" id="init-value" :min="min" :max="max" :step="step"
+						@input="(e: Event) => onInputInitValue(e)">
 				</div>
-				<div class="delta-input-area flex-row">
-					<label>delta:&nbsp;</label>
-					<input type="number" value="0">
+				<div class="delta-input-area flex-row" title="1秒ごとの変化量">
+					<label for="delta-value">delta:&nbsp;</label>
+					<input type="number" id="delta-value" @input="(e: Event) => onInputDeltaValue(e)"
+						v-model="deltaValue">
 				</div>
 			</div>
 

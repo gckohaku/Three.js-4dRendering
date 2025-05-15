@@ -2,23 +2,18 @@
 
 const autoPlaySettings = autoPlaySettingsStore();
 
-const toggleAutoPlay = () => {
-	autoPlaySettings.isAutoPlayMode = !autoPlaySettings.isAutoPlayMode;
-	autoPlaySettings.isPlaying = false;
-};
-
-const togglePlaying = () => {
-	autoPlaySettings.isPlaying = !autoPlaySettings.isPlaying;
-};
+// const emit = defineEmits<{
+// 	startAutoPlay: [];
+// }>();
 
 </script>
 
 <template>
 	<div class="buttons-container">
 		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlayMode ? 'active-auto-play' : ''"
-			@click="toggleAutoPlay">auto<br>play<br>mode</button>
+			@click="autoPlaySettings.toggleAutoPlayMode">auto<br>play<br>mode</button>
 		<button class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
-			:disabled="!autoPlaySettings.isAutoPlayMode" @click="togglePlaying">▶</button>
+			:disabled="!autoPlaySettings.isAutoPlayMode" @click="autoPlaySettings.togglePlaying">▶</button>
 		<button class="pause-button" :disabled="!autoPlaySettings.isPlaying">⏸</button>
 		<button class="stop-button" :disabled="!autoPlaySettings.isPlaying">⏹</button>
 	</div>

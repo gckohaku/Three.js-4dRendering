@@ -68,10 +68,6 @@ const props = withDefaults(defineProps<Props>(), {
 	domParamSizeZMin: "0.1",
 	domParamSizeZStep: "0.1",
 });
-
-console.log(props.domParamSizeXStep);
-console.log(props.domParamSizeYStep);
-console.log(props.domParamSizeZStep);
 </script>
 
 <template>
