@@ -76,6 +76,9 @@ const increaseValue = () => {
 	}
 
 	modelValue.value = numberOfStep % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfStep) * numberOfStep).toFixed(props.step.split(".")[1].length);
+	if (autoPlaySettings.isAutoPlayMode) {
+		initValue.value = modelValue.value;
+	}
 }
 
 const decreaseValue = () => {
@@ -95,15 +98,20 @@ const decreaseValue = () => {
 	modelValue.value = numberOfStep % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfStep) * numberOfStep).toFixed(props.step.split(".")[1].length);
 }
 
+const onInputSlider = (e: Event) => {
+	if (e instanceof InputEvent) {
+		const target = e.target;
+		if (target instanceof HTMLInputElement) {
+			initValue.value = target.value;
+		}
+	}
+}
+
 const onInputInitValue = (e: Event) => {
 	if (e instanceof InputEvent) {
 		const target = e.target;
 		if (target instanceof HTMLInputElement) {
-			modelValue.value = target.value;
-
-			if (!autoPlaySettings.isPlaying) {
-				initValue.value = modelValue.value;
-			}
+			initValue.value = target.value;
 		}
 	}
 }
@@ -121,19 +129,20 @@ const onClickToggleButton = () => {
 	isSliderInput.value = !isSliderInput.value;
 }
 
-const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
-	if (!autoPlaySettings.isPlaying) {
-		if (startAutoPlayTime.value !== -1) {
-			startAutoPlayTime.value = -1;
-			modelValue.value = initValue.value = firstInitValue.value;
-		}
-		requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
-		return;
-	}
-
-	if (startAutoPlayTime.value === -1) {
+const onMouseUpPlayButton = () => {
+	requestAnimationFrameId.value = requestAnimationFrame((timeStamp: DOMHighResTimeStamp) => {
 		startAutoPlayTime.value = timeStamp;
-		firstInitValue.value = initValue.value;
+		initValue.value;
+		onRequestAnimationFrame(timeStamp);
+	});
+}
+
+autoPlaySettings.setActionOnStartAutoPlay(onMouseUpPlayButton);
+
+const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
+	if (!autoPlaySettings.isPlaying || deltaValue.value === 0) {
+		modelValue.value = initValue.value;
+		return;
 	}
 
 	const animationTime = (timeStamp - startAutoPlayTime.value) / 1000;
@@ -144,22 +153,16 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 	if (nextValue > Number(props.max)) {
 		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
 		modelValue.value = numberOfDelta % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
-		return;
 	}
 	if (nextValue < Number(props.min)) {
 		const afterRollingValue: number = nextValue + (Number(props.max) - Number(props.min));
 		modelValue.value = numberOfDelta % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
-		return;
 	}
 
 	modelValue.value = numberOfDelta % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
 }
-
-onMounted(() => {
-	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
-});
 
 // material icons 関連の変数
 const iconToggle = `<span class="material-symbols-outlined">swap_horiz</span>`;
@@ -177,7 +180,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 				<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton"
 					@mouseleave="onReleaseSliderButton" v-html="iconLeft"></button>
 				<input type="range" :name="props.name" :id="props.id" :min="props.min" :max="props.max"
-					:step="props.step" v-model="modelValue">
+					:step="props.step" v-model="modelValue" @input="onInputSlider">
 				<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
 					@mouseleave="onReleaseSliderButton" v-html="iconRight"></button>
 
@@ -186,7 +189,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && !isSliderInput">
 				<div class="number-input-area flex-row" title="再生時の初期値">
 					<label for="init-value">init:&nbsp;</label>
-					<input type="number" id="init-value" :min="min" :max="max" :step="step"
+					<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
 						@input="(e: Event) => onInputInitValue(e)">
 				</div>
 				<div class="delta-input-area flex-row" title="1秒ごとの変化量">

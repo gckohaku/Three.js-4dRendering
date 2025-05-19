@@ -1,10 +1,11 @@
 <script setup lang="ts">
-
 const autoPlaySettings = autoPlaySettingsStore();
 
-// const emit = defineEmits<{
-// 	startAutoPlay: [];
-// }>();
+const onStartAutoPlay = () => {
+	if (autoPlaySettings.isPlaying) {
+		autoPlaySettings.StartActions();
+	}
+};
 
 </script>
 
@@ -13,7 +14,7 @@ const autoPlaySettings = autoPlaySettingsStore();
 		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlayMode ? 'active-auto-play' : ''"
 			@click="autoPlaySettings.toggleAutoPlayMode">auto<br>play<br>mode</button>
 		<button class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
-			:disabled="!autoPlaySettings.isAutoPlayMode" @click="autoPlaySettings.togglePlaying">▶</button>
+			:disabled="!autoPlaySettings.isAutoPlayMode" @mouseup="autoPlaySettings.togglePlaying" @click="onStartAutoPlay">▶</button>
 		<button class="pause-button" :disabled="!autoPlaySettings.isPlaying">⏸</button>
 		<button class="stop-button" :disabled="!autoPlaySettings.isPlaying">⏹</button>
 	</div>
