@@ -59,6 +59,10 @@ const onPushSliderButton = (buttonSide: "right" | "left") => {
 
 const onReleaseSliderButton = () => {
 	clearTimeout(Number(holdEventId.value));
+
+	nextTick(() => {
+		initValue.value = modelValue.value;
+	});
 }
 
 const increaseValue = () => {
@@ -99,6 +103,7 @@ const decreaseValue = () => {
 }
 
 const onInputSlider = (e: Event) => {
+	console.log(e);
 	if (e instanceof InputEvent) {
 		const target = e.target;
 		if (target instanceof HTMLInputElement) {
@@ -152,11 +157,11 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 
 	if (nextValue > Number(props.max)) {
 		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
-		modelValue.value = numberOfDelta % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
+		modelValue.value = (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
 	}
 	if (nextValue < Number(props.min)) {
 		const afterRollingValue: number = nextValue + (Number(props.max) - Number(props.min));
-		modelValue.value = numberOfDelta % 1 === 0 ? afterRollingValue : (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
+		modelValue.value = (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
 	}
 
 	modelValue.value = numberOfDelta % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
@@ -180,7 +185,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 				<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton"
 					@mouseleave="onReleaseSliderButton" v-html="iconLeft"></button>
 				<input type="range" :name="props.name" :id="props.id" :min="props.min" :max="props.max"
-					:step="props.step" v-model="modelValue" @input="onInputSlider">
+					:step="props.step" v-model="modelValue" @mouseup="onInputSlider">
 				<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
 					@mouseleave="onReleaseSliderButton" v-html="iconRight"></button>
 
