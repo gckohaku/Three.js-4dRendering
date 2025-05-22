@@ -103,7 +103,6 @@ const decreaseValue = () => {
 }
 
 const onInputSlider = (e: Event) => {
-	console.log(e);
 	if (e instanceof InputEvent) {
 		const target = e.target;
 		if (target instanceof HTMLInputElement) {
@@ -113,21 +112,27 @@ const onInputSlider = (e: Event) => {
 }
 
 const onInputInitValue = (e: Event) => {
-	if (e instanceof InputEvent) {
-		const target = e.target;
-		if (target instanceof HTMLInputElement) {
-			initValue.value = target.value;
-		}
+	const target = e.target;
+	if (!(target instanceof HTMLInputElement)) {
+		console.error("target is not HTMLInputElement");
+		return;
+	}
+
+	initValue.value = target.value;
+	if (autoPlaySettings.isAutoPlayMode) {
+		modelValue.value = target.value;
 	}
 }
 
 const onInputDeltaValue = (e: Event) => {
-	if (e instanceof InputEvent) {
-		const target = e.target;
-		if (target instanceof HTMLInputElement) {
-			deltaValue.value = Number(target.value);
-		}
+	console.log(e.constructor.name);
+	const target = e.target;
+	if (!(target instanceof HTMLInputElement)) {
+		console.error("target is not HTMLInputElement");
+		return;
 	}
+
+	deltaValue.value = Number(target.value);
 }
 
 const onClickToggleButton = () => {
@@ -151,20 +156,24 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 	}
 
 	const animationTime = (timeStamp - startAutoPlayTime.value) / 1000;
-	const numberOfInit = Number(initValue.value);
-	const numberOfDelta = Number(deltaValue.value);
-	const nextValue = Math.floor(numberOfInit + (numberOfDelta * animationTime));
+	const calculableInit = Number(initValue.value) / Number(props.step);
+	const calculableDelta = Number(deltaValue.value) / Number(props.step);
+	const nextValue = Math.floor(calculableInit + (calculableDelta * animationTime)) * Number(props.step);
 
-	if (nextValue > Number(props.max)) {
-		const afterRollingValue: number = nextValue - (Number(props.max) - Number(props.min));
-		modelValue.value = (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
-	}
-	if (nextValue < Number(props.min)) {
-		const afterRollingValue: number = nextValue + (Number(props.max) - Number(props.min));
-		modelValue.value = (Math.round(afterRollingValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
+	modelValue.value = nextValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
+
+	if (props.isRolling) {
+		if (nextValue > Number(props.max)) {
+			const afterRollingValue: number = (nextValue - Number(props.min)) % (Number(props.max) - Number(props.min)) + Number(props.min);
+			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
+
+		}
+		if (nextValue < Number(props.min)) {
+			const afterRollingValue: number = (nextValue + Number(props.min)) % (Number(props.max) - Number(props.min)) - Number(props.min);
+			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
+		}
 	}
 
-	modelValue.value = numberOfDelta % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfDelta) * numberOfDelta).toFixed(props.step.split(".")[1].length);
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
 }
@@ -195,12 +204,12 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 				<div class="number-input-area flex-row" title="再生時の初期値">
 					<label for="init-value">init:&nbsp;</label>
 					<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
-						@input="(e: Event) => onInputInitValue(e)">
+						@change="(e: Event) => onInputInitValue(e)">
 				</div>
 				<div class="delta-input-area flex-row" title="1秒ごとの変化量">
 					<label for="delta-value">delta:&nbsp;</label>
-					<input type="number" id="delta-value" @input="(e: Event) => onInputDeltaValue(e)"
-						v-model="deltaValue">
+					<input type="number" id="delta-value" :min="min" :max="max" :step="step"
+						@change="(e: Event) => onInputDeltaValue(e)" v-model="deltaValue">
 				</div>
 			</div>
 
