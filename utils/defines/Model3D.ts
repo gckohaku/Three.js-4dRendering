@@ -131,10 +131,6 @@ export class Model3D {
 				colorToIndex += 3;
 			}
 		}
-
-		if (logTimeManager.isPushLog()) {
-			console.log(this.geometry.groups, this.materialColors, this.alphas, this.colorIndexes.length);
-		}
 	}
 
 	getMeshWithFrame(frameColor: number, radius = 6): THREE.Group {

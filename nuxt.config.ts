@@ -7,4 +7,16 @@ export default defineNuxtConfig({
 	},
 
 	modules: ["@pinia/nuxt"],
+
+	app: {
+		head: {
+			title: "ここにタイトルを入れる",
+			link: [
+				{
+					rel: "stylesheet",
+					href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined",
+				},
+			],
+		},
+	},
 });
