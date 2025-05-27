@@ -34,6 +34,10 @@ const requestAnimationFrameId = ref(0);
 const startAutoPlayTime = ref(-1);
 
 const onPushSliderButton = (buttonSide: "right" | "left") => {
+	if (autoPlaySettings.isPlaying && deltaValue.value !== 0) {
+		return;
+	}
+
 	switch (buttonSide) {
 		case "right":
 			increaseValue();
@@ -58,6 +62,10 @@ const onPushSliderButton = (buttonSide: "right" | "left") => {
 };
 
 const onReleaseSliderButton = () => {
+	if (autoPlaySettings.isPlaying && deltaValue.value !== 0) {
+		return;
+	}
+
 	clearTimeout(Number(holdEventId.value));
 
 	nextTick(() => {
@@ -100,15 +108,23 @@ const decreaseValue = () => {
 	}
 
 	modelValue.value = numberOfStep % 1 === 0 ? nextValue : (Math.round(nextValue / numberOfStep) * numberOfStep).toFixed(props.step.split(".")[1].length);
+	if (autoPlaySettings.isAutoPlayMode) {
+		initValue.value = modelValue.value;
+	}
 }
 
 const onInputSlider = (e: Event) => {
-	if (e instanceof InputEvent) {
-		const target = e.target;
-		if (target instanceof HTMLInputElement) {
-			initValue.value = target.value;
-		}
+	const target = e.target;
+	if (!(target instanceof HTMLInputElement)) {
+		console.error("target is not HTMLInputElement");
+		return;
 	}
+
+	if (autoPlaySettings.isPlaying) {
+		return;
+	}
+
+	initValue.value = target.value;
 }
 
 const onInputInitValue = (e: Event) => {
@@ -118,14 +134,15 @@ const onInputInitValue = (e: Event) => {
 		return;
 	}
 
-	initValue.value = target.value;
-	if (autoPlaySettings.isAutoPlayMode) {
-		modelValue.value = target.value;
+	if (autoPlaySettings.isPlaying && deltaValue.value !== 0) {
+		return;
 	}
+
+	initValue.value = target.value;
+	modelValue.value = target.value;
 }
 
 const onInputDeltaValue = (e: Event) => {
-	console.log(e.constructor.name);
 	const target = e.target;
 	if (!(target instanceof HTMLInputElement)) {
 		console.error("target is not HTMLInputElement");
