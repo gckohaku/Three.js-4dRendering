@@ -7,16 +7,23 @@ const onStartAutoPlay = () => {
 	}
 };
 
+const onPauseAutoPlay = () => {
+	autoPlaySettings.togglePlaying();
+};
+
+const onStopAutoPlay = () => {
+	autoPlaySettings.togglePlaying();
+}
 </script>
 
 <template>
 	<div class="buttons-container">
 		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlayMode ? 'active-auto-play' : ''"
 			@click="autoPlaySettings.toggleAutoPlayMode">auto<br>play<br>mode</button>
-		<button class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
+		<button v-if="!autoPlaySettings.isPlaying" class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
 			:disabled="!autoPlaySettings.isAutoPlayMode" @mouseup="autoPlaySettings.togglePlaying" @click="onStartAutoPlay">▶</button>
-		<button class="pause-button" :disabled="!autoPlaySettings.isPlaying">⏸</button>
-		<button class="stop-button" :disabled="!autoPlaySettings.isPlaying">⏹</button>
+		<button v-if="autoPlaySettings.isPlaying" class="pause-button" :disabled="!autoPlaySettings.isPlaying" @click="onPauseAutoPlay">⏸</button>
+		<button class="stop-button" :disabled="!autoPlaySettings.isPlaying" @click="onStopAutoPlay">⏹</button>
 	</div>
 </template>
 

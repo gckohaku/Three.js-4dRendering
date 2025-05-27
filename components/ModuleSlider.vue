@@ -157,8 +157,13 @@ const onClickToggleButton = () => {
 }
 
 const onMouseUpPlayButton = () => {
+	console.log("onMouseUpPlayButton called");
 	requestAnimationFrameId.value = requestAnimationFrame((timeStamp: DOMHighResTimeStamp) => {
-		startAutoPlayTime.value = timeStamp;
+		if (autoPlaySettings.startAutoPlayTime === -1) {
+			autoPlaySettings.startAutoPlayTime = timeStamp;
+		}
+		console.log(timeStamp);
+		// startAutoPlayTime.value = timeStamp;
 		initValue.value;
 		onRequestAnimationFrame(timeStamp);
 	});
@@ -172,7 +177,7 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 		return;
 	}
 
-	const animationTime = (timeStamp - startAutoPlayTime.value) / 1000;
+	const animationTime = autoPlaySettings.autoPlayTimePassed(timeStamp);
 	const calculableInit = Number(initValue.value) / Number(props.step);
 	const calculableDelta = Number(deltaValue.value) / Number(props.step);
 	const nextValue = Math.floor(calculableInit + (calculableDelta * animationTime)) * Number(props.step);
@@ -191,6 +196,7 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 		}
 	}
 
+	// console.log(animationTime);
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
 }
