@@ -157,14 +157,11 @@ const onClickToggleButton = () => {
 }
 
 const onMouseUpPlayButton = () => {
-	console.log("onMouseUpPlayButton called");
 	requestAnimationFrameId.value = requestAnimationFrame((timeStamp: DOMHighResTimeStamp) => {
 		if (autoPlaySettings.startAutoPlayTime === -1) {
 			autoPlaySettings.startAutoPlayTime = timeStamp;
 		}
 		console.log(timeStamp);
-		// startAutoPlayTime.value = timeStamp;
-		initValue.value;
 		onRequestAnimationFrame(timeStamp);
 	});
 }
@@ -175,6 +172,23 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 	if (!autoPlaySettings.isPlaying || deltaValue.value === 0) {
 		modelValue.value = initValue.value;
 		return;
+	}
+
+	if (autoPlaySettings.requestPlayingState === "start") {
+		console.log("start auto play");
+		autoPlaySettings.start(timeStamp);
+	}
+	if (autoPlaySettings.requestPlayingState === "pause") {
+		console.log("pause auto play");
+		autoPlaySettings.pause(timeStamp);
+	}
+	if (autoPlaySettings.requestPlayingState === "resume") {
+		console.log("resume auto play");
+		autoPlaySettings.resume(timeStamp);
+	}
+	if (autoPlaySettings.requestPlayingState === "stop") {
+		console.log("stop auto play");
+		autoPlaySettings.stop(timeStamp);
 	}
 
 	const animationTime = autoPlaySettings.autoPlayTimePassed(timeStamp);
@@ -195,8 +209,6 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 		}
 	}
-
-	// console.log(animationTime);
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
 }

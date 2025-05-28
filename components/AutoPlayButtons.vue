@@ -2,27 +2,32 @@
 const autoPlaySettings = autoPlaySettingsStore();
 
 const onStartAutoPlay = () => {
+	console.log("onStartAutoPlay", autoPlaySettings.isPlaying, autoPlaySettings.isPausing);
 	if (autoPlaySettings.isPlaying) {
-		autoPlaySettings.StartActions();
+		autoPlaySettings.requestPlayingState = "resume";
+		return;
 	}
+	autoPlaySettings.requestPlayingState = "start";
 };
 
 const onPauseAutoPlay = () => {
-	autoPlaySettings.togglePlaying();
+	console.log("onPauseAutoPlay", autoPlaySettings.isPlaying, autoPlaySettings.isPausing);
+	autoPlaySettings.requestPlayingState = "pause";
 };
 
 const onStopAutoPlay = () => {
-	autoPlaySettings.togglePlaying();
-}
+	console.log("onStopAutoPlay", autoPlaySettings.isPlaying, autoPlaySettings.isPausing);
+	autoPlaySettings.requestPlayingState = "stop";
+};
 </script>
 
 <template>
 	<div class="buttons-container">
 		<button class="auto-play-button" :class="autoPlaySettings.isAutoPlayMode ? 'active-auto-play' : ''"
 			@click="autoPlaySettings.toggleAutoPlayMode">auto<br>play<br>mode</button>
-		<button v-if="!autoPlaySettings.isPlaying" class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
-			:disabled="!autoPlaySettings.isAutoPlayMode" @mouseup="autoPlaySettings.togglePlaying" @click="onStartAutoPlay">▶</button>
-		<button v-if="autoPlaySettings.isPlaying" class="pause-button" :disabled="!autoPlaySettings.isPlaying" @click="onPauseAutoPlay">⏸</button>
+		<button v-if="autoPlaySettings.isPausing || !autoPlaySettings.isPlaying" class="start-button" :class="autoPlaySettings.isPlaying ? 'playing' : ''"
+			:disabled="!autoPlaySettings.isAutoPlayMode" @click="onStartAutoPlay">▶</button>
+		<button v-if="autoPlaySettings.isPlaying && !autoPlaySettings.isPausing" class="pause-button" :disabled="!autoPlaySettings.isPlaying" @click="onPauseAutoPlay">⏸</button>
 		<button class="stop-button" :disabled="!autoPlaySettings.isPlaying" @click="onStopAutoPlay">⏹</button>
 	</div>
 </template>
