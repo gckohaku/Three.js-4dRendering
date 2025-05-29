@@ -26,12 +26,12 @@ const marginStartHoldTime = ref(200);
 const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
 const isSliderInput = ref(true);
+const isStarted = ref(false);
 
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
 const deltaValue = ref(0);
 const requestAnimationFrameId = ref(0);
-const startAutoPlayTime = ref(-1);
 
 const onPushSliderButton = (buttonSide: "right" | "left") => {
 	if (autoPlaySettings.isPlaying && deltaValue.value !== 0) {
@@ -166,29 +166,33 @@ const onMouseUpPlayButton = () => {
 	});
 }
 
+const onStopAutoPlay = () => {
+	modelValue.value = initValue.value = firstInitValue.value;
+	isStarted.value = false;
+}
+
 autoPlaySettings.setActionOnStartAutoPlay(onMouseUpPlayButton);
+autoPlaySettings.setActionOnStopAutoPlay(onStopAutoPlay);
 
 const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
+	if (!isStarted.value) {
+		firstInitValue.value = initValue.value;
+		isStarted.value = true;
+	}
 	if (!autoPlaySettings.isPlaying || deltaValue.value === 0) {
 		modelValue.value = initValue.value;
 		return;
 	}
 
-	if (autoPlaySettings.requestPlayingState === "start") {
-		console.log("start auto play");
-		autoPlaySettings.start(timeStamp);
-	}
 	if (autoPlaySettings.requestPlayingState === "pause") {
-		console.log("pause auto play");
 		autoPlaySettings.pause(timeStamp);
 	}
-	if (autoPlaySettings.requestPlayingState === "resume") {
-		console.log("resume auto play");
+	else if (autoPlaySettings.requestPlayingState === "resume") {
 		autoPlaySettings.resume(timeStamp);
 	}
-	if (autoPlaySettings.requestPlayingState === "stop") {
-		console.log("stop auto play");
+	else if (autoPlaySettings.requestPlayingState === "stop") {
 		autoPlaySettings.stop(timeStamp);
+		return;
 	}
 
 	const animationTime = autoPlaySettings.autoPlayTimePassed(timeStamp);

@@ -1,22 +1,26 @@
 <script setup lang="ts">
+import { START_LOCATION } from 'vue-router';
+
 const autoPlaySettings = autoPlaySettingsStore();
 
 const onStartAutoPlay = () => {
-	console.log("onStartAutoPlay", autoPlaySettings.isPlaying, autoPlaySettings.isPausing);
 	if (autoPlaySettings.isPlaying) {
 		autoPlaySettings.requestPlayingState = "resume";
 		return;
 	}
+	
 	autoPlaySettings.requestPlayingState = "start";
+	requestAnimationFrame((timeStamp) => {
+		autoPlaySettings.start(timeStamp);
+		autoPlaySettings.requestPlayingState = "none"
+	});
 };
 
 const onPauseAutoPlay = () => {
-	console.log("onPauseAutoPlay", autoPlaySettings.isPlaying, autoPlaySettings.isPausing);
 	autoPlaySettings.requestPlayingState = "pause";
 };
 
 const onStopAutoPlay = () => {
-	console.log("onStopAutoPlay", autoPlaySettings.isPlaying, autoPlaySettings.isPausing);
 	autoPlaySettings.requestPlayingState = "stop";
 };
 </script>
@@ -38,6 +42,7 @@ const onStopAutoPlay = () => {
 	display: flex;
 	gap: .5rem;
 	height: 100%;
+	padding-inline: 1rem;
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;

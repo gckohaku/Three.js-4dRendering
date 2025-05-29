@@ -2,7 +2,8 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 	const isAutoPlayMode = ref(false);
 	const isPlaying = ref(false);
 	const isPausing = ref(false);
-	const actionsQueue = ref<(() => void)[]>([]);
+	const startActionsQueue = ref<(() => void)[]>([]);
+	const stopActionsQueue = ref<(() => void)[]>([]);
 	const startAutoPlayTime = ref(-1);
 	const totalPausedTime = ref(0);
 	const startPauseTime = ref(0);
@@ -23,18 +24,28 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 	}
 
 	function setActionOnStartAutoPlay(action: () => void) {
-		actionsQueue.value.push(action);
+		startActionsQueue.value.push(action);
 	}
 
-	function StartActions() {
-		for (const action of actionsQueue.value) {
+	function startActions() {
+		for (const action of startActionsQueue.value) {
+			action();
+		}
+	}
+
+	function setActionOnStopAutoPlay(action: () => void) {
+		stopActionsQueue.value.push(action);
+	}
+
+	function stopActions() {
+		for (const action of stopActionsQueue.value) {
 			action();
 		}
 	}
 
 	function autoPlayTimePassed(currentTime: number): number {
 		if (startAutoPlayTime.value !== -1 && isPausing.value) {
-			return (startPauseTime.value - startAutoPlayTime.value) / 1000;
+			return (startPauseTime.value - startAutoPlayTime.value - totalPausedTime.value) / 1000;
 		}
 		return (currentTime - startAutoPlayTime.value - totalPausedTime.value) / 1000;
 	}
@@ -46,9 +57,8 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 	function start(timeStamp: number) {
 		if (startAutoPlayTime.value === -1) {
 			startAutoPlayTime.value = timeStamp;
-			StartActions();
+			startActions();
 		}
-		requestPlayingState.value = "none";
 		isPlaying.value = true;
 		isPausing.value = false;
 		totalPausedTime.value = 0;
@@ -63,6 +73,7 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 	function resume(timeStamp: number) {
 		requestPlayingState.value = "none";
 		isPausing.value = false;
+
 		const pauseDuration = timeStamp - startPauseTime.value;
 		totalPausedTime.value += pauseDuration;
 	}
@@ -72,6 +83,7 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 		isPlaying.value = false;
 		isPausing.value = false;
 		totalPausedTime.value = 0;
+		stopActions();
 		resetAutoPlayTime();
 	}
 
@@ -86,7 +98,7 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 		toggleAutoPlayMode,
 		togglePlaying,
 		setActionOnStartAutoPlay,
-		StartActions,
+		setActionOnStopAutoPlay,
 		autoPlayTimePassed,
 		start,
 		pause,
