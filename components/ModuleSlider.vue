@@ -26,12 +26,12 @@ const marginStartHoldTime = ref(200);
 const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
 const isSliderInput = ref(true);
+const isStarted = ref(false);
 
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
 const deltaValue = ref(0);
 const requestAnimationFrameId = ref(0);
-const startAutoPlayTime = ref(-1);
 
 const onPushSliderButton = (buttonSide: "right" | "left") => {
 	if (autoPlaySettings.isPlaying && deltaValue.value !== 0) {
@@ -158,21 +158,44 @@ const onClickToggleButton = () => {
 
 const onMouseUpPlayButton = () => {
 	requestAnimationFrameId.value = requestAnimationFrame((timeStamp: DOMHighResTimeStamp) => {
-		startAutoPlayTime.value = timeStamp;
-		initValue.value;
+		if (autoPlaySettings.startAutoPlayTime === -1) {
+			autoPlaySettings.startAutoPlayTime = timeStamp;
+		}
+		console.log(timeStamp);
 		onRequestAnimationFrame(timeStamp);
 	});
 }
 
+const onStopAutoPlay = () => {
+	modelValue.value = initValue.value = firstInitValue.value;
+	isStarted.value = false;
+}
+
 autoPlaySettings.setActionOnStartAutoPlay(onMouseUpPlayButton);
+autoPlaySettings.setActionOnStopAutoPlay(onStopAutoPlay);
 
 const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
+	if (!isStarted.value) {
+		firstInitValue.value = initValue.value;
+		isStarted.value = true;
+	}
 	if (!autoPlaySettings.isPlaying || deltaValue.value === 0) {
 		modelValue.value = initValue.value;
 		return;
 	}
 
-	const animationTime = (timeStamp - startAutoPlayTime.value) / 1000;
+	if (autoPlaySettings.requestPlayingState === "pause") {
+		autoPlaySettings.pause(timeStamp);
+	}
+	else if (autoPlaySettings.requestPlayingState === "resume") {
+		autoPlaySettings.resume(timeStamp);
+	}
+	else if (autoPlaySettings.requestPlayingState === "stop") {
+		autoPlaySettings.stop(timeStamp);
+		return;
+	}
+
+	const animationTime = autoPlaySettings.autoPlayTimePassed(timeStamp);
 	const calculableInit = Number(initValue.value) / Number(props.step);
 	const calculableDelta = Number(deltaValue.value) / Number(props.step);
 	const nextValue = Math.floor(calculableInit + (calculableDelta * animationTime)) * Number(props.step);
@@ -190,7 +213,6 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 		}
 	}
-
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
 }
