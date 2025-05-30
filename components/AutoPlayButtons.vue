@@ -4,6 +4,7 @@ import { START_LOCATION } from 'vue-router';
 const autoPlaySettings = autoPlaySettingsStore();
 
 const onStartAutoPlay = () => {
+	console.log("onStartAutoPlay called");
 	if (autoPlaySettings.isPlaying) {
 		autoPlaySettings.requestPlayingState = "resume";
 		return;

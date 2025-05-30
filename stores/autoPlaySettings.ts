@@ -87,6 +87,20 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 		resetAutoPlayTime();
 	}
 
+	const masterAnimationFrame = (timeStamp: number) => {
+		if (requestPlayingState.value === "pause") {
+			pause(timeStamp);
+		} else if (requestPlayingState.value === "resume") {
+			resume(timeStamp);
+		} else if (requestPlayingState.value === "stop") {
+			stop(timeStamp);
+		}
+
+		requestAnimationFrame(masterAnimationFrame);
+	};
+
+	startActionsQueue.value.push(() => requestAnimationFrame(masterAnimationFrame));
+
 	return {
 		isAutoPlayMode,
 		isPlaying,
