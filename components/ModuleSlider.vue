@@ -27,6 +27,7 @@ const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
 const isSliderInput = ref(true);
 const isStarted = ref(false);
+const autoPlayMovingMode: Ref<"Rolling" | "There and Back (delta)" | "There and Back (time)"> = ref("Rolling");
 
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
@@ -221,6 +222,10 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 const iconToggle = `<span class="material-symbols-outlined">swap_horiz</span>`;
 const iconLeft = `<span class="material-symbols-outlined">arrow_back</span>`;
 const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`;
+
+const iconRolling = `<span class="material-symbols-outlined">refresh</span>`
+const iconThereAndBackDelta = `<span class="material-symbols-outlined" style"position: relative;">arrow_range</span>`;
+const iconThereAndBackTime = `<span class="material-symbols-outlined" style"position: relative;">arrow_range</span>`;
 </script>
 
 <template>

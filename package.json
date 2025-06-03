@@ -21,6 +21,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@pinia/nuxt": "^0.9.0",
+    "@total-typescript/ts-reset": "^0.6.1",
     "@types/three": "^0.172.0"
   }
 }
