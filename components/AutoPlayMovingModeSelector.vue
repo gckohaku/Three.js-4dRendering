@@ -3,11 +3,13 @@ import { autoPlayMovingMode, isAutoPlayMovingMode, type AutoPlayMovingMode } fro
 
 const movingMode = ref<AutoPlayMovingMode>("rolling");
 
-const iconRolling = `<span class="material-symbols-outlined">refresh</span>`
-const iconThereAndBackDelta = `<span style"position: relative;"><span class="material-symbols-outlined">arrow_range</span></span>_d`;
-const iconThereAndBackTime = `<span style"position: relative;"><span class="material-symbols-outlined">arrow_range</span></span>_t`;
+const iconRolling = `<span class="material-symbols-outlined">refresh</span>`;
+const mutualStyle = "letter-spacing: -3px;";
+const iconArrowRangeOnly = `<span class="material-symbols-outlined style="${mutualStyle}">arrow_range</span>`;
+const iconThereAndBackDelta = `<span>${iconArrowRangeOnly}<sub><span>Δ</span></sub></span>`;
+const iconThereAndBackTime = `<span>${iconArrowRangeOnly}<sub><span class="material-symbols-outlined" style="font-size: .8rem; ${mutualStyle}">timer</span></sub>aaaaaaa</span>`;
 
-const selectIconViewMap = new Map<string, string>([
+const selectIconViewMap = new Map<AutoPlayMovingMode, string>([
 	["rolling", iconRolling],
 	["thereAndBackDelta", iconThereAndBackDelta],
 	["thereAndBackTime", iconThereAndBackTime]
@@ -36,7 +38,7 @@ const onSelectChange = (event: Event) => {
 
 <template>
 	<div class="test-area">
-		<p>selected: <span v-html="selectedIconView"></span></p>
+		<p class="flex">selected: <span v-html="selectedIconView"></span></p>
 		<select name="" id="" @change="onSelectChange" v-model="movingMode">
 			<option value="rolling">Rolling</option>
 			<option value="thereAndBackDelta">There and Back (delta)</option>
@@ -46,6 +48,11 @@ const onSelectChange = (event: Event) => {
 </template>
 
 <style scoped>
+p.flex {
+	display: flex;
+	flex-direction: row;
+}
+
 .test-area {
 	padding: 1rem;
 }
