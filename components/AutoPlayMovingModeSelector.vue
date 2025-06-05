@@ -1,22 +1,40 @@
 <script setup lang="ts">
 import { autoPlayMovingMode, isAutoPlayMovingMode, type AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
+import type ModuleSelectorIconDisplayButton from './ModuleSelectorIconDisplayButton.vue';
 
 const movingMode = ref<AutoPlayMovingMode>("rolling");
 
 const iconRolling = `<span class="material-symbols-outlined">refresh</span>`;
-const mutualStyle = "letter-spacing: -3px;";
-const iconArrowRangeOnly = `<span class="material-symbols-outlined style="${mutualStyle}">arrow_range</span>`;
+const letterSpacing = "letter-spacing: -5px;";
+const iconArrowRangeOnly = `<span class="material-symbols-outlined"  style="${letterSpacing}">arrow_range</span>`;
 const iconThereAndBackDelta = `<span>${iconArrowRangeOnly}<sub><span>Δ</span></sub></span>`;
-const iconThereAndBackTime = `<span>${iconArrowRangeOnly}<sub><span class="material-symbols-outlined" style="font-size: .8rem; ${mutualStyle}">timer</span></sub>aaaaaaa</span>`;
+const iconThereAndBackTime = `<span>${iconArrowRangeOnly}<sub><span class="material-symbols-outlined" style="font-size: .8rem; ">timer</span></sub></span>`;
 
-const selectIconViewMap = new Map<AutoPlayMovingMode, string>([
-	["rolling", iconRolling],
-	["thereAndBackDelta", iconThereAndBackDelta],
-	["thereAndBackTime", iconThereAndBackTime]
-]);
+const selectIconViewOptions: InstanceType<typeof ModuleSelectorIconDisplayButton>["$props"]["options"] = [
+	{
+		value: "rolling",
+		label: "Rolling",
+		icon: iconRolling
+	},
+	{
+		value: "thereAndBackDelta",
+		label: "There and Back (delta)",
+		icon: iconThereAndBackDelta
+	},
+	{
+		value: "thereAndBackTime",
+		label: "There and Back (time)",
+		icon: iconThereAndBackTime
+	}
+];
 
 const selectedIconView = computed(() => {
-	return selectIconViewMap.get(movingMode.value);
+	const selectedOption = selectIconViewOptions.find(option => option.value === movingMode.value);
+	if (!selectedOption) {
+		console.error("Selected moving mode not found in options:", movingMode.value);
+		return "";
+	}
+	return selectedOption.icon;
 });
 
 const onSelectChange = (event: Event) => {
@@ -38,12 +56,14 @@ const onSelectChange = (event: Event) => {
 
 <template>
 	<div class="test-area">
-		<p class="flex">selected: <span v-html="selectedIconView"></span></p>
+		<p class="flex">selected: <span class="moving-mode-icon" v-html="selectedIconView"></span></p>
 		<select name="" id="" @change="onSelectChange" v-model="movingMode">
 			<option value="rolling">Rolling</option>
 			<option value="thereAndBackDelta">There and Back (delta)</option>
 			<option value="thereAndBackTime">There and Back (time)</option>
 		</select>
+
+		<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" />
 	</div>
 </template>
 
@@ -55,5 +75,9 @@ p.flex {
 
 .test-area {
 	padding: 1rem;
+}
+
+.moving-mode-icon {
+	letter-spacing: -3px;;
 }
 </style>

@@ -17,7 +17,7 @@ input, button {
 		'opsz' 24;
 	font-size: 1rem;
 	line-height: 1rem;
-	letter-spacing: 0;
+	letter-spacing: inherit;
 }
 
 button:disabled {
