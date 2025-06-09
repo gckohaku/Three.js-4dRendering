@@ -35,7 +35,7 @@ const onClickOption = (option: { value: string; label: string; icon: string }) =
 	<div class="selector-container">
 		<button class="selector-button" v-html="currentMovingModeOption.icon" @click.stop="onClickButton"></button>
 		<div v-if="isVisibleOptions" class="options-container" v-on-click-outside.bubble="() => isVisibleOptions = false">
-			<div v-for="option of props.options" class="option-area" :key="option.value" @click.stop="onClickOption(option)">
+			<div v-for="option of props.options" class="option-area" :key="option.value" @click.self="onClickOption(option)">
 				{{ option.label }}
 			</div>
 		</div>
@@ -50,6 +50,10 @@ const onClickOption = (option: { value: string; label: string; icon: string }) =
 	.selector-button {
 		width: v-bind('buttonWidth + "px"');
 		height: v-bind('buttonHeight + "px"');
+
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.options-container {
@@ -57,11 +61,13 @@ const onClickOption = (option: { value: string; label: string; icon: string }) =
 		bottom: v-bind(-'buttonHeight + "px"');;
 		border: 1px solid #1c1c1c;
 		border-radius: 5px;
+		z-index: 100;
+		background-color: #fff;
+		width: max-content;
 
 		.option-area {
 			padding: .1rem .2rem;
 			cursor: default;
-			
 
 			&:hover {
 				background-color: #186060;

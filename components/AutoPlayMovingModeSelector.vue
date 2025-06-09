@@ -55,16 +55,7 @@ const onSelectChange = (event: Event) => {
 </script>
 
 <template>
-	<div class="test-area">
-		<p class="flex">selected: <span class="moving-mode-icon" v-html="selectedIconView"></span></p>
-		<select name="" id="" @change="onSelectChange" v-model="movingMode">
-			<option value="rolling">Rolling</option>
-			<option value="thereAndBackDelta">There and Back (delta)</option>
-			<option value="thereAndBackTime">There and Back (time)</option>
-		</select>
-
-		<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" />
-	</div>
+	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" />
 </template>
 
 <style scoped>
@@ -78,6 +69,7 @@ p.flex {
 }
 
 .moving-mode-icon {
-	letter-spacing: -3px;;
+	letter-spacing: -3px;
+	;
 }
 </style>
