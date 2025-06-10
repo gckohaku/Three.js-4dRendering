@@ -11,6 +11,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const uiState = uiStateStore();
+
 const buttonWidth = 25; // px
 const buttonHeight = 25; // px
 
@@ -22,11 +24,23 @@ const toggleOptionVisibility = () => {
 };
 
 const onClickButton = () => {
+	if (isVisibleOptions.value) {
+		uiState.removeClosingOptionEvent(closeMovingOption);
+		closeMovingOption();
+		return;
+	}
+	uiState.executeClosingOptionEvents();
 	toggleOptionVisibility();
+	uiState.registerClosingOptionEvent(closeMovingOption);
 };
 
 const onClickOption = (option: { value: string; label: string; icon: string }) => {
+	uiState.removeClosingOptionEvent(closeMovingOption);
 	currentMovingModeOption.value = option;
+	isVisibleOptions.value = false;
+};
+
+const closeMovingOption = () => {
 	isVisibleOptions.value = false;
 };
 </script>
