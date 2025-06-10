@@ -27,6 +27,7 @@ const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
 const isSliderInput = ref(true);
 const isStarted = ref(false);
+const autoPlayMovingMode: Ref<"Rolling" | "There and Back (delta)" | "There and Back (time)"> = ref("Rolling");
 
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
@@ -254,6 +255,8 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 			<button @click="onClickToggleButton" :disabled="!autoPlaySettings.isAutoPlayMode"
 				v-html="iconToggle"></button>
+
+			<AutoPlayMovingModeSelector />
 		</div>
 	</div>
 </template>
