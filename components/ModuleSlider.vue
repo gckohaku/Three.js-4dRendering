@@ -32,6 +32,8 @@ const autoPlayMovingMode: Ref<"Rolling" | "There and Back (delta)" | "There and 
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
 const deltaValue = ref(0);
+const autoMinValue = ref(props.min);
+const autoMaxValue = ref(props.max);
 const requestAnimationFrameId = ref(0);
 
 const onPushSliderButton = (buttonSide: "right" | "left") => {
@@ -153,6 +155,26 @@ const onInputDeltaValue = (e: Event) => {
 	deltaValue.value = Number(target.value);
 }
 
+const onInputAutoMinValue = (e: Event) => {
+	const target = e.target;
+	if (!(target instanceof HTMLInputElement)) {
+		console.error("target is not HTMLInputElement");
+		return;
+	}
+
+	autoMinValue.value = target.value;
+}
+
+const onInputAutoMaxValue = (e: Event) => {
+	const target = e.target;
+	if (!(target instanceof HTMLInputElement)) {
+		console.error("target is not HTMLInputElement");
+		return;
+	}
+
+	autoMaxValue.value = target.value;
+}
+
 const onClickToggleButton = () => {
 	isSliderInput.value = !isSliderInput.value;
 }
@@ -230,33 +252,48 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			<p>{{ text }}: {{ modelValue }}</p>
 		</div>
 		<div class="slider-container">
-			<div class="slider-area" v-if="!autoPlaySettings.isAutoPlayMode || isSliderInput">
+			<div class="slider-area">
 				<button @mousedown.left="onPushSliderButton('left')" @mouseup.left="onReleaseSliderButton"
 					@mouseleave="onReleaseSliderButton" v-html="iconLeft"></button>
 				<input type="range" :name="props.name" :id="props.id" :min="props.min" :max="props.max"
 					:step="props.step" v-model="modelValue" @mouseup="onInputSlider">
 				<button @mousedown.left="onPushSliderButton('right')" @mouseup.left="onReleaseSliderButton"
 					@mouseleave="onReleaseSliderButton" v-html="iconRight"></button>
-
 			</div>
 
-			<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && !isSliderInput">
-				<div class="number-input-area flex-row" title="再生時の初期値">
-					<label for="init-value">init:&nbsp;</label>
-					<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
-						@change="(e: Event) => onInputInitValue(e)">
-				</div>
-				<div class="delta-input-area flex-row" title="1秒ごとの変化量">
-					<label for="delta-value">delta:&nbsp;</label>
-					<input type="number" id="delta-value" :min="min" :max="max" :step="step"
-						@change="(e: Event) => onInputDeltaValue(e)" v-model="deltaValue">
+
+
+			<div class="toggle-button-container">
+				<button @click="onClickToggleButton" :disabled="!autoPlaySettings.isAutoPlayMode"
+					v-html="iconToggle"></button>
+
+				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && !isSliderInput">
+					<div class="init-input-area input-subgrid" title="再生時の初期値">
+						<label for="init-value">init:&nbsp;</label>
+						<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
+							@change="(e: Event) => onInputInitValue(e)">
+					</div>
+					<div class="auto-min-input-area input-subgrid" title="自動再生の最小値">
+						<label for="auto-min-value">min:&nbsp;</label>
+						<input type="number" id="auto-min-value" :min="min" :max="max" :step="step"
+							@change="(e: Event) => onInputAutoMinValue(e)" v-model="deltaValue">
+					</div>
+					<div class="auto-max-input-area input-subgrid" title="自動再生の最大値">
+						<label for="auto-max-value">max:&nbsp;</label>
+						<input type="number" id="auto-max-value" :min="min" :max="max" :step="step"
+							@change="(e: Event) => onInputAutoMaxValue(e)" v-model="deltaValue">
+					</div>
+					<div class="delta-input-area input-subgrid" title="1秒ごとの変化量">
+						<label for="delta-value">delta:&nbsp;</label>
+						<input type="number" id="delta-value" :min="min" :max="max" :step="step"
+							@change="(e: Event) => onInputDeltaValue(e)" v-model="deltaValue">
+					</div>
 				</div>
 			</div>
 
-			<button @click="onClickToggleButton" :disabled="!autoPlaySettings.isAutoPlayMode"
-				v-html="iconToggle"></button>
 
-			<AutoPlayMovingModeSelector />
+
+			<AutoPlayMovingModeSelector :disabled="!autoPlaySettings.isAutoPlayMode" />
 		</div>
 	</div>
 </template>
@@ -277,6 +314,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 	}
 
 	.slider-container {
+		position: relative;
 		display: flex;
 		justify-content: space-between;
 
@@ -284,13 +322,24 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			display: flex;
 		}
 
-		.auto-play-setting-area {
-			display: flex;
-			gap: .25rem;
+		.toggle-button-container {
+			.auto-play-setting-area {
+				padding: .5rem;
+				position: absolute;
+				z-index: 100;
+				top: 20px;
+				display: grid;
+				grid-template-columns: repeat(2, 1fr);
+				gap: .25rem;
+				background-color: #fff;
+				border: 2px solid #1c1c1c;
+				border-radius: 5px;
 
-			.flex-row {
-				display: flex;
-				flex-direction: row;
+				.input-subgrid {
+					display: grid;
+					grid-template-columns: subgrid;
+					grid-column: 1 / -1;
+				}
 			}
 		}
 

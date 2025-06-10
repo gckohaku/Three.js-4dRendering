@@ -2,13 +2,21 @@
 import { autoPlayMovingMode, isAutoPlayMovingMode, type AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
 import type ModuleSelectorIconDisplayButton from './ModuleSelectorIconDisplayButton.vue';
 
+interface Props {
+	disabled?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+	disabled: true
+});
+
 const movingMode = ref<AutoPlayMovingMode>("rolling");
 
 const iconRolling = `<span class="material-symbols-outlined">refresh</span>`;
 const letterSpacing = "letter-spacing: -5px;";
 const iconArrowRangeOnly = `<span class="material-symbols-outlined"  style="${letterSpacing}">arrow_range</span>`;
-const iconThereAndBackDelta = `<span>${iconArrowRangeOnly}<sub><span>Δ</span></sub></span>`;
-const iconThereAndBackTime = `<span>${iconArrowRangeOnly}<sub><span class="material-symbols-outlined" style="font-size: .8rem; ">timer</span></sub></span>`;
+const iconThereAndBackDelta = `<span>${iconArrowRangeOnly}<sub><span style="font-size: .87rem;">Δ</span></sub></span>`;
+const iconThereAndBackTime = `<span>${iconArrowRangeOnly}<sub><span class="material-symbols-outlined" style="font-size: .7rem;">timer</span></sub></span>`;
 
 const selectIconViewOptions: InstanceType<typeof ModuleSelectorIconDisplayButton>["$props"]["options"] = [
 	{
@@ -55,7 +63,7 @@ const onSelectChange = (event: Event) => {
 </script>
 
 <template>
-	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" />
+	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" :disabled="props.disabled" />
 </template>
 
 <style scoped>

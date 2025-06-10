@@ -7,14 +7,20 @@ interface Props {
 		label: string;
 		icon: string;
 	}[];
+	disabled?: boolean;
+	width?: number;
+	height?: number;
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+	width: 25,
+	height: 25
+});
 
-const uiState = uiStateStore();
+const uiManager = uiManagerStore();
 
-const buttonWidth = 25; // px
-const buttonHeight = 25; // px
+const buttonWidth = props.width; // px
+const buttonHeight = props.height; // px
 
 const currentMovingModeOption = ref(props.options[0]);
 const isVisibleOptions = ref(false);
@@ -25,17 +31,17 @@ const toggleOptionVisibility = () => {
 
 const onClickButton = () => {
 	if (isVisibleOptions.value) {
-		uiState.removeClosingOptionEvent(closeMovingOption);
+		uiManager.removeClosingOptionEvent(closeMovingOption);
 		closeMovingOption();
 		return;
 	}
-	uiState.executeClosingOptionEvents();
+	uiManager.executeClosingOptionEvents();
 	toggleOptionVisibility();
-	uiState.registerClosingOptionEvent(closeMovingOption);
+	uiManager.registerClosingOptionEvent(closeMovingOption);
 };
 
 const onClickOption = (option: { value: string; label: string; icon: string }) => {
-	uiState.removeClosingOptionEvent(closeMovingOption);
+	uiManager.removeClosingOptionEvent(closeMovingOption);
 	currentMovingModeOption.value = option;
 	isVisibleOptions.value = false;
 };
@@ -47,7 +53,7 @@ const closeMovingOption = () => {
 
 <template>
 	<div class="selector-container">
-		<button class="selector-button" v-html="currentMovingModeOption.icon" @click.stop="onClickButton"></button>
+		<button class="selector-button" v-html="currentMovingModeOption.icon" @click.stop="onClickButton" :disabled="props.disabled"></button>
 		<div v-if="isVisibleOptions" class="options-container" v-on-click-outside.bubble="() => isVisibleOptions = false">
 			<div v-for="option of props.options" class="option-area" :key="option.value" @click.self="onClickOption(option)">
 				{{ option.label }}
