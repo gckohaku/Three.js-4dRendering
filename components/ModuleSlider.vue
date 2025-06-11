@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { autoPlaySettingsStore } from '~/stores/autoPlaySettings';
+import {vOnClickOutside} from '@vueuse/components';
+import { mx_fractal_noise_float } from 'three/tsl';
+import type { AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
 
 const modelValue = defineModel<string | number>();
 
@@ -21,17 +24,19 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const autoPlaySettings = autoPlaySettingsStore();
+const uiManager = uiManagerStore();
 
 const marginStartHoldTime = ref(200);
 const changingValueIntervalTime = ref(50);
 const holdEventId: Ref<NodeJS.Timeout | null> = ref(null);
-const isSliderInput = ref(true);
+const isPopupParams = ref(false);
 const isStarted = ref(false);
-const autoPlayMovingMode: Ref<"Rolling" | "There and Back (delta)" | "There and Back (time)"> = ref("Rolling");
+const autoPlayMovingMode: Ref<AutoPlayMovingMode> = ref("rolling");
 
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
 const deltaValue = ref(0);
+const timeValue = ref(1000);
 const autoMinValue = ref(props.min);
 const autoMaxValue = ref(props.max);
 const requestAnimationFrameId = ref(0);
@@ -155,6 +160,16 @@ const onInputDeltaValue = (e: Event) => {
 	deltaValue.value = Number(target.value);
 }
 
+const onInputTimeValue = (e: Event) => {
+	const target = e.target;
+	if (!(target instanceof HTMLInputElement)) {
+		console.error("target is not HTMLInputElement");
+		return;
+	}
+
+	timeValue.value = Number(target.value);
+}
+
 const onInputAutoMinValue = (e: Event) => {
 	const target = e.target;
 	if (!(target instanceof HTMLInputElement)) {
@@ -175,8 +190,20 @@ const onInputAutoMaxValue = (e: Event) => {
 	autoMaxValue.value = target.value;
 }
 
-const onClickToggleButton = () => {
-	isSliderInput.value = !isSliderInput.value;
+const onClickParamsButton = () => {
+	if (isPopupParams.value) {
+		uiManager.removeClosingOptionEvent(closeParamsPopup);
+		isPopupParams.value = false;
+		return;
+	}
+
+	uiManager.executeClosingOptionEvents();
+	isPopupParams.value = true;
+	uiManager.registerClosingOptionEvent(closeParamsPopup);
+}
+
+const closeParamsPopup = () => {
+	isPopupParams.value = false;
 }
 
 const onMouseUpPlayButton = () => {
@@ -264,36 +291,39 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 
 			<div class="toggle-button-container">
-				<button @click="onClickToggleButton" :disabled="!autoPlaySettings.isAutoPlayMode"
+				<button @click="onClickParamsButton" v-on-click-outside="() => isPopupParams = false" :disabled="!autoPlaySettings.isAutoPlayMode"
 					v-html="iconToggle"></button>
 
-				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && !isSliderInput">
+				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams">
 					<div class="init-input-area input-subgrid" title="再生時の初期値">
 						<label for="init-value">init:&nbsp;</label>
 						<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
 							@change="(e: Event) => onInputInitValue(e)">
 					</div>
-					<div class="auto-min-input-area input-subgrid" title="自動再生の最小値">
+					<div v-if="autoPlayMovingMode !== 'rolling'" class="auto-min-input-area input-subgrid" title="自動再生の最小値">
 						<label for="auto-min-value">min:&nbsp;</label>
 						<input type="number" id="auto-min-value" :min="min" :max="max" :step="step"
-							@change="(e: Event) => onInputAutoMinValue(e)" v-model="deltaValue">
+							@change="(e: Event) => onInputAutoMinValue(e)" v-model="autoMinValue">
 					</div>
-					<div class="auto-max-input-area input-subgrid" title="自動再生の最大値">
+					<div v-if="autoPlayMovingMode !== 'rolling'" class="auto-max-input-area input-subgrid" title="自動再生の最大値">
 						<label for="auto-max-value">max:&nbsp;</label>
 						<input type="number" id="auto-max-value" :min="min" :max="max" :step="step"
-							@change="(e: Event) => onInputAutoMaxValue(e)" v-model="deltaValue">
+							@change="(e: Event) => onInputAutoMaxValue(e)" v-model="autoMaxValue">
 					</div>
-					<div class="delta-input-area input-subgrid" title="1秒ごとの変化量">
+					<div v-if="autoPlayMovingMode !== 'thereAndBackTime'" class="delta-input-area input-subgrid" title="1秒ごとの変化量">
 						<label for="delta-value">delta:&nbsp;</label>
 						<input type="number" id="delta-value" :min="min" :max="max" :step="step"
 							@change="(e: Event) => onInputDeltaValue(e)" v-model="deltaValue">
 					</div>
+					<div v-if="autoPlayMovingMode === 'thereAndBackTime'" class="time-input-area input-subgrid" title="片道にかかる時間">
+						<label for="time-value">time:&nbsp;</label>
+						<input type="number" id="time-value" :min="min" :max="max" :step="step"
+							@change="(e: Event) => onInputTimeValue(e)" v-model="timeValue">
+					</div>
 				</div>
 			</div>
 
-
-
-			<AutoPlayMovingModeSelector :disabled="!autoPlaySettings.isAutoPlayMode" />
+			<AutoPlayMovingModeSelector :disabled="!autoPlaySettings.isAutoPlayMode" v-model="autoPlayMovingMode" />
 		</div>
 	</div>
 </template>

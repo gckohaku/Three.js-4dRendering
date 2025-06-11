@@ -1,5 +1,3 @@
-import { e } from "mathjs";
-
 export const uiManagerStore = defineStore("uiManagerStore", () => {
 	const closingOptionEvents = ref<(() => void)[]>([]);
 

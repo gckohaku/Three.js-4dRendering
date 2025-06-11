@@ -2,6 +2,8 @@
 import { autoPlayMovingMode, isAutoPlayMovingMode, type AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
 import type ModuleSelectorIconDisplayButton from './ModuleSelectorIconDisplayButton.vue';
 
+const modelValue = defineModel<AutoPlayMovingMode>();
+
 interface Props {
 	disabled?: boolean;
 }
@@ -63,7 +65,7 @@ const onSelectChange = (event: Event) => {
 </script>
 
 <template>
-	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" :disabled="props.disabled" />
+	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" :disabled="props.disabled" v-model="modelValue" />
 </template>
 
 <style scoped>

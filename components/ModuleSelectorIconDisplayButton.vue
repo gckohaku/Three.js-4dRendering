@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import {vOnClickOutside} from '@vueuse/components';
+import { isAutoPlayMovingMode, type AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
+
+const modelValue = defineModel<string>();
 
 interface Props {
 	options: {
@@ -43,6 +46,7 @@ const onClickButton = () => {
 const onClickOption = (option: { value: string; label: string; icon: string }) => {
 	uiManager.removeClosingOptionEvent(closeMovingOption);
 	currentMovingModeOption.value = option;
+	modelValue.value = option.value;
 	isVisibleOptions.value = false;
 };
 
