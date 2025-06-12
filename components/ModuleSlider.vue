@@ -252,7 +252,7 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 
 	modelValue.value = nextValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 
-	if (props.isRolling) {
+	if (autoPlayMovingMode.value === "rolling") {
 		if (nextValue > Number(props.max)) {
 			const afterRollingValue: number = (nextValue - Number(props.min)) % (Number(props.max) - Number(props.min)) + Number(props.min);
 			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
@@ -262,6 +262,10 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 			const afterRollingValue: number = (nextValue + Number(props.min)) % (Number(props.max) - Number(props.min)) - Number(props.min);
 			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 		}
+	}
+	else if (autoPlayMovingMode.value === "thereAndBackDelta") {
+		const currentValue = thereAndBackDeltaPosition(animationTime, Number(initValue.value), Number(autoMinValue.value), Number(autoMaxValue.value), Number(deltaValue.value));
+		modelValue.value = currentValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 	}
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
@@ -291,10 +295,10 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 
 			<div class="toggle-button-container">
-				<button @click="onClickParamsButton" v-on-click-outside="() => isPopupParams = false" :disabled="!autoPlaySettings.isAutoPlayMode"
+				<button @click="onClickParamsButton" :disabled="!autoPlaySettings.isAutoPlayMode"
 					v-html="iconToggle"></button>
 
-				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams">
+				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams" v-on-click-outside="() => isPopupParams = false" >
 					<div class="init-input-area input-subgrid" title="再生時の初期値">
 						<label for="init-value">init:&nbsp;</label>
 						<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
