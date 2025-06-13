@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { autoPlaySettingsStore } from '~/stores/autoPlaySettings';
-import {vOnClickOutside} from '@vueuse/components';
+import { vOnClickOutside } from '@vueuse/components';
 import { mx_fractal_noise_float } from 'three/tsl';
 import type { AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
 
@@ -191,18 +191,25 @@ const onInputAutoMaxValue = (e: Event) => {
 }
 
 const onClickParamsButton = () => {
+	console.log("onClickParamsButton");
+	console.log("isPopupParams.value: ", isPopupParams.value);
 	if (isPopupParams.value) {
 		uiManager.removeClosingOptionEvent(closeParamsPopup);
-		isPopupParams.value = false;
+		closeParamsPopup();
+		console.log("closeParamsPopup called");
+		console.log("isPopupParams.value: ", isPopupParams.value);
 		return;
 	}
 
 	uiManager.executeClosingOptionEvents();
 	isPopupParams.value = true;
 	uiManager.registerClosingOptionEvent(closeParamsPopup);
+	console.log("openParamsPopup called");
+	console.log("isPopupParams.value: ", isPopupParams.value);
 }
 
 const closeParamsPopup = () => {
+	console.log("closeParamsPopup called");
 	isPopupParams.value = false;
 }
 
@@ -252,7 +259,7 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 
 	modelValue.value = nextValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 
-	if (props.isRolling) {
+	if (autoPlayMovingMode.value === "rolling") {
 		if (nextValue > Number(props.max)) {
 			const afterRollingValue: number = (nextValue - Number(props.min)) % (Number(props.max) - Number(props.min)) + Number(props.min);
 			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
@@ -262,6 +269,10 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 			const afterRollingValue: number = (nextValue + Number(props.min)) % (Number(props.max) - Number(props.min)) - Number(props.min);
 			modelValue.value = afterRollingValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 		}
+	}
+	else if (autoPlayMovingMode.value === "thereAndBackDelta") {
+		const currentValue = thereAndBackDeltaPosition(animationTime, Number(initValue.value), Number(autoMinValue.value), Number(autoMaxValue.value), Number(deltaValue.value));
+		modelValue.value = currentValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 	}
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
@@ -290,8 +301,8 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 
 
-			<div class="toggle-button-container">
-				<button @click="onClickParamsButton" v-on-click-outside="() => isPopupParams = false" :disabled="!autoPlaySettings.isAutoPlayMode"
+			<div class="toggle-button-container" v-on-click-outside.bobble="closeParamsPopup">
+				<button @click.stop="onClickParamsButton" :disabled="!autoPlaySettings.isAutoPlayMode"
 					v-html="iconToggle"></button>
 
 				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams">
@@ -300,24 +311,28 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 						<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
 							@change="(e: Event) => onInputInitValue(e)">
 					</div>
-					<div v-if="autoPlayMovingMode !== 'rolling'" class="auto-min-input-area input-subgrid" title="自動再生の最小値">
+					<div v-if="autoPlayMovingMode !== 'rolling'" class="auto-min-input-area input-subgrid"
+						title="自動再生の最小値">
 						<label for="auto-min-value">min:&nbsp;</label>
 						<input type="number" id="auto-min-value" :min="min" :max="max" :step="step"
 							@change="(e: Event) => onInputAutoMinValue(e)" v-model="autoMinValue">
 					</div>
-					<div v-if="autoPlayMovingMode !== 'rolling'" class="auto-max-input-area input-subgrid" title="自動再生の最大値">
+					<div v-if="autoPlayMovingMode !== 'rolling'" class="auto-max-input-area input-subgrid"
+						title="自動再生の最大値">
 						<label for="auto-max-value">max:&nbsp;</label>
 						<input type="number" id="auto-max-value" :min="min" :max="max" :step="step"
 							@change="(e: Event) => onInputAutoMaxValue(e)" v-model="autoMaxValue">
 					</div>
-					<div v-if="autoPlayMovingMode !== 'thereAndBackTime'" class="delta-input-area input-subgrid" title="1秒ごとの変化量">
+					<div v-if="autoPlayMovingMode !== 'thereAndBackTime'" class="delta-input-area input-subgrid"
+						title="1秒ごとの変化量">
 						<label for="delta-value">delta:&nbsp;</label>
-						<input type="number" id="delta-value" :min="min" :max="max" :step="step"
+						<input type="number" id="delta-value" :min="-99999" :max="99999" :step="step"
 							@change="(e: Event) => onInputDeltaValue(e)" v-model="deltaValue">
 					</div>
-					<div v-if="autoPlayMovingMode === 'thereAndBackTime'" class="time-input-area input-subgrid" title="片道にかかる時間">
+					<div v-if="autoPlayMovingMode === 'thereAndBackTime'" class="time-input-area input-subgrid"
+						title="片道にかかる時間">
 						<label for="time-value">time:&nbsp;</label>
-						<input type="number" id="time-value" :min="min" :max="max" :step="step"
+						<input type="number" id="time-value" :min="0" :max="99999" :step="0.1"
 							@change="(e: Event) => onInputTimeValue(e)" v-model="timeValue">
 					</div>
 				</div>
