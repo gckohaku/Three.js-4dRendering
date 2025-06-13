@@ -9,19 +9,28 @@ export function thereAndBackDeltaPosition(currentTime: number, init: number, min
 	const aroundTime = (range * 2) / Math.abs(delta);
 	const initPosition = (init - min) / range;
 	const currentAroundValue = currentTime / aroundTime;
-	const currentAroundTimeOffsetAngle = (currentTime % aroundTime) * 2 * Math.PI / range;
+	const currentAroundTimeOffsetAngle = (currentTime % aroundTime) / aroundTime * Math.PI * 2;
 
-	const initAngle = ((delta > 0 ? 1 : -1) * Math.PI * initPosition) / aroundTime;
+	const initAngle = ((delta > 0 ? 1 : -1) * Math.PI * initPosition);
 	// const angleOffsetByDelta = delta > 0 ? 0 : Math.PI;
 
 	const currentPosition = Math.acos(Math.cos(initAngle + currentAroundTimeOffsetAngle)) / Math.PI;
 
 	if (logTimeManager.isPushLog()) {
-		console.log(`currentTime: ${currentTime}, init: ${init}, min: ${min}, max: ${max}, delta: ${delta}`);
-		console.log(
-			`range: ${range}, aroundTime: ${aroundTime}, initPosition: ${initPosition}, currentAroundValue: ${currentAroundValue}, currentAroundTimeOffsetAngle: ${currentAroundTimeOffsetAngle}`,
-		);
-		console.log(`initAngle: ${initAngle}, currentPosition: ${currentPosition}`);
+		console.table({
+			currentTime,
+			init,
+			min,
+			max,
+			delta,
+			range,
+			aroundTime,
+			initPosition,
+			currentAroundValue,
+			currentAroundTimeOffsetAngle,
+			initAngle,
+			currentPosition
+		});
 	}
 
 	return min + currentPosition * range;
