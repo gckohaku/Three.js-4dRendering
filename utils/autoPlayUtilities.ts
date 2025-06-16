@@ -16,22 +16,5 @@ export function thereAndBackDeltaPosition(currentTime: number, init: number, min
 
 	const currentPosition = Math.acos(Math.cos(initAngle + currentAroundTimeOffsetAngle)) / Math.PI;
 
-	if (logTimeManager.isPushLog()) {
-		console.table({
-			currentTime,
-			init,
-			min,
-			max,
-			delta,
-			range,
-			aroundTime,
-			initPosition,
-			currentAroundValue,
-			currentAroundTimeOffsetAngle,
-			initAngle,
-			currentPosition
-		});
-	}
-
 	return min + currentPosition * range;
 }

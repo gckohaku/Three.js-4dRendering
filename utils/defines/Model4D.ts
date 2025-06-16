@@ -120,7 +120,6 @@ export class Model4D {
 
 			if (viewPosition[3] > near) {
 				if (logTimeManager.isPushLog()) {
-					console.log("over: ", i);
 				}
 
 				ignoreVertexIndexes.push(i);
