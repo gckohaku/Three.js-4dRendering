@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { autoPlaySettingsStore } from '~/stores/autoPlaySettings';
-import { vOnClickOutside } from '@vueuse/components';
 import { mx_fractal_noise_float } from 'three/tsl';
+import { vOnClickOutside } from '@vueuse/components';
 import type { AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
 
 const modelValue = defineModel<string | number>();
@@ -191,21 +191,15 @@ const onInputAutoMaxValue = (e: Event) => {
 }
 
 const onClickParamsButton = () => {
-	console.log("onClickParamsButton");
-	console.log("isPopupParams.value: ", isPopupParams.value);
 	if (isPopupParams.value) {
 		uiManager.removeClosingOptionEvent(closeParamsPopup);
 		closeParamsPopup();
-		console.log("closeParamsPopup called");
-		console.log("isPopupParams.value: ", isPopupParams.value);
 		return;
 	}
 
 	uiManager.executeClosingOptionEvents();
 	isPopupParams.value = true;
 	uiManager.registerClosingOptionEvent(closeParamsPopup);
-	console.log("openParamsPopup called");
-	console.log("isPopupParams.value: ", isPopupParams.value);
 }
 
 const closeParamsPopup = () => {
@@ -301,11 +295,11 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 
 
-			<div class="toggle-button-container" v-on-click-outside.bobble="closeParamsPopup">
+			<div class="toggle-button-container">
 				<button @click.stop="onClickParamsButton" :disabled="!autoPlaySettings.isAutoPlayMode"
 					v-html="iconToggle"></button>
 
-				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams">
+				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams" v-on-click-outside.bubble="closeParamsPopup">
 					<div class="init-input-area input-subgrid" title="再生時の初期値">
 						<label for="init-value">init:&nbsp;</label>
 						<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"

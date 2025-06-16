@@ -51,6 +51,7 @@ const onClickOption = (option: { value: string; label: string; icon: string }) =
 };
 
 const closeMovingOption = () => {
+	console.log("closeMovingOption called");
 	isVisibleOptions.value = false;
 };
 </script>
@@ -58,7 +59,7 @@ const closeMovingOption = () => {
 <template>
 	<div class="selector-container">
 		<button class="selector-button" v-html="currentMovingModeOption.icon" @click.stop="onClickButton" :disabled="props.disabled"></button>
-		<div v-if="isVisibleOptions" class="options-container" v-on-click-outside.bubble="() => isVisibleOptions = false">
+		<div v-if="isVisibleOptions" class="options-container" v-on-click-outside.bubble="closeMovingOption">
 			<div v-for="option of props.options" class="option-area" :key="option.value" @click.self="onClickOption(option)">
 				{{ option.label }}
 			</div>

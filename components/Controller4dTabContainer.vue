@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 const isOpenPanel: Ref<boolean[]> = ref([true, false, false]);
 
 const onButtonClick = (index: number) => {
