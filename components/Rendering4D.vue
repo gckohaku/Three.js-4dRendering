@@ -351,29 +351,32 @@ onMounted(() => {
 					</div>
 				</template>
 				<template v-slot:options>
-					<div class="options-container">
-						<h2>Camera 4d オプション</h2>
-						<section>
-							<ModuleSlider v-model="options.camera4dNear" text="camera 4d near" :min="'-500'"
-								:max="'0'" />
-						</section>
-						<h2>フレームの太さ関連</h2>
-						<section>
-							<h3>Threshold W Position</h3>
+					<div class="tab-slot-container">
+						<div class="options-container">
+							<h2>Camera 4d オプション</h2>
 							<section>
-								<ModuleSlider v-model="options.frameThresholdWMax" text="max" :min="'-500'"
-									:max="'0'" />
-								<ModuleSlider v-model="options.frameThresholdWMin" text="min" :min="'-500'"
+								<ModuleSlider v-model="options.camera4dNear" text="camera 4d near" :min="'-500'"
 									:max="'0'" />
 							</section>
-							<h3>Frame Radius Multiply</h3>
+							<h2>フレームの太さ関連</h2>
 							<section>
-								<ModuleSlider v-model="options.frameRadiusMax" text="max" :min="'0.1'" :max="'3'"
-									:step="'0.1'" />
-								<ModuleSlider v-model="options.frameRadiusMin" text="min" :min="'0.1'" :max="'3'"
-									:step="'0.1'" />
+								<h3>Threshold W Position</h3>
+								<section>
+									<ModuleSlider v-model="options.frameThresholdWMax" text="max" :min="'-500'"
+										:max="'0'" />
+									<ModuleSlider v-model="options.frameThresholdWMin" text="min" :min="'-500'"
+										:max="'0'" />
+								</section>
+								<h3>Frame Radius Multiply</h3>
+								<section>
+									<ModuleSlider v-model="options.frameRadiusMax" text="max" :min="'0.1'" :max="'3'"
+										:step="'0.1'" />
+									<ModuleSlider v-model="options.frameRadiusMin" text="min" :min="'0.1'" :max="'3'"
+										:step="'0.1'" />
+								</section>
 							</section>
-						</section>
+						</div>
+						<AutoPlayButtons class="auto-play-button-container" />
 					</div>
 				</template>
 			</Controller4dTabContainer>
@@ -397,7 +400,7 @@ onMounted(() => {
 		gap: .5rem;
 		align-items: start;
 
-		.controller-container {
+		.controller-container, .options-container {
 			grid-area: controller;
 		}
 
