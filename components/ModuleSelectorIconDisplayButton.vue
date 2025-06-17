@@ -11,19 +11,11 @@ interface Props {
 		icon: string;
 	}[];
 	disabled?: boolean;
-	width?: number;
-	height?: number;
 }
 
-const props = withDefaults(defineProps<Props>(), {
-	width: 25,
-	height: 25
-});
+const props = defineProps<Props>();
 
 const uiManager = uiManagerStore();
-
-const buttonWidth = props.width; // px
-const buttonHeight = props.height; // px
 
 const currentMovingModeOption = ref(props.options[0]);
 const isVisibleOptions = ref(false);
@@ -73,9 +65,6 @@ const closeMovingOption = () => {
 	user-select: none;
 
 	.selector-button {
-		width: v-bind('buttonWidth + "px"');
-		height: v-bind('buttonHeight + "px"');
-
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -83,7 +72,6 @@ const closeMovingOption = () => {
 
 	.options-container {
 		position: absolute;
-		bottom: v-bind(-'buttonHeight + "px"');;
 		border: 1px solid #1c1c1c;
 		border-radius: 5px;
 		z-index: 100;

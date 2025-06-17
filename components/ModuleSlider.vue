@@ -282,7 +282,7 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 }
 
 // material icons 関連の変数
-const iconToggle = `<span class="material-symbols-outlined">swap_horiz</span>`;
+const iconParams = `<span class="material-symbols-outlined">notes</span>`;
 const iconLeft = `<span class="material-symbols-outlined">arrow_back</span>`;
 const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`;
 </script>
@@ -306,7 +306,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 			<div class="toggle-button-container">
 				<button @click.stop="onClickParamsButton" :disabled="!autoPlaySettings.isAutoPlayMode"
-					v-html="iconToggle"></button>
+					v-html="iconParams"></button>
 
 				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams"
 					v-on-click-outside.bubble="closeParamsPopup">
@@ -351,7 +351,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 				</div>
 			</div>
 
-			<AutoPlayMovingModeSelector :disabled="!autoPlaySettings.isAutoPlayMode" v-model="autoPlayMovingMode" />
+			<AutoPlayMovingModeSelector class="moving-mode-selector" :disabled="!autoPlaySettings.isAutoPlayMode" v-model="autoPlayMovingMode" />
 		</div>
 	</div>
 </template>
@@ -373,14 +373,20 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 	.slider-container {
 		position: relative;
-		display: flex;
+		display: grid;
 		justify-content: space-between;
+		align-items: center;
+		grid-template-areas: "slider gap params moving-mode";
+		grid-template-columns: 1fr .25rem 1.7rem 1.7rem;
 
 		.slider-area {
 			display: flex;
+			grid-area: slider;
 		}
 
 		.toggle-button-container {
+			grid-area: params;
+
 			.auto-play-setting-area {
 				padding: .5rem;
 				position: absolute;
@@ -405,9 +411,13 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 			}
 		}
 
-		button {
-			height: 1.5rem;
-			width: 1.5rem;
+		.moving-mode-selector {
+			grid-area: moving-mode;
+		}
+
+		button, ::v-deep(button) {
+			height: 1.7rem;
+			width: 1.7rem;
 			display: flex;
 			justify-content: center;
 			align-items: center;
