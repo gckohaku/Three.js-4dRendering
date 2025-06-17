@@ -36,9 +36,10 @@ const autoPlayMovingMode: Ref<AutoPlayMovingMode> = ref("rolling");
 const firstInitValue = ref(modelValue.value);
 const initValue = ref(modelValue.value);
 const deltaValue = ref(0);
-const timeValue = ref(1000);
+const timeValue = ref(3); // seconds
 const autoMinValue = ref(props.min);
 const autoMaxValue = ref(props.max);
+const firstDirection = ref<"+" | "-">("+");
 const requestAnimationFrameId = ref(0);
 
 const onPushSliderButton = (buttonSide: "right" | "left") => {
@@ -230,7 +231,11 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 		firstInitValue.value = initValue.value;
 		isStarted.value = true;
 	}
-	if (!autoPlaySettings.isPlaying || deltaValue.value === 0) {
+	if (
+		!autoPlaySettings.isPlaying
+		|| (autoPlayMovingMode.value !== "thereAndBackTime" && deltaValue.value === 0)
+		|| (autoPlayMovingMode.value === "thereAndBackTime" && timeValue.value === 0)
+	) {
 		modelValue.value = initValue.value;
 		return;
 	}
@@ -268,6 +273,10 @@ const onRequestAnimationFrame = (timeStamp: DOMHighResTimeStamp) => {
 		const currentValue = thereAndBackDeltaPosition(animationTime, Number(initValue.value), Number(autoMinValue.value), Number(autoMaxValue.value), Number(deltaValue.value));
 		modelValue.value = currentValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
 	}
+	else if (autoPlayMovingMode.value === "thereAndBackTime") {
+		const currentValue = thereAndBackTimePosition(animationTime, Number(initValue.value), Number(autoMinValue.value), Number(autoMaxValue.value), Number(timeValue.value), firstDirection.value);
+		modelValue.value = currentValue.toFixed(props.step.includes(".") ? props.step.split(".")[1].length : 0);
+	}
 
 	requestAnimationFrameId.value = requestAnimationFrame(onRequestAnimationFrame);
 }
@@ -299,7 +308,8 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 				<button @click.stop="onClickParamsButton" :disabled="!autoPlaySettings.isAutoPlayMode"
 					v-html="iconToggle"></button>
 
-				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams" v-on-click-outside.bubble="closeParamsPopup">
+				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams"
+					v-on-click-outside.bubble="closeParamsPopup">
 					<div class="init-input-area input-subgrid" title="再生時の初期値">
 						<label for="init-value">init:&nbsp;</label>
 						<input type="number" id="init-value" :min="min" :max="max" :step="step" v-model="initValue"
@@ -328,6 +338,15 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 						<label for="time-value">time:&nbsp;</label>
 						<input type="number" id="time-value" :min="0" :max="99999" :step="0.1"
 							@change="(e: Event) => onInputTimeValue(e)" v-model="timeValue">
+					</div>
+					<div v-if="autoPlayMovingMode === 'thereAndBackTime'"
+						class="first-direction-input-area input-subgrid" title="自動再生開始時の方向">
+						<label for="first-direction">first direction:&nbsp;</label>
+						<select id="first-direction" v-model="firstDirection">
+							<option value="+">+</option>
+							<option value="-">-</option>
+						</select>
+
 					</div>
 				</div>
 			</div>
@@ -378,6 +397,10 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 					display: grid;
 					grid-template-columns: subgrid;
 					grid-column: 1 / -1;
+
+					label {
+						text-wrap: nowrap;
+					}
 				}
 			}
 		}
