@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import {vOnClickOutside} from '@vueuse/components';
-import { isAutoPlayMovingMode, type AutoPlayMovingMode } from '~/utils/defines/AutoPlayMovingMode';
+import { vOnClickOutside } from '@vueuse/components';
 
 const modelValue = defineModel<string>();
 
@@ -11,6 +10,7 @@ interface Props {
 		icon: string;
 	}[];
 	disabled?: boolean;
+	buttonTitlePropText?: string;
 }
 
 const props = defineProps<Props>();
@@ -43,14 +43,13 @@ const onClickOption = (option: { value: string; label: string; icon: string }) =
 };
 
 const closeMovingOption = () => {
-	console.log("closeMovingOption called");
 	isVisibleOptions.value = false;
 };
 </script>
 
 <template>
 	<div class="selector-container">
-		<button class="selector-button" v-html="currentMovingModeOption.icon" @click.stop="onClickButton" :disabled="props.disabled"></button>
+		<button class="selector-button" v-html="currentMovingModeOption.icon" @click.stop="onClickButton" :disabled="props.disabled" :title="props.buttonTitlePropText"></button>
 		<div v-if="isVisibleOptions" class="options-container" v-on-click-outside.bubble="closeMovingOption">
 			<div v-for="option of props.options" class="option-area" :key="option.value" @click.self="onClickOption(option)">
 				{{ option.label }}

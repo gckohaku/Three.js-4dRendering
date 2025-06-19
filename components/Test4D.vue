@@ -207,9 +207,9 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 		face.material = transformedModel.materialColors;
 		frame.geometry = transformedModel.getFrameGeometry(4);
 
-		if (logTimeManager.isPushLog()) {
-			console.log(face.geometry);
-		}
+		// if (logTimeManager.isPushLog()) {
+		// 	console.log(face.geometry);
+		// }
 	}
 
 	scene.updateMatrix();
@@ -239,7 +239,6 @@ onMounted(() => {
 		const initializeState = localStorage.getItem("initializeState");
 
 		if (initializeState === "initialized") {
-			console.log("a");
 			localStorage.setItem("initializeState", "reload");
 			console.log("page reloading");
 			location.reload();

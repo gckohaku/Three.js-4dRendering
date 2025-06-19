@@ -138,11 +138,11 @@ export class Model3D {
 
 		const frameGeometry = this.getFrameGeometry(radius);
 
-		console.log("create face mesh");
+		// console.log("create face mesh");
 		const faceMesh = new THREE.Mesh(this.geometry, this.materialColors);
-		console.log("create frame mesh");
+		// console.log("create frame mesh");
 		const frameMesh = new THREE.Mesh(frameGeometry, new THREE.MeshLambertMaterial({ color: frameColor }));
-		console.log("end of create mesh");
+		// console.log("end of create mesh");
 
 		const retGroup = new THREE.Group();
 		retGroup.add(faceMesh);

@@ -5,7 +5,7 @@ import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import type { ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
 
-const logTimeManager = logTimeManagerStore();
+// const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
 const options = optionsStore();
 const autoPlaySettings = autoPlaySettingsStore();
@@ -270,11 +270,11 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 		isLogPush.value = false;
 	}
 
-	if (logTimeManager.isPushLog()) {
-		logTimeManager.updateLogDate();
-	}
+	// if (logTimeManager.isPushLog()) {
+	// 	logTimeManager.updateLogDate();
+	// }
 
-	logTimeManager.updateCurrentDate();
+	// logTimeManager.updateCurrentDate();
 };
 
 const release = (face: THREE.Mesh, frame: THREE.Mesh) => {
@@ -289,7 +289,6 @@ onMounted(() => {
 		const initializeState = localStorage.getItem("initializeState");
 
 		if (initializeState === "initialized") {
-			console.log("a");
 			localStorage.setItem("initializeState", "reload");
 			console.log("page reloading");
 			location.reload();
