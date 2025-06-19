@@ -24,7 +24,7 @@ function onClickDownButton() {
 	const isSelected = isSelectedContentOfList.value;
 	const index = isSelected.indexOf(true);
 	if (index >= isSelected.length - 1) {
-		console.log(index, isSelected);
+		// console.log(index, isSelected);
 		return;
 	}
 	const contents = modelValue.value;

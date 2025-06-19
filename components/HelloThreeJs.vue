@@ -171,12 +171,12 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	renderer.render(scene, camera);
 
 	if (isLogPush.value) {
-		console.log(frame.geometry);
+		// console.log(frame.geometry);
 		isLogPush.value = false;
 	}
 
 	if (logTimeManager.isPushLog()) {
-		console.log(face.geometry);
+		// console.log(face.geometry);
 
 		logTimeManager.updateLogDate();
 	}
@@ -196,7 +196,6 @@ onMounted(() => {
 		const initializeState = localStorage.getItem("initializeState");
 
 		if (initializeState === "initialized") {
-			console.log("a");
 			localStorage.setItem("initializeState", "reload");
 			console.log("page reloading");
 			location.reload();

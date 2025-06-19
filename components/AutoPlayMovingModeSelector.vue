@@ -23,17 +23,17 @@ const iconThereAndBackTime = `<span>${iconArrowRangeOnly}<sub><span class="mater
 const selectIconViewOptions: InstanceType<typeof ModuleSelectorIconDisplayButton>["$props"]["options"] = [
 	{
 		value: "rolling",
-		label: "Rolling",
+		label: "単方向繰り返し",
 		icon: iconRolling
 	},
 	{
 		value: "thereAndBackDelta",
-		label: "There and Back (delta)",
+		label: "往復 (移動量指定)",
 		icon: iconThereAndBackDelta
 	},
 	{
 		value: "thereAndBackTime",
-		label: "There and Back (time)",
+		label: "往復 (片道の時間指定)",
 		icon: iconThereAndBackTime
 	}
 ];
@@ -65,7 +65,7 @@ const onSelectChange = (event: Event) => {
 </script>
 
 <template>
-	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" :disabled="props.disabled" v-model="modelValue" />
+	<ModuleSelectorIconDisplayButton :options="selectIconViewOptions" :disabled="props.disabled" v-model="modelValue" :button-title-prop-text="`アニメーションタイプの選択&#13;&#10;現在の設定: ${selectIconViewOptions.find((o) => o.value === modelValue)?.label ?? 'エラー: 出ないはずのエラーメッセージ'}`" />
 </template>
 
 <style scoped>

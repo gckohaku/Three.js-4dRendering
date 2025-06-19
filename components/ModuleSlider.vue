@@ -204,7 +204,6 @@ const onClickParamsButton = () => {
 }
 
 const closeParamsPopup = () => {
-	console.log("closeParamsPopup called");
 	isPopupParams.value = false;
 }
 
@@ -213,7 +212,6 @@ const onMouseUpPlayButton = () => {
 		if (autoPlaySettings.startAutoPlayTime === -1) {
 			autoPlaySettings.startAutoPlayTime = timeStamp;
 		}
-		console.log(timeStamp);
 		onRequestAnimationFrame(timeStamp);
 	});
 }
@@ -306,7 +304,7 @@ const iconRight = `<span class="material-symbols-outlined">arrow_forward</span>`
 
 			<div class="toggle-button-container">
 				<button @click.stop="onClickParamsButton" :disabled="!autoPlaySettings.isAutoPlayMode"
-					v-html="iconParams"></button>
+					v-html="iconParams" title="パラメータの設定"></button>
 
 				<div class="auto-play-setting-area" v-if="autoPlaySettings.isAutoPlayMode && isPopupParams"
 					v-on-click-outside.bubble="closeParamsPopup">

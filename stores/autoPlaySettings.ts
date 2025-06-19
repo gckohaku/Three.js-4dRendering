@@ -15,6 +15,7 @@ export const autoPlaySettingsStore = defineStore("autoPlaySettingsStore", () => 
 		isAutoPlayMode.value = !isAutoPlayMode.value;
 		if (!isAutoPlayMode.value) {
 			isPlaying.value = false;
+			isPausing.value = false;
 			resetAutoPlayTime();
 		}
 	}
