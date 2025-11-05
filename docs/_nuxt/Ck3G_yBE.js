@@ -1,0 +1,1 @@
+import{_ as t}from"./C6qL23pU.js";import{d as e,Z as _,y as c}from"./D_gzLHBP.js";import{_ as n}from"./DlAUqK2U.js";const r=e({__name:"test-selector",setup(s){return(a,p)=>{const o=t;return c(),_(o)}}}),d=n(r,[["__scopeId","data-v-0abbc860"]]);export{d as default};
