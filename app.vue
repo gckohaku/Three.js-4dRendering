@@ -3,7 +3,7 @@ import "~/public/base.css"
 </script>
 
 <template>
-  <div>
-    <Rendering4D />
-  </div>
+	<div>
+		<NuxtPage />
+	</div>
 </template>

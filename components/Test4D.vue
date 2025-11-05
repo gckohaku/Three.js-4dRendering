@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { chain, concat, cot, multiply, pi, unaryMinus, type MathType } from "mathjs";
 import * as THREE from "three";
+import { VertexNormalsHelper } from "three/examples/jsm/Addons.js";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import type { ArrayOfColorRGBA } from "~/utils/typeUtilities";
 import { Model4D } from "~/utils/defines/Model4D";
 
-// const logTimeManager = logTimeManagerStore();
+const logTimeManager = logTimeManagerStore();
 const rotationOrder = rotationOrderStore();
-const options = optionsStore();
-const autoPlaySettings = autoPlaySettingsStore();
 
 const moveX: Ref<string> = ref("0");
 const moveY: Ref<string> = ref("0");
@@ -42,7 +41,7 @@ const camera4dSizeW: Ref<string> = ref("1.0");
 
 const cameraMoveX: Ref<string> = ref("0");
 const cameraMoveY: Ref<string> = ref("0");
-const cameraMoveZ: Ref<string> = ref("750");
+const cameraMoveZ: Ref<string> = ref("500");
 const cameraRotateX: Ref<string> = ref("0");
 const cameraRotateY: Ref<string> = ref("0");
 const cameraRotateZ: Ref<string> = ref("0");
@@ -80,7 +79,7 @@ const transformMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return chain(parallelMatrix4D.value).multiply(rotateMatrix4D.value).multiply(sizeMatrix4D.value).done();
 });
 
-const focalLength = 300 * cot(30 * pi / 180);
+const focalLength = 300 * cot(23 * pi / 180);
 
 const cameraRMatrix4D: ComputedRef<number[][]> = computed(() => {
 	return makeRotate4DMatrix(-Number(camera4dRotateXW.value), -Number(camera4dRotateYW.value), -Number(camera4dRotateZW.value), -Number(camera4dRotateXY.value), -Number(camera4dRotateYZ.value), -Number(camera4dRotateXZ.value));
@@ -117,81 +116,27 @@ const threeCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const myGeometry = new THREE.BufferGeometry();
 
 const fourDimensionVertexes: number[][] = [
-	[100, 100, 100, 100], // 0
-	[100, -100, 100, 100],
-	[-100, 100, 100, 100],
-	[-100, -100, 100, 100],
-	[100, 100, -100, 100], // 4
-	[100, -100, -100, 100],
-	[-100, 100, -100, 100],
-	[-100, -100, -100, 100],
-	[100, 100, 100, -100], // 8
-	[100, -100, 100, -100],
-	[-100, 100, 100, -100],
-	[-100, -100, 100, -100],
-	[100, 100, -100, -100], // 12
-	[100, -100, -100, -100],
-	[-100, 100, -100, -100],
-	[-100, -100, -100, -100],
+	[50, -50, 50, 0], // 0
+	[-50, -50, 50, 0],
+	[50, -50, -50, 0],
+	[-50, -50, -50, 0],
+
+	[50, 50, -50, 0], // 4
+	[-50, 50, -50, 0],
+
+	[50, 50, 50, 0],
 ]
 
 const fourDimensionParts: number[][] = [
-	// big	
-	[0, 1, 2, 3], // front
-	[4, 5, 6, 7], // back
-	[0, 2, 4, 6], // top
-	[1, 3, 5, 7], // bottom
-	[0, 1, 4, 5], // right
-	[2, 3, 6, 7], // left
-	// small (+8)
-	[8, 9, 10, 11],
-	[12, 13, 14, 15],
-	[8, 10, 12, 14],
-	[9, 11, 13, 15],
-	[8, 9, 12, 13],
-	[10, 11, 14, 15],
-	// x rotate direction
-	[0, 2, 8, 10],
-	[1, 3, 9, 11],
-	[4, 6, 12, 14],
-	[5, 7, 13, 15],
-	// y rotate direction
-	[0, 1, 8, 9],
-	[2, 3, 10, 11],
-	[4, 5, 12, 13],
-	[6, 7, 14, 15],
-	// z rotate direction
-	[0, 4, 8, 12],
-	[1, 5, 9, 13],
-	[2, 6, 10, 14],
-	[3, 7, 11, 15],
+	[0, 1, 2, 3], // horizon to x and z
+	[2, 3, 4, 5], // horizon to x and y
+	[0, 2, 6 ,4], // horizon to y and z
 ];
 
 const fourDimensionColors: ArrayOfColorRGBA[] = [
-	[255, 255, 255, 0.1], // big
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1], // small (+8)
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1], // x rotate direction
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1], // y rotate direction
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1], // z rotate direction
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
-	[255, 255, 255, 0.1],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 255, 0, 0.3],
 ]
 
 const model4D = new Model4D();
@@ -225,7 +170,8 @@ const initialize = () => {
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(downDimensionModel4D.geometry, downDimensionModel4D.materialColors);
 	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(downDimensionModel4D.indexes.flat(2)), 1));
-	const frame = downDimensionModel4D.getFrameMesh(0x00ffff, 4, true);
+	// face.geometry.computeVertexNormals();
+	const frame = downDimensionModel4D.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(face);
 	group.add(frame);
@@ -248,18 +194,22 @@ const initialize = () => {
 const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera, light: THREE.Light, face: THREE.Mesh, frame: THREE.Mesh) => {
 	release(face, frame);
 	camera.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
-	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(-Number(cameraRotateX.value), -Number(cameraRotateY.value), -Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
+	camera.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
 	light.position.set(Number(cameraMoveX.value), Number(cameraMoveY.value), Number(cameraMoveZ.value));
 	light.rotation.setFromRotationMatrix(new THREE.Matrix4(...makeRotate3DMatrix44(Number(cameraRotateX.value), Number(cameraRotateY.value), Number(cameraRotateZ.value)).flat() as ConstructorParameters<typeof THREE.Matrix4>));
 
-	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value, options.camera4dNear);
+	const transformedModel = model4D.affine(transformMatrix4D.value).toModel3D(cameraAMatrix4D.value, cameraRtMatrix4D.value);
 
-	transformedModel.geometry.computeVertexNormals();
+	transformedModel.setColorMesh();
 	if (transformedModel.indexes.length) {
-		frame.geometry = transformedModel.getFrameGeometry(4);
 		face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
 		face.material = transformedModel.materialColors;
+		frame.geometry = transformedModel.getFrameGeometry(4);
+
+		// if (logTimeManager.isPushLog()) {
+		// 	console.log(face.geometry);
+		// }
 	}
 
 	scene.updateMatrix();
@@ -270,11 +220,11 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 		isLogPush.value = false;
 	}
 
-	// if (logTimeManager.isPushLog()) {
-	// 	logTimeManager.updateLogDate();
-	// }
+	if (logTimeManager.isPushLog()) {
+		logTimeManager.updateLogDate();
+	}
 
-	// logTimeManager.updateCurrentDate();
+	logTimeManager.updateCurrentDate();
 };
 
 const release = (face: THREE.Mesh, frame: THREE.Mesh) => {
@@ -316,11 +266,10 @@ onMounted(() => {
 							v-model:move-w="moveW" v-model:rotate-x-w="rotateXW" v-model:rotate-y-w="rotateYW"
 							v-model:rotate-z-w="rotateZW" v-model:rotate-x-y="rotateXY" v-model:rotate-y-z="rotateYZ"
 							v-model:rotate-x-z="rotateXZ" v-model:size-x="sizeX" v-model:size-y="sizeY"
-							v-model:size-z="sizeZ" v-model:size-w="sizeW" class="controller-container" />
+							v-model:size-z="sizeZ" v-model:size-w="sizeW" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.orderList" />
 						</div>
-						<AutoPlayButtons class="auto-play-button-container" />
 					</div>
 
 				</template>
@@ -332,56 +281,23 @@ onMounted(() => {
 							v-model:rotate-z-w="camera4dRotateZW" v-model:rotate-x-y="camera4dRotateXY"
 							v-model:rotate-y-z="camera4dRotateYZ" v-model:rotate-x-z="camera4dRotateXZ"
 							v-model:size-x="camera4dSizeX" v-model:size-y="camera4dSizeY" v-model:size-z="camera4dSizeZ"
-							v-model:size-w="camera4dSizeW" :dom-param-w-max="'1000'" :dom-param-w-min="'0'" />
+							v-model:size-w="camera4dSizeW" />
 						<div class="rotation-order-container">
 							<ChangeableOrderList v-model="rotationOrder.cameraOrderList" />
 						</div>
-						<AutoPlayButtons class="auto-play-button-container" />
 					</div>
 				</template>
 				<template v-slot:camera-3d>
-					<div class="tab-slot-container">
-						<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY"
-							v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX"
-							v-model:rotate-y="cameraRotateY" v-model:rotate-z="cameraRotateZ"
-							v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY" v-model:size-z="cameraSizeZ"
-							dom-param-z-max="1000" />
-						<AutoPlayButtons class="auto-play-button-container" />
-					</div>
-				</template>
-				<template v-slot:options>
-					<div class="tab-slot-container">
-						<div class="options-container">
-							<h2>Camera 4d オプション</h2>
-							<section>
-								<ModuleSlider v-model="options.camera4dNear" text="camera 4d near" :min="'-500'"
-									:max="'0'" />
-							</section>
-							<h2>フレームの太さ関連</h2>
-							<section>
-								<h3>Threshold W Position</h3>
-								<section>
-									<ModuleSlider v-model="options.frameThresholdWMax" text="max" :min="'-500'"
-										:max="'0'" />
-									<ModuleSlider v-model="options.frameThresholdWMin" text="min" :min="'-500'"
-										:max="'0'" />
-								</section>
-								<h3>Frame Radius Multiply</h3>
-								<section>
-									<ModuleSlider v-model="options.frameRadiusMax" text="max" :min="'0.1'" :max="'3'"
-										:step="'0.1'" />
-									<ModuleSlider v-model="options.frameRadiusMin" text="min" :min="'0.1'" :max="'3'"
-										:step="'0.1'" />
-								</section>
-							</section>
-						</div>
-						<AutoPlayButtons class="auto-play-button-container" />
-					</div>
+					<ControllerUi3D v-model:move-x="cameraMoveX" v-model:move-y="cameraMoveY"
+						v-model:move-z="cameraMoveZ" v-model:rotate-x="cameraRotateX" v-model:rotate-y="cameraRotateY"
+						v-model:rotate-z="cameraRotateZ" v-model:size-x="cameraSizeX" v-model:size-y="cameraSizeY"
+						v-model:size-z="cameraSizeZ" />
 				</template>
 			</Controller4dTabContainer>
 		</div>
+
 	</div>
-	<!-- <button id="push-log" @click="isLogPush = true">push log</button> -->
+	<button id="push-log" @click="isLogPush = true">push log</button>
 </template>
 
 <style scoped>
@@ -391,34 +307,9 @@ onMounted(() => {
 	flex-wrap: nowrap;
 
 	.tab-slot-container {
-		display: grid;
-		grid-template-areas:
-			"controller rotation-order"
-			"controller auto-play-button";
-		grid-template-rows: max-content 1fr;
+		display: flex;
+		flex-direction: row;
 		gap: .5rem;
-		align-items: start;
-
-		.controller-container, .options-container {
-			grid-area: controller;
-		}
-
-		.rotation-order-container {
-			grid-area: rotation-order;
-			height: fit-content;
-		}
-
-		.auto-play-button-container {
-			grid-area: auto-play-button;
-		}
-	}
-
-	.options-container {
-
-		h2:not(:first-child),
-		h3 {
-			margin-block-start: .5rem;
-		}
 	}
 }
 </style>

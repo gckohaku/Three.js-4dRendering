@@ -6,5 +6,19 @@ export default defineNuxtConfig({
 		dirs: ["utils"],
 	},
 
-	modules: ["@pinia/nuxt"],
+	modules: ["@pinia/nuxt", "@vueuse/nuxt"],
+
+	app: {
+		head: {
+			title: "ここにタイトルを入れる",
+			link: [
+				{
+					rel: "stylesheet",
+					href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200",
+				},
+			],
+		},
+
+		cdnURL: "/Three.js-4dRendering/"
+	},
 });

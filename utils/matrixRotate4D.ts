@@ -1,4 +1,4 @@
-import { concat, cos, multiply, sin, Unit } from "mathjs";
+import { concat, cos, multiply, sin, Unit, type MathCollection, type MathType } from "mathjs";
 
 export const makeRotate4DMatrix = (rotateXW: number, rotateYW: number, rotateZW: number, rotateXY: number, rotateYZ: number, rotateXZ: number): number[][] => {
 	const rotationOrder = rotationOrderStore();
@@ -85,7 +85,7 @@ export const makeRotate4DMatrix = (rotateXW: number, rotateYW: number, rotateZW:
 			throw new Error("matrix is undefined in matrixRotate4D.ts");
 		}
 
-		retMatrix = multiply(retMatrix, currentMatrix);
+		retMatrix = multiply<MathCollection>(retMatrix, currentMatrix) as number[][];
 	}
 
 	if (!retMatrix) {

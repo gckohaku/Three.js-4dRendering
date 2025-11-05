@@ -10,16 +10,21 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "mathjs": "^13.2.3",
-    "nuxt": "^3.14.1592",
-    "three": "^0.169.0",
+    "mathjs": "^14.4.0",
+    "nuxi": "^3.25.1",
+    "nuxt": "^3.17.5",
+    "three": "^0.176.0",
     "vue": "latest",
     "vue-router": "latest"
   },
   "packageManager": "pnpm@9.12.3+sha512.cce0f9de9c5a7c95bef944169cc5dfe8741abfb145078c0d508b868056848a87c81e626246cb60967cbd7fd29a6c062ef73ff840d96b3c86c40ac92cf4a813ee",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@pinia/nuxt": "^0.7.0",
-    "@types/three": "^0.169.0"
+    "@pinia/nuxt": "^0.9.0",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/three": "^0.172.0",
+    "@vueuse/components": "^13.3.0",
+    "@vueuse/core": "^13.3.0",
+    "@vueuse/nuxt": "^13.3.0"
   }
 }

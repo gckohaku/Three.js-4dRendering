@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { chain, pi } from "mathjs";
+import { chain, mode, pi } from "mathjs";
 import * as THREE from "three";
+import * as PolygonUtilities from "@/utils/polygonUtilities";
 import { makeRotate3DMatrix44 } from "~/utils/matrixUtilities";
 import { Model3D } from "~/utils/defines/Model3D";
 import type { ArrayOfColorRGB, ArrayOfColorRGBA } from "~/utils/typeUtilities";
+import { toTrianglesDrawMode } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 const logTimeManager = logTimeManagerStore();
 
@@ -97,13 +99,13 @@ const nextParts: number[][] = [
 	[2, 1, 4],
 ];
 
-const nextColors: ArrayOfColorRGB[] = [
-	[255, 0, 0],
-	[0, 255, 0],
-	[0, 0, 255],
-	[255, 128, 0],
-	[192, 0, 192],
-	[0, 192, 192],
+const nextColors: (ArrayOfColorRGB | ArrayOfColorRGBA)[] = [
+	[255, 0, 0, 0.3],
+	[0, 255, 0, 0.3],
+	[0, 0, 255, 0.3],
+	[255, 128, 0, 0.3],
+	[192, 0, 192, 0.3],
+	[0, 192, 192, 0.3],
 ];
 
 const model = new Model3D();
@@ -111,7 +113,7 @@ model.setVertexes(vertexes);
 model.setParts(parts, colors);
 
 myGeometry.setAttribute("position", new THREE.BufferAttribute(model.toThreeVertexes(), 3));
-myGeometry.setIndex(new THREE.BufferAttribute(model.toTrianglesIndex(), 1));
+myGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(model.vertexes.flat()), 1));
 myGeometry.computeVertexNormals();
 
 const initialize = () => {
@@ -133,13 +135,12 @@ const initialize = () => {
 	const mesh = new THREE.Mesh(model.geometry, model.materialColors);
 	// const lineSegments = model.getLineSegments(0x00ffff, 1);
 	const face = new THREE.Mesh(model.geometry, model.materialColors);
+	face.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(model.indexes.flat(2)), 1));
 	const frame = model.getFrameMesh(0x00ffff);
 	const group = new THREE.Group();
 	group.add(frame);
 	group.add(face);
 	scene.add(group);
-	console.log(frame.geometry);
-
 
 	if (!threeCanvas.value) {
 		throw new Error("canvasElement is null");
@@ -161,19 +162,21 @@ const update = (renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE
 	const flatTransformMatrix = transformMatrix.value.flat();
 	const transformedModel = model.affine(transformMatrix.value);
 	transformedModel.geometry.computeVertexNormals();
+	transformedModel.setColorMesh();
 	frame.geometry = transformedModel.getFrameGeometry();
-	face.geometry = transformedModel.geometry;
+	face.geometry = transformedModel.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(transformedModel.indexes.flat(2)), 1));
+	face.geometry.computeVertexNormals();
 
 	scene.updateMatrix();
 	renderer.render(scene, camera);
 
 	if (isLogPush.value) {
-		console.log(frame.geometry);
+		// console.log(frame.geometry);
 		isLogPush.value = false;
 	}
 
 	if (logTimeManager.isPushLog()) {
-
+		// console.log(face.geometry);
 
 		logTimeManager.updateLogDate();
 	}
@@ -193,7 +196,6 @@ onMounted(() => {
 		const initializeState = localStorage.getItem("initializeState");
 
 		if (initializeState === "initialized") {
-			console.log("a");
 			localStorage.setItem("initializeState", "reload");
 			console.log("page reloading");
 			location.reload();
