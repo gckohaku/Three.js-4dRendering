@@ -18,5 +18,7 @@ export default defineNuxtConfig({
 				},
 			],
 		},
+
+		cdnURL: "/Three.js-4dRendering/"
 	},
 });
